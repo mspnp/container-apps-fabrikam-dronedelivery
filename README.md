@@ -116,6 +116,40 @@ Following the steps below will result in the creation of the following Azure res
    az acr build -r $ACR_NAME -t $ACR_SERVER/package:0.1.0 ./workload/src/shipping/package/.
    ```
 
+## Deploy Azure Container App
+
+1. Create a Log Analytics workspace
+
+   ```bash
+   az monitor log-analytics workspace create --resource-group rg-shipping-dronedelivery --workspace-name la-shipping-dronedelivery
+   ```
+
+1. Obtain the Log Analytics Client ID
+
+   ```bash
+   LOG_ANALYTICS_WORKSPACE_CLIENT_ID=$(az monitor log-analytics workspace show --query customerId -g $RESOURCE_GROUP -n $LOG_ANALYTICS_WORKSPACE --out tsv)
+   ```
+
+1. Obtain the Log Analytics Client Secret
+
+   ```bash
+   LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET=$(az monitor log-analytics workspace get-shared-keys --query primarySharedKey -g $RESOURCE_GROUP -n $LOG_ANALYTICS_WORKSPACE --out tsv)
+   ```
+
+1. Register the Azure Resource Manager provider for `Microsoft.Web`
+
+   ```bash
+   az provider register --namespace Microsoft.Web
+   ```
+
+1. Deploy the Container Apps ARM template
+
+   ```bash
+   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p ACR_SERVER=mcr.microsoft.com logAnalitycsCustomerId=${LOG_ANALYTICS_WORKSPACE_CLIENT_ID} logAnalitycsSharedKey=${LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET}
+   ```
+
+   :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with current limited `location` support.
+
 ## Clean up
 
 1. Delete the Azure Container Registry resource group
@@ -129,4 +163,3 @@ Following the steps below will result in the creation of the following Azure res
    ```bash
    az group delete -n rg-shipping-dronedelivery -y
    ```
-
