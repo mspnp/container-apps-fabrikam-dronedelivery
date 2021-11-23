@@ -1,6 +1,6 @@
 # Container Apps Example Scenario
 
-This repository guides you during the process of running a set of containers in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that were previously running in Azure Kubernetes Services consisting of several general purposes microservices is now being provisioned to a recently created Azure Container App environment.  This Azure managed service that is optimized for running applications that span many microservices will make containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capobility. Addtionally, it will manage their secrets in a secure manner.
+This repository guides you during the process of running a set of containers in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that were previously running in Azure Kubernetes Services consisting of several general purposes microservices is now being provisioned to a recently created Azure Container App environment.  This Azure managed service that is optimized for running applications that span many microservices will make containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
 
 ```output
                                                                                     ┌───────────────────┐
@@ -50,9 +50,9 @@ Following the steps below will result in the creation of the following Azure res
 |-------------------------------------------|---------------------------------------------------------|
 | Five Azure User Managed Identities        | These are going to give `Read` and `List` secrets permissions over Azure KeyVault to the microservices |
 | Five Azure KeyVault instances             | Secrets are saved into Azure KeyValt instances |
-| Two Azure Cosmos Db instances             | Delivery and Package services took dependencies on Azure Cosmos Db |
-| An Azure Redis Cache instance             | Delivery services uses Azure Redis cache to keep track of inflight deliveries |
-| An Azure Service Bus                      | Ingestion and Workflow services are communicated using Azure Service Bus queues |
+| Two Azure Cosmos Db instances             | Delivery and Package services have dependencies on Azure Cosmos Db |
+| An Azure Redis Cache instance             | Delivery service uses Azure Redis cache to keep track of inflight deliveries |
+| An Azure Service Bus                      | Ingestion and Workflow services communicate using Azure Service Bus queues |
 | An Azure Application Insights instance    | All services are sending trace information to a shared Azure Application Insights instance |
 
 ## Clone the repository
@@ -65,7 +65,7 @@ Following the steps below will result in the creation of the following Azure res
 
    :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can [install Windows Subsystem for Linux](https://docs.microsoft.com/windows/wsl/install#install) to run Bash by entering the following command in PowerShell or Windows Command Prompt and then restarting your machine: `wsl --install`
 
-1. Navigate to the cicdbots folder
+1. Navigate to the container-apps-fabrikam-dronedelivery folder
 
    ```bash
    cd ./container-apps-fabrikam-dronedelivery
@@ -148,7 +148,7 @@ Following the steps below will result in the creation of the following Azure res
    az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p ACR_SERVER=mcr.microsoft.com logAnalitycsCustomerId=${LOG_ANALYTICS_WORKSPACE_CLIENT_ID} logAnalitycsSharedKey=${LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET}
    ```
 
-   :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with current limited `location` support.
+   :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
 
 ## Clean up
 
