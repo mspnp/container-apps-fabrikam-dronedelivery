@@ -1,0 +1,78 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "logAnalitycsCustomerId": {
+            "type": "String"
+        },
+        "logAnalitycsSharedKey": {
+            "type": "SecureString"
+        },
+        "acrSever": {
+            "type": "String"
+        }
+    },
+    "variables": {},
+    "resources": [
+			{
+        "name": "cae-shipping-dronedelivery",
+        "type": "Microsoft.Web/kubeenvironments",
+        "apiVersion": "2021-03-01",
+        "kind": "containerenvironment",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "type": "managed",
+          "appLogsConfiguration": {
+            "destination": "log-analytics",
+            "logAnalyticsConfiguration": {
+              "customerId": "[parameters('logAnalitycsCustomerId')]",
+              "sharedKey": "[parameters('logAnalitycsSharedKey')]"
+            }
+          }
+        }
+      },
+      {
+        "name": "my-container-app",
+        "type": "Microsoft.Web/containerApps",
+        "apiVersion": "2021-03-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]"
+        ],
+        "kind": "containerapp",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "kubeEnvironmentId": "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]",
+          "configuration": {
+            "ingress": {
+              "external": true,
+              "targetPort": 80,
+              "transport": "Auto",
+              "traffic": [
+                {
+                  "weight": 100,
+                  "latestRevision": true
+                }
+              ],
+              "allowInsecure": false
+            }
+          },
+          "template": {
+            "containers": [
+              {
+                "image": "[concat(parameters('acrSever'), '/azuredocs/containerapps-helloworld:latest')]",
+                "name": "my-container-app",
+                "resources": {
+                    "cpu": 0.5,
+                    "memory": "1Gi"
+                }
+              }
+            ],
+            "scale": {
+              "minReplicas": 1,
+              "maxReplicas": 1
+            }
+          }
+        }
+      }
+    ]
+}
