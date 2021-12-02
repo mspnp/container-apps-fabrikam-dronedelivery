@@ -145,7 +145,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Deploy the Container Apps ARM template
 
    ```bash
-   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p ACR_SERVER=mcr.microsoft.com logAnalitycsCustomerId=${LOG_ANALYTICS_WORKSPACE_CLIENT_ID} logAnalitycsSharedKey=${LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET}
+   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p acrSever=mcr.microsoft.com logAnalitycsCustomerId=${LOG_ANALYTICS_WORKSPACE_CLIENT_ID} logAnalitycsSharedKey=${LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET}
    ```
 
    :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
