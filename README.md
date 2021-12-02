@@ -127,13 +127,13 @@ Following the steps below will result in the creation of the following Azure res
 1. Obtain the Log Analytics Client ID
 
    ```bash
-   LOG_ANALYTICS_WORKSPACE_CLIENT_ID=$(az monitor log-analytics workspace show --query customerId -g $RESOURCE_GROUP -n $LOG_ANALYTICS_WORKSPACE --out tsv)
+   LOG_ANALYTICS_WORKSPACE_CLIENT_ID=$(az monitor log-analytics workspace show --query customerId -g rg-shipping-dronedelivery -n la-shipping-dronedelivery --out tsv)
    ```
 
 1. Obtain the Log Analytics Client Secret
 
    ```bash
-   LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET=$(az monitor log-analytics workspace get-shared-keys --query primarySharedKey -g $RESOURCE_GROUP -n $LOG_ANALYTICS_WORKSPACE --out tsv)
+   LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET=$(az monitor log-analytics workspace get-shared-keys --query primarySharedKey -g rg-shipping-dronedelivery -n la-shipping-dronedelivery --out tsv)
    ```
 
 1. Register the Azure Resource Manager provider for `Microsoft.Web`
