@@ -118,24 +118,6 @@ Following the steps below will result in the creation of the following Azure res
 
 ## Deploy Azure Container App
 
-1. Create a Log Analytics workspace
-
-   ```bash
-   az monitor log-analytics workspace create --resource-group rg-shipping-dronedelivery --workspace-name la-shipping-dronedelivery
-   ```
-
-1. Obtain the Log Analytics Client ID
-
-   ```bash
-   LOG_ANALYTICS_WORKSPACE_CLIENT_ID=$(az monitor log-analytics workspace show --query customerId -g rg-shipping-dronedelivery -n la-shipping-dronedelivery --out tsv)
-   ```
-
-1. Obtain the Log Analytics Client Secret
-
-   ```bash
-   LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET=$(az monitor log-analytics workspace get-shared-keys --query primarySharedKey -g rg-shipping-dronedelivery -n la-shipping-dronedelivery --out tsv)
-   ```
-
 1. Register the Azure Resource Manager provider for `Microsoft.Web`
 
    ```bash
@@ -145,7 +127,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Deploy the Container Apps ARM template
 
    ```bash
-   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p acrSever=mcr.microsoft.com logAnalitycsCustomerId=${LOG_ANALYTICS_WORKSPACE_CLIENT_ID} logAnalitycsSharedKey=${LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET}
+   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p acrSever=mcr.microsoft.com
    ```
 
    :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).

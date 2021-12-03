@@ -2,31 +2,50 @@
     "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "logAnalitycsCustomerId": {
-            "type": "String"
-        },
-        "logAnalitycsSharedKey": {
-            "type": "SecureString"
-        },
         "acrSever": {
             "type": "String"
         }
     },
     "variables": {},
     "resources": [
+      {
+        "name": "la-shipping-dronedelivery",
+        "type": "Microsoft.OperationalInsights/workspaces",
+        "apiVersion": "2021-06-01",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "sku": {
+            "name": "pergb2018"
+          },
+          "retentionInDays": 30,
+          "features": {
+            "legacy": 0,
+            "searchVersion": 1,
+            "enableLogAccessUsingOnlyResourcePermissions": true
+          },
+          "workspaceCapping": {
+            "dailyQuotaGb": -1
+          },
+          "publicNetworkAccessForIngestion": "Enabled",
+          "publicNetworkAccessForQuery": "Enabled"
+        }
+      },
 			{
         "name": "cae-shipping-dronedelivery",
         "type": "Microsoft.Web/kubeenvironments",
         "apiVersion": "2021-03-01",
         "kind": "containerenvironment",
         "location": "[resourceGroup().location]",
+        "dependsOn": [
+          "[resourceId('Microsoft.OperationalInsights/workspaces', 'la-shipping-dronedelivery')]"
+        ],
         "properties": {
           "type": "managed",
           "appLogsConfiguration": {
             "destination": "log-analytics",
             "logAnalyticsConfiguration": {
-              "customerId": "[parameters('logAnalitycsCustomerId')]",
-              "sharedKey": "[parameters('logAnalitycsSharedKey')]"
+              "customerId": "[reference(resourceId('Microsoft.OperationalInsights/workspaces', 'la-shipping-dronedelivery')).customerId]",
+              "sharedKey": "[listKeys(resourceId('Microsoft.OperationalInsights/workspaces', 'la-shipping-dronedelivery'), '2021-06-01').primarySharedKey]"
             }
           }
         }
