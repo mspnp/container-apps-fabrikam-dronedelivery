@@ -1,11 +1,27 @@
-param logAnalitycsCustomerId string
-
-@secure()
-param logAnalitycsSharedKey string
-
 param acrSever string
 
-resource cae 'Microsoft.Web/kubeenvironments@2021-02-01' = {
+resource la 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
+  name: 'la-shipping-dronedelivery'
+  location: resourceGroup().location
+  properties: {
+    sku: {
+      name: 'PerGB2018'
+    }
+    retentionInDays: 30
+    features: {
+      legacy: 0
+      searchVersion: 1
+      enableLogAccessUsingOnlyResourcePermissions: true
+    }
+    workspaceCapping: {
+      dailyQuotaGb: -1
+    }
+    publicNetworkAccessForIngestion: 'Enabled'
+    publicNetworkAccessForQuery: 'Enabled'
+  }
+}
+
+resource cae 'Microsoft.Web/kubeenvironments@2021-03-01' = {
   name: 'cae-shipping-dronedelivery'
   kind: 'containerenvironment'
   location: resourceGroup().location
@@ -14,8 +30,8 @@ resource cae 'Microsoft.Web/kubeenvironments@2021-02-01' = {
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
-        customerId: logAnalitycsCustomerId
-        sharedKey: logAnalitycsSharedKey
+        customerId: la.properties.customerId
+        sharedKey: listKeys(la.id, '2021-06-01').primarySharedKey
       }
     }
   }

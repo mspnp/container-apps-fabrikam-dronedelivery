@@ -3,26 +3,45 @@
 This repository guides you during the process of running a set of containers in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that were previously running in Azure Kubernetes Services consisting of several general purposes microservices is now being provisioned to a recently created Azure Container App environment.  This Azure managed service that is optimized for running applications that span many microservices will make containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
 
 ```output
-                                                                                    ┌───────────────────┐
-                                                                                    │                   │
-                                                          ┌────────────────────────►│      Package      │
-                                                          │                         │      service      │
-                                                          │                         │                   │
-                      ┌─────┐  ┌─────┐  ┌─────┐           │                         └───────────────────┘
-                      │x   x│  │x   x│  │x   x│           │
-┌───────────────────┐ │  x  │  │  x  │  │  x  │ ┌─────────┴─────────┐               ┌───────────────────┐
-│                   │ └─────┘  └─────┘  └─────┘ │                   │               │                   │
-│     Ingestion     │                           │     Workflow      │               │  Drone Scheduler  │
-│      service      ├──────────────────────────►│     service       ├──────────────►│     service       │
-│                   │          Message          │                   │               │                   │
-└───────────────────┘          queue            └─────────┬─────────┘               └───────────────────┘
-                                                          │
-                                                          │                         ┌───────────────────┐
-                                                          │                         │                   │
-                                                          │                         │     Delivery      │
-                                                          └────────────────────────►│     service       │
-                                                                                    │                   │
-                                                                                    └───────────────────┘
+
+                         ┌─────────────┐      ┌─────────────┐       ┌─────────────┐
+                         │   Azure     │      │   Azure     │       │   Azure     │
+            ┌───────────►│   Service   │      │   Key Vault │       │   Container │
+            │            │   Bus       │      │             │       │   Registry  │
+            │            └─────┬───────┘      └─────────────┘       └─────────────┘
+            │                  │
+┌───────────│──────────────────│───────────────Azure Container App Environment────┐
+│           │                  │                                                  │
+│           │                  │                                                  │
+│           │                  │                                ┌─────────────┐   │     ┌─────────────┐
+│           │                  │                                │             │   │     │   Azure     │
+│           │                  │                 ┌─────────────►│   Package   │────────►│   MongoDb   │
+│           │                  │                 │              │   Container │   │     │             │
+│           │                  │                 │              │   App       │   │     └─────────────┘
+│           │                  │                 │              └─────────────┘   │
+│           │                  │                 │                                │
+│   ┌───────┴─────┐            │          ┌──────┴──────┐       ┌─────────────┐   │     ┌─────────────┐
+│   │             │            │          │             │       │  Drone      │   │     │   Azure     │
+│   │  Ingestion  │            │          │  Workflow   │       │  Scheduler  │ ───────►│   CosmosDb  │
+│   │  Container  │            └─────────►│  Container  ├──────►│  Container  │   │     │             │
+│   │  App        │                       │  App        │       │  App        │   │     └─────────────┘
+│   └─────────────┘                       └──────┬──────┘       └─────────────┘   │
+│                                                │                                │
+│                                                │              ┌─────────────┐   │     ┌─────────────┐
+│                                                │              │             │   │     │   Azure     │
+│                                                │              │  Delivery   │ ───────►│   Redis     │
+│                                                └─────────────►│  Container  │   │     │   Cache     │
+│                                                               │  App        │   │     └─────────────┘
+│                                                               └─────────────┘   │
+│                                                                                 │
+│                                                                                 │
+└─────────────────────────────────────────────────────────────────────────────────┘
+
+┌───────────────────────────────────────┐┌────────────────────────────────────────┐
+│         Azure                         ││          Azure Monitor                 │
+│         Log Analytics Workspace       ││          Application Insights          │
+└───────────────────────────────────────┘└────────────────────────────────────────┘
+
 ```
 
 ## Prerequisites
@@ -54,6 +73,10 @@ Following the steps below will result in the creation of the following Azure res
 | An Azure Redis Cache instance             | Delivery service uses Azure Redis cache to keep track of inflight deliveries |
 | An Azure Service Bus                      | Ingestion and Workflow services communicate using Azure Service Bus queues |
 | An Azure Application Insights instance    | All services are sending trace information to a shared Azure Application Insights instance |
+| An Azure Container Registry               | This is the private container registry where all Fabrikam workload images are uploaded and later pulled from the different Azure Container Apps |
+| An Azure Container App Environment        | It is the managed Container App environment where Container Apps are homed |
+| Five Azure Container Apps                 | These are the Azure resources that represents the five Fabrikam microservices in the Azure Container App environment |
+| An Azure Log Analytics Workspace          | This is where all the Container Apps logs are sent        |
 
 ## Clone the repository
 
@@ -118,24 +141,6 @@ Following the steps below will result in the creation of the following Azure res
 
 ## Deploy Azure Container App
 
-1. Create a Log Analytics workspace
-
-   ```bash
-   az monitor log-analytics workspace create --resource-group rg-shipping-dronedelivery --workspace-name la-shipping-dronedelivery
-   ```
-
-1. Obtain the Log Analytics Client ID
-
-   ```bash
-   LOG_ANALYTICS_WORKSPACE_CLIENT_ID=$(az monitor log-analytics workspace show --query customerId -g $RESOURCE_GROUP -n $LOG_ANALYTICS_WORKSPACE --out tsv)
-   ```
-
-1. Obtain the Log Analytics Client Secret
-
-   ```bash
-   LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET=$(az monitor log-analytics workspace get-shared-keys --query primarySharedKey -g $RESOURCE_GROUP -n $LOG_ANALYTICS_WORKSPACE --out tsv)
-   ```
-
 1. Register the Azure Resource Manager provider for `Microsoft.Web`
 
    ```bash
@@ -145,7 +150,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Deploy the Container Apps ARM template
 
    ```bash
-   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p ACR_SERVER=mcr.microsoft.com logAnalitycsCustomerId=${LOG_ANALYTICS_WORKSPACE_CLIENT_ID} logAnalitycsSharedKey=${LOG_ANALYTICS_WORKSPACE_CLIENT_SECRET}
+   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p acrSever=mcr.microsoft.com
    ```
 
    :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
