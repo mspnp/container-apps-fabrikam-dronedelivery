@@ -76,14 +76,13 @@ Following the steps below will result in the creation of the following Azure res
 | An Azure Container Registry               | This is the private container registry where all Fabrikam workload images are uploaded and later pulled from the different Azure Container Apps |
 | An Azure Container App Environment        | It is the managed Container App environment where Container Apps are homed |
 | Five Azure Container Apps                 | These are the Azure resources that represents the five Fabrikam microservices in the Azure Container App environment |
-| An Azure Log Analytics Workspace          | This is where all the Container Apps logs are sunk        |
+| An Azure Log Analytics Workspace          | This is where all the Container Apps logs are sent        |
 
 ## Clone the repository
 
 1. Clone this repository
 
    ```bash
-
    git clone --recurse-submodules https://github.com/mspnp/container-apps-fabrikam-dronedelivery.git
    ```
 
