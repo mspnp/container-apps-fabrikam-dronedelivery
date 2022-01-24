@@ -4,6 +4,27 @@
     "parameters": {
         "acrSever": {
             "type": "String"
+        },
+        "applicationInsightsInstrumentationKey": {
+            "type": "String"
+        },
+        "deliveryCosmosdbDatabaseName": {
+            "type": "String"
+        },
+        "deliveryCosmosdbCollectionName": {
+            "type": "String"
+        },
+        "deliveryCosmosdbEndpoint": {
+            "type": "String"
+        },
+        "deliveryCosmosdbKey": {
+            "type": "String"
+        },
+        "deliveryRedisEndpoint": {
+            "type": "String"
+        },
+        "deliveryRedisKey": {
+            "type": "String"
         }
     },
     "variables": {},
@@ -62,6 +83,20 @@
         "properties": {
           "kubeEnvironmentId": "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]",
           "configuration": {
+            "secrets": [
+              {
+                "name": "applicationinsights-instrumentationkey",
+                "value": "[parameters('applicationInsightsInstrumentationKey')]"
+              },
+              {
+                "name": "delivery-cosmosdb-key",
+                "value": "[parameters('deliveryCosmosdbKey')]"
+              },
+              {
+                "name": "delivery-redis-key",
+                "value": "[parameters('deliveryRedisKey')]"
+              }
+            ],
             "ingress": {
               "external": true,
               "targetPort": 80,
@@ -80,6 +115,36 @@
               {
                 "image": "[concat(parameters('acrSever'), '/azuredocs/containerapps-helloworld:latest')]",
                 "name": "my-container-app",
+                "env": [
+                  {
+                    "name": "ApplicationInsights--InstrumentationKey",
+                    "secretref": "applicationinsights-instrumentationkey"
+                  },
+                  {
+                    "name": "CosmosDB-Endpoint",
+                    "value": "[parameters('deliveryCosmosdbEndpoint')]"
+                  },
+                  {
+                    "name": "CCosmosDB-Key",
+                    "secretref": "delivery-cosmosdb-key"
+                  },
+                  {
+                    "name": "DOCDB_DATABASEID",
+                    "value": "[parameters('deliveryCosmosdbDatabaseName')]"
+                  },
+                  {
+                    "name": "DOCDB_COLLECTIONID",
+                    "value": "[parameters('deliveryCosmosdbCollectionName')]"
+                  },
+                  {
+                    "name": "Redis-Endpoint",
+                    "value": "[parameters('deliveryRedisEndpoint')]"
+                  },
+                  {
+                    "name": "Redis-AccessKey",
+                    "secretref": "delivery-redis-key"
+                  }
+                ],
                 "resources": {
                     "cpu": 0.5,
                     "memory": "1Gi"

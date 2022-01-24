@@ -1,4 +1,11 @@
 param acrSever string
+param applicationInsightsInstrumentationKey string
+param deliveryCosmosdbDatabaseName string
+param deliveryCosmosdbCollectionName string
+param deliveryCosmosdbEndpoint string
+param deliveryCosmosdbKey string
+param deliveryRedisEndpoint string
+param deliveryRedisKey string
 
 resource la 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   name: 'la-shipping-dronedelivery'
@@ -44,6 +51,20 @@ resource my_container_app 'Microsoft.Web/containerApps@2021-03-01' = {
   properties: {
     kubeEnvironmentId: cae.id
     configuration: {
+      secrets: [
+        {
+          name: 'applicationinsights-instrumentationkey'
+          value: applicationInsightsInstrumentationKey
+        }
+        {
+          name: 'delivery-cosmosdb-key'
+          value: deliveryCosmosdbKey
+        }
+        {
+          name: 'delivery-redis-key'
+          value: deliveryRedisKey
+        }
+      ]
       ingress: {
         external: true
         targetPort: 80
@@ -62,6 +83,36 @@ resource my_container_app 'Microsoft.Web/containerApps@2021-03-01' = {
         {
           image: '${acrSever}/azuredocs/containerapps-helloworld:latest'
           name: 'my-container-app'
+          env: [
+            {
+              name: 'ApplicationInsights--InstrumentationKey'
+              secretref: 'applicationinsights-instrumentationkey'
+            }
+            {
+              name: 'CosmosDB-Endpoint'
+              value: deliveryCosmosdbEndpoint
+            }
+            {
+              name: 'CCosmosDB-Key'
+              secretref: 'delivery-cosmosdb-key'
+            }
+            {
+              name: 'DOCDB_DATABASEID'
+              value: deliveryCosmosdbDatabaseName
+            }
+            {
+              name: 'DOCDB_COLLECTIONID'
+              value: deliveryCosmosdbCollectionName
+            }
+            {
+              name: 'Redis-Endpoint'
+              value: deliveryRedisEndpoint
+            }
+            {
+              name: 'Redis-AccessKey'
+              secretref: 'delivery-redis-key'
+            }
+          ]
           resources: {
             cpu: '0.5'
             memory: '1Gi'

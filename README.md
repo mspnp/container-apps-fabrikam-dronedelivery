@@ -170,7 +170,14 @@ Following the steps below will result in the creation of the following Azure res
 1. Deploy the Container Apps ARM template
 
    ```bash
-   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p acrSever=mcr.microsoft.com
+   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p acrSever=mcr.microsoft.com \
+      applicationInsightsInstrumentationKey=$AI_KEY \
+      deliveryCosmosdbDatabaseName=$DELIVERY_DATABASE_NAME \
+      deliveryCosmosdbCollectionName=$DELIVERY_COLLECTION_NAME \
+      deliveryCosmosdbEndpoint=$DELIVERY_COSMOSDB_ENDPOINT \
+      deliveryCosmosdbKey=$DELIVERY_COSMOSDB_KEY \
+      deliveryRedisEndpoint=$DELIVERY_REDIS_ENDPOINT \
+      deliveryRedisKey=$DELIVERY_REDIS_KEY
    ```
 
    :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
