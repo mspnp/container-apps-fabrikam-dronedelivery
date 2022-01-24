@@ -170,7 +170,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Deploy the Container Apps ARM template
 
    ```bash
-   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p acrSever=mcr.microsoft.com \
+   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p acrSever=$ACR_SERVER \
       applicationInsightsInstrumentationKey=$AI_KEY \
       deliveryCosmosdbDatabaseName=$DELIVERY_DATABASE_NAME \
       deliveryCosmosdbCollectionName=$DELIVERY_COLLECTION_NAME \

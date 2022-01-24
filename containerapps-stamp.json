@@ -72,7 +72,7 @@
         }
       },
       {
-        "name": "my-container-app",
+        "name": "delivery-container-app",
         "type": "Microsoft.Web/containerApps",
         "apiVersion": "2021-03-01",
         "dependsOn": [
@@ -99,7 +99,7 @@
             ],
             "ingress": {
               "external": true,
-              "targetPort": 80,
+              "targetPort": 8080,
               "transport": "Auto",
               "traffic": [
                 {
@@ -113,8 +113,8 @@
           "template": {
             "containers": [
               {
-                "image": "[concat(parameters('acrSever'), '/azuredocs/containerapps-helloworld:latest')]",
-                "name": "my-container-app",
+                "image": "[concat(parameters('acrSever'), '/delivery:0.1.0')]",
+                "name": "delivery-app",
                 "env": [
                   {
                     "name": "ApplicationInsights--InstrumentationKey",

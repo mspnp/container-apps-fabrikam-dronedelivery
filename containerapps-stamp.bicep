@@ -44,8 +44,8 @@ resource cae 'Microsoft.Web/kubeenvironments@2021-03-01' = {
   }
 }
 
-resource my_container_app 'Microsoft.Web/containerApps@2021-03-01' = {
-  name: 'my-container-app'
+resource delivery_ca 'Microsoft.Web/containerApps@2021-03-01' = {
+  name: 'delivery_ca'
   kind: 'containerapp'
   location: resourceGroup().location
   properties: {
@@ -67,7 +67,7 @@ resource my_container_app 'Microsoft.Web/containerApps@2021-03-01' = {
       ]
       ingress: {
         external: true
-        targetPort: 80
+        targetPort: 8080
         transport: 'Auto'
         traffic: [
           {
@@ -81,8 +81,8 @@ resource my_container_app 'Microsoft.Web/containerApps@2021-03-01' = {
     template: {
       containers: [
         {
-          image: '${acrSever}/azuredocs/containerapps-helloworld:latest'
-          name: 'my-container-app'
+          image: '${acrSever}/delivery:0.1.0'
+          name: 'delivery-app'
           env: [
             {
               name: 'ApplicationInsights--InstrumentationKey'
