@@ -139,6 +139,26 @@ Following the steps below will result in the creation of the following Azure res
    az acr build -r $ACR_NAME -t $ACR_SERVER/package:0.1.0 ./workload/src/shipping/package/.
    ```
 
+1. Get Application Insights Instrumention Key
+
+   ```bash
+   AI_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.appInsightsName.value -o tsv)
+   AI_KEY=$(az resource show -g rg-shipping-dronedelivery -n $AI_NAME --resource-type "Microsoft.Insights/components" --query properties.InstrumentationKey -o tsv)
+   ```
+
+1. Get microservices details
+
+   ```bash
+   DELIVERY_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryCosmosDbName.value -o tsv)
+   DELIVERY_DATABASE_NAME="${DELIVERY_COSMOSDB_NAME}-db"
+   DELIVERY_COLLECTION_NAME="${DELIVERY_COSMOSDB_NAME}-col"
+   DELIVERY_COSMOSDB_ENDPOINT=$(az cosmosdb show -g rg-shipping-dronedelivery -n $DELIVERY_COSMOSDB_NAME --query documentEndpoint -o tsv)
+   DELIVERY_COSMOSDB_KEY=$(az cosmosdb keys list -g rg-shipping-dronedelivery -n $DELIVERY_COSMOSDB_NAME --query primaryMasterKey -o tsv)
+   DELIVERY_REDIS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryRedisName.value -o tsv)
+   DELIVERY_REDIS_ENDPOINT=$(az redis show -g rg-shipping-dronedelivery  -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
+   DELIVERY_REDIS_KEY=$(az redis list-keys -g rg-shipping-dronedelivery  -n $DELIVERY_REDIS_NAME --query primaryKey -o tsv)
+   ```
+
 ## Deploy Azure Container App
 
 1. Register the Azure Resource Manager provider for `Microsoft.Web`
