@@ -187,6 +187,14 @@ Following the steps below will result in the creation of the following Azure res
 
    :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
 
+## Validation
+
+1. Get the Delivery Api spec
+
+   ```bash
+   curl -XGET https://ca-delivery.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger/v1/swagger.json
+   ```
+
 ## Clean up
 
 1. Delete the Azure Container Registry resource group
