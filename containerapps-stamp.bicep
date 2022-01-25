@@ -139,3 +139,65 @@ resource ca_delivery 'Microsoft.Web/containerApps@2021-03-01' = {
     }
   }
 }
+
+resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
+  name: 'ca-dronescheduler'
+  kind: 'containerapp'
+  location: resourceGroup().location
+  properties: {
+    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    configuration: {
+      secrets: [
+        {
+          name: 'applicationinsights-instrumentationkey'
+          value: applicationInsightsInstrumentationKey
+        }
+        {
+          name: 'containerregistry-password'
+          value: containerRegistryPassword
+        }
+      ]
+      registries: [
+        {
+          server: acrSever
+          username: containerRegistryUser
+          passwordSecretRef: 'containerregistry-password'
+        }
+      ]
+      ingress: {
+        external: true
+        targetPort: 8080
+        transport: 'Auto'
+        traffic: [
+          {
+            weight: 100
+            latestRevision: true
+          }
+        ]
+        allowInsecure: false
+      }
+    }
+    template: {
+      containers: [
+        {
+          image: '${acrSever}/shipping/dronescheduler:0.1.0'
+          name: 'dronescheduler-app'
+          env: [
+            {
+              name: 'ApplicationInsights--InstrumentationKey'
+              secretref: 'applicationinsights-instrumentationkey'
+            }
+          ]
+          resources: {
+            cpu: '0.5'
+            memory: '1Gi'
+          }
+        }
+      ]
+      scale: {
+        minReplicas: 1
+        maxReplicas: 1
+      }
+    }
+  }
+}

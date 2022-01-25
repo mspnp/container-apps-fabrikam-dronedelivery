@@ -195,6 +195,12 @@ Following the steps below will result in the creation of the following Azure res
    curl -XGET https://ca-delivery.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger/v1/swagger.json
    ```
 
+1. Get the Dronescheduler Api spec
+
+   ```bash
+   curl -XGET https://ca-dronescheduler.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger/v1/swagger.json
+   ```
+
 ## Clean up
 
 1. Delete the Azure Container Registry resource group
