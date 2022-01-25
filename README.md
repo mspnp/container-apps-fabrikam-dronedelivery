@@ -127,16 +127,18 @@ Following the steps below will result in the creation of the following Azure res
    ```bash
    ACR_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.acrName.value -o tsv)
    ACR_SERVER=$(az acr show -n $ACR_NAME --query loginServer -o tsv)
+   az acr update -n yok5z6ex2n7sy --admin-enabled true
+   ACR_PASS=$(az acr credential renew -n $ACR_NAME --password-name password --query "passwords[0].value" -o tsv)
    ```
 
 1. Build the microservice images
 
    ```bash
-   az acr build -r $ACR_NAME -t $ACR_SERVER/delivery:0.1.0 ./workload/src/shipping/delivery/.
-   az acr build -r $ACR_NAME -t $ACR_SERVER/ingestion:0.1.0 ./workload/src/shipping/ingestion/.
-   az acr build -r $ACR_NAME -t $ACR_SERVER/workflow:0.1.0 ./workload/src/shipping/workflow/.
-   az acr build -r $ACR_NAME -f ./workload/src/shipping/dronescheduler/Dockerfile -t $ACR_SERVER/dronescheduler:0.1.0 ./workload/src/shipping/.
-   az acr build -r $ACR_NAME -t $ACR_SERVER/package:0.1.0 ./workload/src/shipping/package/.
+   az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/delivery:0.1.0 ./workload/src/shipping/delivery/.
+   az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/ingestion:0.1.0 ./workload/src/shipping/ingestion/.
+   az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/workflow:0.1.0 ./workload/src/shipping/workflow/.
+   az acr build -r $ACR_NAME -f ./workload/src/shipping/dronescheduler/Dockerfile -t $ACR_SERVER/shipping/dronescheduler:0.1.0 ./workload/src/shipping/.
+   az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/package:0.1.0 ./workload/src/shipping/package/.
    ```
 
 1. Get Application Insights Instrumention Key
@@ -170,7 +172,10 @@ Following the steps below will result in the creation of the following Azure res
 1. Deploy the Container Apps ARM template
 
    ```bash
-   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p acrSever=$ACR_SERVER \
+   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p \
+      acrSever=$ACR_SERVER \
+      containerRegistryUser=$ACR_NAME \
+      containerRegistryPassword=$ACR_PASS \
       applicationInsightsInstrumentationKey=$AI_KEY \
       deliveryCosmosdbDatabaseName=$DELIVERY_DATABASE_NAME \
       deliveryCosmosdbCollectionName=$DELIVERY_COLLECTION_NAME \

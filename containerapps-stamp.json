@@ -5,6 +5,12 @@
         "acrSever": {
             "type": "String"
         },
+        "containerRegistryUser": {
+            "type": "String"
+        },
+        "containerRegistryPassword": {
+            "type": "String"
+        },
         "applicationInsightsInstrumentationKey": {
             "type": "String"
         },
@@ -72,7 +78,7 @@
         }
       },
       {
-        "name": "delivery-container-app",
+        "name": "ca-delivery",
         "type": "Microsoft.Web/containerApps",
         "apiVersion": "2021-03-01",
         "dependsOn": [
@@ -95,6 +101,17 @@
               {
                 "name": "delivery-redis-key",
                 "value": "[parameters('deliveryRedisKey')]"
+              },
+              {
+                "name": "containerregistry-password",
+                "value": "[parameters('containerRegistryPassword')]"
+              }
+            ],
+            "registries": [
+              {
+                "server": "[parameters('acrSever')]",
+                "username": "[parameters('containerRegistryUser')]",
+                "passwordSecretRef": "containerregistry-password"
               }
             ],
             "ingress": {
@@ -113,7 +130,7 @@
           "template": {
             "containers": [
               {
-                "image": "[concat(parameters('acrSever'), '/delivery:0.1.0')]",
+                "image": "[concat(parameters('acrSever'), '/shipping/delivery:0.1.0')]",
                 "name": "delivery-app",
                 "env": [
                   {

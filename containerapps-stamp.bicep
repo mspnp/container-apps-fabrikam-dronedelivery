@@ -1,4 +1,6 @@
 param acrSever string
+param containerRegistryUser string
+param containerRegistryPassword string
 param applicationInsightsInstrumentationKey string
 param deliveryCosmosdbDatabaseName string
 param deliveryCosmosdbCollectionName string
@@ -44,8 +46,8 @@ resource cae 'Microsoft.Web/kubeenvironments@2021-03-01' = {
   }
 }
 
-resource delivery_ca 'Microsoft.Web/containerApps@2021-03-01' = {
-  name: 'delivery_ca'
+resource ca_delivery 'Microsoft.Web/containerApps@2021-03-01' = {
+  name: 'ca-delivery'
   kind: 'containerapp'
   location: resourceGroup().location
   properties: {
@@ -64,6 +66,17 @@ resource delivery_ca 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'delivery-redis-key'
           value: deliveryRedisKey
         }
+        {
+          name: 'containerregistry-password'
+          value: containerRegistryPassword
+        }
+      ]
+      registries: [
+        {
+          server: acrSever
+          username: containerRegistryUser
+          passwordSecretRef: 'containerregistry-password'
+        }
       ]
       ingress: {
         external: true
@@ -81,7 +94,7 @@ resource delivery_ca 'Microsoft.Web/containerApps@2021-03-01' = {
     template: {
       containers: [
         {
-          image: '${acrSever}/delivery:0.1.0'
+          image: '${acrSever}/shipping/delivery:0.1.0'
           name: 'delivery-app'
           env: [
             {
