@@ -12,6 +12,7 @@ param wokflowNamespaceEndpoint string
 param workflowNamespaceSASName string
 param workflowNamespaceSASKey string
 param workflowQueueName string
+param packageMongodbConnectionString string
 
 resource la 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   name: 'la-shipping-dronedelivery'
@@ -308,6 +309,88 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
             {
               name: 'SERVICEREQUEST__MAXBULKHEADQUEUESIZE'
               value: '25'
+            }
+          ]
+          resources: {
+            cpu: '0.5'
+            memory: '1Gi'
+          }
+        }
+      ]
+      scale: {
+        minReplicas: 1
+        maxReplicas: 1
+      }
+    }
+  }
+}
+
+resource ca_package 'Microsoft.Web/containerApps@2021-03-01' = {
+  name: 'ca-package'
+  kind: 'containerapp'
+  location: resourceGroup().location
+  properties: {
+    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    configuration: {
+      secrets: [
+        {
+          name: 'applicationinsights-instrumentationkey'
+          value: applicationInsightsInstrumentationKey
+        }
+        {
+          name: 'containerregistry-password'
+          value: containerRegistryPassword
+        }
+        {
+          name: 'mongodb-connectrionstring'
+          value: packageMongodbConnectionString
+        }
+      ]
+      registries: [
+        {
+          server: acrSever
+          username: containerRegistryUser
+          passwordSecretRef: 'containerregistry-password'
+        }
+      ]
+      ingress: {
+        external: true
+        targetPort: 80
+        transport: 'Auto'
+        traffic: [
+          {
+            weight: 100
+            latestRevision: true
+          }
+        ]
+        allowInsecure: false
+      }
+    }
+    template: {
+      containers: [
+        {
+          image: '${acrSever}/shipping/package:0.1.0'
+          name: 'package-app'
+          env: [
+            {
+              name: 'ApplicationInsights--InstrumentationKey'
+              secretref: 'applicationinsights-instrumentationkey'
+            }
+            {
+              name: 'CONNECTION_STRING'
+              secretref: 'mongodb-connectrionstring'
+            }
+            {
+              name: 'COLLECTION_NAME'
+              value: 'packages'
+            }
+            {
+              name: 'LOG_LEVEL'
+              value: 'error'
+            }
+            {
+              name: 'CONTAINER_NAME'
+              value: 'fabrikam-package'
             }
           ]
           resources: {

@@ -128,7 +128,7 @@ Following the steps below will result in the creation of the following Azure res
    ACR_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.acrName.value -o tsv)
    ACR_SERVER=$(az acr show -n $ACR_NAME --query loginServer -o tsv)
    az acr update -n yok5z6ex2n7sy --admin-enabled true
-   ACR_PASS=$(az acr credential renew -n $ACR_NAME --password-name password --query "passwords[0].value" -o tsv)
+   ACR_PASS=$(az acr credential show -n $ACR_NAME --query "passwords[0].value" -o tsv)
    ```
 
 1. Build the microservice images
@@ -167,6 +167,10 @@ Following the steps below will result in the creation of the following Azure res
    WORKFLOW_NAMESPACE_SAS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.workflowServiceAccessKeyName.value -o tsv)
    WORKFLOW_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $WORKFLOW_NAMESPACE_NAME -n $WORKFLOW_NAMESPACE_SAS_NAME  --query primaryKey -o tsv)
    WORKFLOW_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueName.value -o tsv)
+
+   # package
+   PACKAGE_MONGODB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.packageMongoDbName.value -o tsv)
+   PACKAGE_MONGODB_CONNNECTIONSTRING=$(az cosmosdb keys list --type connection-strings -g rg-shipping-dronedelivery --name $PACKAGE_MONGODB_NAME --query "connectionStrings[0].connectionString" -o tsv | sed 's/==/%3D%3D/g')
    ```
 
 ## Deploy Azure Container App
@@ -194,7 +198,8 @@ Following the steps below will result in the creation of the following Azure res
       wokflowNamespaceEndpoint=$WORKFLOW_NAMESPACE_ENDPOINT \
       workflowNamespaceSASName=$WORKFLOW_NAMESPACE_SAS_NAME \
       workflowNamespaceSASKey=$WORKFLOW_NAMESPACE_SAS_KEY \
-      workflowQueueName=$WORKFLOW_QUEUE_NAME
+      workflowQueueName=$WORKFLOW_QUEUE_NAME \
+      packageMongodbConnectionString=$PACKAGE_MONGODB_CONNNECTIONSTRING
    ```
 
    :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
@@ -211,6 +216,12 @@ Following the steps below will result in the creation of the following Azure res
 
    ```bash
    curl -XGET https://ca-dronescheduler.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger/v1/swagger.json
+   ```
+
+1. Get the Package Api spec
+
+   ```bash
+   curl -XGET https://ca-package.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger/swagger.json
    ```
 
 ## Clean up

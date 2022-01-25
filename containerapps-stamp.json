@@ -43,6 +43,9 @@
         },
         "workflowQueueName": {
             "type": "String"
+        },
+        "packageMongodbConnectionString": {
+            "type": "String"
         }
     },
     "variables": {},
@@ -360,6 +363,92 @@
                   {
                     "name": "SERVICEREQUEST__MAXBULKHEADQUEUESIZE",
                     "value":  "25"
+                  }
+                ],
+                "resources": {
+                    "cpu": 0.5,
+                    "memory": "1Gi"
+                }
+              }
+            ],
+            "scale": {
+              "minReplicas": 1,
+              "maxReplicas": 1
+            }
+          }
+        }
+      },
+      {
+        "name": "ca-package",
+        "type": "Microsoft.Web/containerApps",
+        "apiVersion": "2021-03-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]"
+        ],
+        "kind": "containerapp",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "kubeEnvironmentId": "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]",
+          "configuration": {
+            "secrets": [
+              {
+                "name": "applicationinsights-instrumentationkey",
+                "value": "[parameters('applicationInsightsInstrumentationKey')]"
+              },
+              {
+                "name": "containerregistry-password",
+                "value": "[parameters('containerRegistryPassword')]"
+              },
+              {
+                "name": "mongodb-connectrionstring",
+                "value": "[parameters('packageMongodbConnectionString')]"
+              }
+            ],
+            "registries": [
+              {
+                "server": "[parameters('acrSever')]",
+                "username": "[parameters('containerRegistryUser')]",
+                "passwordSecretRef": "containerregistry-password"
+              }
+            ],
+            "ingress": {
+              "external": true,
+              "targetPort": 80,
+              "transport": "Auto",
+              "traffic": [
+                {
+                  "weight": 100,
+                  "latestRevision": true
+                }
+              ],
+              "allowInsecure": false
+            }
+          },
+          "template": {
+            "containers": [
+              {
+                "image": "[concat(parameters('acrSever'), '/shipping/package:0.1.0')]",
+                "name": "package-app",
+                "env": [
+                  {
+                    "name": "ApplicationInsights--InstrumentationKey",
+                    "secretref": "applicationinsights-instrumentationkey"
+                  },
+                  {
+                    "name": "CONNECTION_STRING",
+                    "secretref": "mongodb-connectrionstring"
+                  },
+                  {
+                    "name": "COLLECTION_NAME",
+                    "value": "packages"
+                  },
+                  {
+                    "name": "LOG_LEVEL",
+                    "value": "error"
+                  },
+                  {
+                    "name": "CONTAINER_NAME",
+                    "value": "fabrikam-package"
                   }
                 ],
                 "resources": {
