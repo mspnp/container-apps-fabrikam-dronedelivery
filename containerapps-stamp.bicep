@@ -106,7 +106,7 @@ resource ca_delivery 'Microsoft.Web/containerApps@2021-03-01' = {
               value: deliveryCosmosdbEndpoint
             }
             {
-              name: 'CCosmosDB-Key'
+              name: 'CosmosDB-Key'
               secretref: 'delivery-cosmosdb-key'
             }
             {
