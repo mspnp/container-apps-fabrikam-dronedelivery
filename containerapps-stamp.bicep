@@ -8,6 +8,10 @@ param deliveryCosmosdbEndpoint string
 param deliveryCosmosdbKey string
 param deliveryRedisEndpoint string
 param deliveryRedisKey string
+param wokflowNamespaceEndpoint string
+param workflowNamespaceSASName string
+param workflowNamespaceSASKey string
+param workflowQueueName string
 
 resource la 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   name: 'la-shipping-dronedelivery'
@@ -186,6 +190,124 @@ resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
             {
               name: 'ApplicationInsights--InstrumentationKey'
               secretref: 'applicationinsights-instrumentationkey'
+            }
+          ]
+          resources: {
+            cpu: '0.5'
+            memory: '1Gi'
+          }
+        }
+      ]
+      scale: {
+        minReplicas: 1
+        maxReplicas: 1
+      }
+    }
+  }
+}
+
+resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
+  name: 'ca-workflow'
+  kind: 'containerapp'
+  location: resourceGroup().location
+  properties: {
+    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    configuration: {
+      secrets: [
+        {
+          name: 'applicationinsights-instrumentationkey'
+          value: applicationInsightsInstrumentationKey
+        }
+        {
+          name: 'containerregistry-password'
+          value: containerRegistryPassword
+        }
+        {
+          name: 'namespace-sas-key'
+          value: workflowNamespaceSASKey
+        }
+      ]
+      registries: [
+        {
+          server: acrSever
+          username: containerRegistryUser
+          passwordSecretRef: 'containerregistry-password'
+        }
+      ]
+    }
+    template: {
+      containers: [
+        {
+          image: '${acrSever}/shipping/workflow:0.1.0'
+          name: 'workflow-app'
+          env: [
+            {
+              name: 'ApplicationInsights--InstrumentationKey'
+              secretref: 'applicationinsights-instrumentationkey'
+            }
+            {
+              name: 'QueueName'
+              value: workflowQueueName
+            }
+            {
+              name: 'QueueEndpoint'
+              value: wokflowNamespaceEndpoint
+            }
+            {
+              name: 'QueueAccessPolicyName'
+              value: workflowNamespaceSASName
+            }
+            {
+              name: 'QueueAccessPolicyKey'
+              secretref: 'namespace-sas-key'
+            }
+            {
+              name: 'HEALTHCHECK_INITIAL_DELAY'
+              value: '30000'
+            }
+            {
+              name: 'SERVICE_URI_PACKAGE'
+              value: 'http://package/api/packages/'
+            }
+            {
+              name: 'SERVICE_URI_DRONE'
+              value: 'http://dronescheduler/api/DroneDeliveries/'
+            }
+            {
+              name: 'SERVICE_URI_DELIVERY'
+              value: 'http://delivery/api/Deliveries/'
+            }
+            {
+              name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
+              value: 'Error'
+            }
+            {
+              name: 'SERVICEREQUEST__MAXRETRIES'
+              value: '3'
+            }
+            {
+              name: 'SERVICEREQUEST__CIRCUITBREAKERTHRESHOLD'
+              value: '0.5'
+            }
+            {
+              name: 'SERVICEREQUEST__CIRCUITBREAKERSAMPLINGPERIODSECONDS'
+              value: '5'
+            }
+            {
+              name: 'SERVICEREQUEST__CIRCUITBREAKERMINIMUMTHROUGHPUT'
+              value: '20'
+            }
+            {
+              name: 'SERVICEREQUEST__CIRCUITBREAKERBREAKDURATION'
+              value: '30'
+            }
+            {
+              name: 'SERVICEREQUEST__MAXBULKHEADSIZE'
+              value: '100'
+            }
+            {
+              name: 'SERVICEREQUEST__MAXBULKHEADQUEUESIZE'
+              value: '25'
             }
           ]
           resources: {

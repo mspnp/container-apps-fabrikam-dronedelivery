@@ -151,6 +151,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Get microservices details
 
    ```bash
+   # delivery
    DELIVERY_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryCosmosDbName.value -o tsv)
    DELIVERY_DATABASE_NAME="${DELIVERY_COSMOSDB_NAME}-db"
    DELIVERY_COLLECTION_NAME="${DELIVERY_COSMOSDB_NAME}-col"
@@ -159,6 +160,13 @@ Following the steps below will result in the creation of the following Azure res
    DELIVERY_REDIS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryRedisName.value -o tsv)
    DELIVERY_REDIS_ENDPOINT=$(az redis show -g rg-shipping-dronedelivery  -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
    DELIVERY_REDIS_KEY=$(az redis list-keys -g rg-shipping-dronedelivery  -n $DELIVERY_REDIS_NAME --query primaryKey -o tsv)
+
+   # workflow
+   WORKFLOW_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueNamespace.value -o tsv)
+   WORKFLOW_NAMESPACE_ENDPOINT=$(az servicebus namespace show -g rg-shipping-dronedelivery -n $WORKFLOW_NAMESPACE_NAME --query serviceBusEndpoint -o tsv)
+   WORKFLOW_NAMESPACE_SAS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.workflowServiceAccessKeyName.value -o tsv)
+   WORKFLOW_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $WORKFLOW_NAMESPACE_NAME -n $WORKFLOW_NAMESPACE_SAS_NAME  --query primaryKey -o tsv)
+   WORKFLOW_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueName.value -o tsv)
    ```
 
 ## Deploy Azure Container App
@@ -182,7 +190,11 @@ Following the steps below will result in the creation of the following Azure res
       deliveryCosmosdbEndpoint=$DELIVERY_COSMOSDB_ENDPOINT \
       deliveryCosmosdbKey=$DELIVERY_COSMOSDB_KEY \
       deliveryRedisEndpoint=$DELIVERY_REDIS_ENDPOINT \
-      deliveryRedisKey=$DELIVERY_REDIS_KEY
+      deliveryRedisKey=$DELIVERY_REDIS_KEY \
+      wokflowNamespaceEndpoint=$WORKFLOW_NAMESPACE_ENDPOINT \
+      workflowNamespaceSASName=$WORKFLOW_NAMESPACE_SAS_NAME \
+      workflowNamespaceSASKey=$WORKFLOW_NAMESPACE_SAS_KEY \
+      workflowQueueName=$WORKFLOW_QUEUE_NAME
    ```
 
    :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
