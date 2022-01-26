@@ -171,6 +171,12 @@ Following the steps below will result in the creation of the following Azure res
    # package
    PACKAGE_MONGODB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.packageMongoDbName.value -o tsv)
    PACKAGE_MONGODB_CONNNECTIONSTRING=$(az cosmosdb keys list --type connection-strings -g rg-shipping-dronedelivery --name $PACKAGE_MONGODB_NAME --query "connectionStrings[0].connectionString" -o tsv | sed 's/==/%3D%3D/g')
+
+   # ingestion
+   INGESTION_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueNamespace.value -o tsv)
+   INGESTION_NAMESPACE_SAS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionServiceAccessKeyName.value -o tsv)
+   INGESTION_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $INGESTION_NAMESPACE_NAME -n $INGESTION_NAMESPACE_SAS_NAME  --query primaryKey -o tsv)
+   INGESTION_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueName.value -o tsv)
    ```
 
 ## Deploy Azure Container App
@@ -199,7 +205,11 @@ Following the steps below will result in the creation of the following Azure res
       workflowNamespaceSASName=$WORKFLOW_NAMESPACE_SAS_NAME \
       workflowNamespaceSASKey=$WORKFLOW_NAMESPACE_SAS_KEY \
       workflowQueueName=$WORKFLOW_QUEUE_NAME \
-      packageMongodbConnectionString=$PACKAGE_MONGODB_CONNNECTIONSTRING
+      packageMongodbConnectionString=$PACKAGE_MONGODB_CONNNECTIONSTRING \
+      ingestionNamespaceName=$INGESTION_NAMESPACE_NAME \
+      ingestionNamespaceSASName=$INGESTION_NAMESPACE_SAS_NAME \
+      ingestionNamespaceSASKey=$INGESTION_NAMESPACE_SAS_KEY \
+      ingestionQueueName=$INGESTION_QUEUE_NAME
    ```
 
    :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
@@ -222,6 +232,12 @@ Following the steps below will result in the creation of the following Azure res
 
    ```bash
    curl -XGET https://ca-package.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger/swagger.json
+   ```
+
+1. Get the Ingestion Api spec
+
+   ```bash
+   curl -XGET https://ca-ingestion.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger-ui.html
    ```
 
 ## Clean up
