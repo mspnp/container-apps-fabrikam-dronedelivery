@@ -216,29 +216,56 @@ Following the steps below will result in the creation of the following Azure res
 
 ## Validation
 
-1. Get the Delivery Api spec
+Now that you have deployed in a Container Apps Environment, you can validate its functionality. This section will help you to validate the workload is exposed through a Container Apps External Ingress and responding to HTTP requests correctly.
+
+### Steps
+
+1. Get Public IP of Application Gateway.
+
+    > :book: The app team conducts a final acceptance test to ensure that traffic is flowing end-to-end as expected. To do so, an HTTP request is submitted against the Azure Application Gateway endpoint.
 
    ```bash
-   curl -XGET https://ca-delivery.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger/v1/swagger.json
+   INGESTION_FQDN=$(az deployment group show -g rg-shipping-dronedelivery -n containerapps-stamp --query properties.outputs.ingestionFqdn.value -o tsv)
    ```
 
-1. Get the Dronescheduler Api spec
+1. Send a request to https://dronedelivery.fabrikam.com.
+
+   > :bulb: Since the certificate used for TLS is self-signed, the request disables TLS validation using the '-k' option.
 
    ```bash
-   curl -XGET https://ca-dronescheduler.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger/v1/swagger.json
+   curl -X POST "https://${INGESTION_FQDN}/api/deliveryrequests" --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{
+      "confirmationRequired": "None",
+      "deadline": "",
+      "dropOffLocation": "drop off",
+      "expedited": true,
+      "ownerId": "myowner",
+      "packageInfo": {
+        "packageId": "mypackage",
+        "size": "Small",
+        "tag": "mytag",
+        "weight": 10
+      },
+      "pickupLocation": "my pickup",
+      "pickupTime": "2019-05-08T20:00:00.000Z"
+    }' > deliveryresponse.json
    ```
 
-1. Get the Package Api spec
+1. Check the request status.
 
    ```bash
-   curl -XGET https://ca-package.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger/swagger.json
+   DELIVERY_ID=$(cat deliveryresponse.json | jq -r .deliveryId)
+   curl "https://dronedelivery.fabrikam.com/api/deliveries/$DELIVERY_ID" --resolve dronedelivery.fabrikam.com:443:$APPGW_PUBLIC_IP --header 'Accept: application/json' -k
    ```
 
-1. Get the Ingestion Api spec
+## Troubleshooting
 
-   ```bash
-   curl -XGET https://ca-ingestion.mangobush-09bcea93.eastus.azurecontainerapps.io/swagger-ui.html
-   ```
+### Restart a revision
+
+if you need a restart a revision with Provision Status `Failed` or for another reason you can use az cli:
+
+```bash
+az containerapp revision restart -g rg-shipping-dronedelivery --app <containerapp-name> -n <containerapp-revision-name>
+```
 
 ## Clean up
 

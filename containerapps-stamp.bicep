@@ -88,7 +88,7 @@ resource ca_delivery 'Microsoft.Web/containerApps@2021-03-01' = {
         }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 8080
         transport: 'Auto'
         traffic: [
@@ -174,7 +174,7 @@ resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
         }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 8080
         transport: 'Auto'
         traffic: [
@@ -272,15 +272,15 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
             }
             {
               name: 'SERVICE_URI_PACKAGE'
-              value: 'http://package/api/packages/'
+              value: 'https://${ca_package.properties.configuration.ingress.fqdn}/api/packages/'
             }
             {
               name: 'SERVICE_URI_DRONE'
-              value: 'http://dronescheduler/api/DroneDeliveries/'
+              value: 'https://${ca_dronescheduler.properties.configuration.ingress.fqdn}/api/DroneDeliveries/'
             }
             {
               name: 'SERVICE_URI_DELIVERY'
-              value: 'http://delivery/api/Deliveries/'
+              value: 'https://${ca_delivery.properties.configuration.ingress.fqdn}/api/Deliveries/'
             }
             {
               name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
@@ -358,7 +358,7 @@ resource ca_package 'Microsoft.Web/containerApps@2021-03-01' = {
         }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 80
         transport: 'Auto'
         traffic: [
@@ -500,3 +500,5 @@ resource ca_ingestion 'Microsoft.Web/containerApps@2021-03-01' = {
     }
   }
 }
+
+output ingestionFqdn string = ca_ingestion.properties.configuration.ingress.fqdn

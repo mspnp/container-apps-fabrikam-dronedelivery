@@ -142,7 +142,7 @@
               }
             ],
             "ingress": {
-              "external": true,
+              "external": false,
               "targetPort": 8080,
               "transport": "Auto",
               "traffic": [
@@ -232,7 +232,7 @@
               }
             ],
             "ingress": {
-              "external": true,
+              "external": false,
               "targetPort": 8080,
               "transport": "Auto",
               "traffic": [
@@ -334,15 +334,15 @@
                   },
                   {
                     "name": "SERVICE_URI_PACKAGE",
-                    "value": "http://package/api/packages/"
+                    "value": "[concat('https://', reference(resourceId('Microsoft.Web/containerApps', 'ca-package')).configuration.ingress.fqdn, '/api/packages/')]"
                   },
                   {
                     "name": "SERVICE_URI_DRONE",
-                    "value": "http://dronescheduler/api/DroneDeliveries/"
+                    "value": "[concat('https://', reference(resourceId('Microsoft.Web/containerApps', 'ca-dronescheduler')).configuration.ingress.fqdn, '/api/DroneDeliveries/')]"
                   },
                   {
                     "name": "SERVICE_URI_DELIVERY",
-                    "value": "http://delivery/api/Deliveries/"
+                    "value": "[concat('https://', reference(resourceId('Microsoft.Web/containerApps', 'ca-delivery')).configuration.ingress.fqdn, '/api/Deliveries/')]"
                   },
                   {
                     "name": "LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT",
@@ -424,7 +424,7 @@
               }
             ],
             "ingress": {
-              "external": true,
+              "external": false,
               "targetPort": 80,
               "transport": "Auto",
               "traffic": [
@@ -570,5 +570,11 @@
           }
         }
       }
-    ]
+    ],
+    "outputs": {
+      "ingestionFqdn": {
+        "type": "string",
+        "value": "[reference(resourceId('Microsoft.Web/containerApps', 'ca-ingestion')).configuration.ingress.fqdn]"
+      }
+    }
 }
