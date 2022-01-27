@@ -8,6 +8,8 @@ param deliveryCosmosdbEndpoint string
 param deliveryCosmosdbKey string
 param deliveryRedisEndpoint string
 param deliveryRedisKey string
+param droneSchedulerCosmosdbEndpoint string
+param droneSchedulerCosmosdbKey string
 param wokflowNamespaceEndpoint string
 param workflowNamespaceSASName string
 param workflowNamespaceSASKey string
@@ -165,6 +167,10 @@ resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'containerregistry-password'
           value: containerRegistryPassword
         }
+        {
+          name: 'cosmosdb-key'
+          value: droneSchedulerCosmosdbKey
+        }
       ]
       registries: [
         {
@@ -195,6 +201,50 @@ resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
             {
               name: 'ApplicationInsights__InstrumentationKey'
               secretref: 'applicationinsights-instrumentationkey'
+            }
+            {
+              name: 'CosmosDBEndpoint'
+              value: droneSchedulerCosmosdbEndpoint
+            }
+            {
+              name: 'CosmosDBKey'
+              secretref: 'cosmosdb-key'
+            }
+            {
+              name: 'CosmosDBConnectionMode'
+              value: 'Gateway'
+            }
+            {
+              name: 'CosmosDBConnectionProtocol'
+              value: 'Https'
+            }
+            {
+              name: 'CosmosDBMaxConnectionsLimit'
+              value: '50'
+            }
+            {
+              name: 'CosmosDBMaxParallelism'
+              value: '-1'
+            }
+            {
+              name: 'CosmosDBMaxBufferedItemCount'
+              value: '0'
+            }
+            {
+              name: 'FeatureManagement__UsePartitionKey'
+              value: 'false'
+            }
+            {
+              name: 'COSMOSDB_DATABASEID'
+              value: 'invoicing'
+            }
+            {
+              name: 'COSMOSDB_COLLECTIONID'
+              value: 'utilization'
+            }
+            {
+              name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
+              value: 'Error'
             }
           ]
           resources: {
