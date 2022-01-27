@@ -45,6 +45,15 @@ This repository guides you during the process of running a set of containers in 
 Workflow Service: it is a message consumer app, so it needs to be deployed as single revision mode. Otherwise an old versions could still process a message if happen to be one that retrieves first.
 ```
 
+For more information on how the Container Apps feature are being used in this Reference Implementation, please take a look below:
+
+- [HTTPS ingress, this allows to expose the Ingestion service to internet.](https://docs.microsoft.com/en-us/azure/container-apps/ingress)
+- [Internal service discovery, Delivery, DroneScheduler and Package services must be internally reacheable by Workflow service](https://docs.microsoft.com/en-us/azure/container-apps/connect-apps)
+- [Securely mange secrets, all services secrets are handled using this feature](https://docs.microsoft.com/en-us/azure/container-apps/secure-app)
+- [Run containers from any registry, the Fabrikam Drone Delivery uses ACR to publish its Docker images](https://docs.microsoft.com/en-us/azure/container-apps/containers)
+- [Use ARM templates to deploy my application, there is no need for another layer of indirection like Helm charts. All the Drone Delivery containers are part of the ARM templates](https://docs.microsoft.com/en-us/azure/container-apps/get-started)
+- [Logs, see the container logs directly in Log Analyticis without configuring any provider from code or Azure service](https://docs.microsoft.com/en-us/azure/container-apps/monitor).
+
 ## Prerequisites
 
 1. An Azure subscription. You can [open an account for free](https://azure.microsoft.com/free).
@@ -257,6 +266,10 @@ Now that you have deployed in a Container Apps Environment, you can validate its
    DELIVERY_ID=$(cat deliveryresponse.json | jq -r .deliveryId)
    curl "https://dronedelivery.fabrikam.com/api/deliveries/$DELIVERY_ID" --resolve dronedelivery.fabrikam.com:443:$APPGW_PUBLIC_IP --header 'Accept: application/json' -k
    ```
+
+1. You can also navigate to Application Insights to see some End to end tranction view as shown below
+
+![An End to end transaction screenshot from Application Insights](./ai.png)
 
 ## Troubleshooting
 
