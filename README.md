@@ -132,6 +132,8 @@ Following the steps below will result in the creation of the following Azure res
    -p packagePrincipalId=$PACKAGE_ID_PRINCIPAL_ID
    ```
 
+   :warning: Azure KeyVault and Managed Identities will be integrated in the future with Container Apps in this Reference Implementation.
+
 1. Obtain the ACR server details
 
    ```bash
