@@ -161,7 +161,7 @@
                 "name": "delivery-app",
                 "env": [
                   {
-                    "name": "ApplicationInsights--InstrumentationKey",
+                    "name": "ApplicationInsights__InstrumentationKey",
                     "secretref": "applicationinsights-instrumentationkey"
                   },
                   {
@@ -251,7 +251,7 @@
                 "name": "dronescheduler-app",
                 "env": [
                   {
-                    "name": "ApplicationInsights--InstrumentationKey",
+                    "name": "ApplicationInsights__InstrumentationKey",
                     "secretref": "applicationinsights-instrumentationkey"
                   }
                 ],
@@ -309,7 +309,7 @@
                 "name": "workflow-app",
                 "env": [
                   {
-                    "name": "ApplicationInsights--InstrumentationKey",
+                    "name": "ApplicationInsights__InstrumentationKey",
                     "secretref": "applicationinsights-instrumentationkey"
                   },
                   {
@@ -443,7 +443,7 @@
                 "name": "package-app",
                 "env": [
                   {
-                    "name": "ApplicationInsights--InstrumentationKey",
+                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                     "secretref": "applicationinsights-instrumentationkey"
                   },
                   {

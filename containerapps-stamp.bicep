@@ -107,7 +107,7 @@ resource ca_delivery 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'delivery-app'
           env: [
             {
-              name: 'ApplicationInsights--InstrumentationKey'
+              name: 'ApplicationInsights__InstrumentationKey'
               secretref: 'applicationinsights-instrumentationkey'
             }
             {
@@ -193,7 +193,7 @@ resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'dronescheduler-app'
           env: [
             {
-              name: 'ApplicationInsights--InstrumentationKey'
+              name: 'ApplicationInsights__InstrumentationKey'
               secretref: 'applicationinsights-instrumentationkey'
             }
           ]
@@ -247,7 +247,7 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'workflow-app'
           env: [
             {
-              name: 'ApplicationInsights--InstrumentationKey'
+              name: 'ApplicationInsights__InstrumentationKey'
               secretref: 'applicationinsights-instrumentationkey'
             }
             {
@@ -377,7 +377,7 @@ resource ca_package 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'package-app'
           env: [
             {
-              name: 'ApplicationInsights--InstrumentationKey'
+              name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
               secretref: 'applicationinsights-instrumentationkey'
             }
             {
