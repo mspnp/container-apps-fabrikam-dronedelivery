@@ -267,13 +267,6 @@ Now that you have deployed in a Container Apps Environment, you can validate its
     }' > deliveryresponse.json
    ```
 
-1. Check the request status.
-
-   ```bash
-   DELIVERY_ID=$(cat deliveryresponse.json | jq -r .deliveryId)
-   curl "https://dronedelivery.fabrikam.com/api/deliveries/$DELIVERY_ID" --resolve dronedelivery.fabrikam.com:443:$APPGW_PUBLIC_IP --header 'Accept: application/json' -k
-   ```
-
 1. You can also navigate to Application Insights to see some End to end tranction view as shown below
 
 ![An End to end transaction screenshot from Application Insights](./ai.png)
