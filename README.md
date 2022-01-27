@@ -42,6 +42,7 @@ This repository guides you during the process of running a set of containers in 
 │         Log Analytics Workspace       ││          Application Insights          │
 └───────────────────────────────────────┘└────────────────────────────────────────┘
 
+Workflow Service: it is a message consumer app, so it needs to be deployed as single revision mode. Otherwise an old versions could still process a message if happen to be one that retrieves first.
 ```
 
 ## Prerequisites

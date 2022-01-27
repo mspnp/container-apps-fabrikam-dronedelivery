@@ -232,6 +232,7 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
           value: workflowNamespaceSASKey
         }
       ]
+      activeRevisionsMode: 'Single'
       registries: [
         {
           server: acrSever

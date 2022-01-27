@@ -294,6 +294,7 @@
                 "value": "[parameters('workflowNamespaceSASKey')]"
               }
             ],
+            "activeRevisionsMode": "Single",
             "registries": [
               {
                 "server": "[parameters('acrSever')]",
