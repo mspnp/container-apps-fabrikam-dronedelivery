@@ -31,6 +31,39 @@
         },
         "deliveryRedisKey": {
             "type": "String"
+        },
+        "droneSchedulerCosmosdbEndpoint": {
+            "type": "String"
+        },
+        "droneSchedulerCosmosdbKey": {
+            "type": "String"
+        },
+        "wokflowNamespaceEndpoint": {
+            "type": "String"
+        },
+        "workflowNamespaceSASName": {
+            "type": "String"
+        },
+        "workflowNamespaceSASKey": {
+            "type": "String"
+        },
+        "workflowQueueName": {
+            "type": "String"
+        },
+        "packageMongodbConnectionString": {
+            "type": "String"
+        },
+        "ingestionNamespaceName": {
+            "type": "String"
+        },
+        "ingestionNamespaceSASName": {
+            "type": "String"
+        },
+        "ingestionNamespaceSASKey": {
+            "type": "String"
+        },
+        "ingestionQueueName": {
+            "type": "String"
         }
     },
     "variables": {},
@@ -115,7 +148,7 @@
               }
             ],
             "ingress": {
-              "external": true,
+              "external": false,
               "targetPort": 8080,
               "transport": "Auto",
               "traffic": [
@@ -134,7 +167,7 @@
                 "name": "delivery-app",
                 "env": [
                   {
-                    "name": "ApplicationInsights--InstrumentationKey",
+                    "name": "ApplicationInsights__InstrumentationKey",
                     "secretref": "applicationinsights-instrumentationkey"
                   },
                   {
@@ -195,6 +228,10 @@
               {
                 "name": "containerregistry-password",
                 "value": "[parameters('containerRegistryPassword')]"
+              },
+              {
+                "name": "cosmosdb-key",
+                "value": "[parameters('droneSchedulerCosmosdbKey')]"
               }
             ],
             "registries": [
@@ -205,7 +242,7 @@
               }
             ],
             "ingress": {
-              "external": true,
+              "external": false,
               "targetPort": 8080,
               "transport": "Auto",
               "traffic": [
@@ -224,8 +261,52 @@
                 "name": "dronescheduler-app",
                 "env": [
                   {
-                    "name": "ApplicationInsights--InstrumentationKey",
+                    "name": "ApplicationInsights__InstrumentationKey",
                     "secretref": "applicationinsights-instrumentationkey"
+                  },
+                  {
+                    "name": "CosmosDBEndpoint",
+                    "value": "[parameters('droneSchedulerCosmosdbEndpoint')]"
+                  },
+                  {
+                    "name": "CosmosDBKey",
+                    "secretref": "cosmosdb-key"
+                  },
+                  {
+                    "name": "CosmosDBConnectionMode",
+                    "value": "Gateway"
+                  },
+                  {
+                    "name": "CosmosDBConnectionProtocol",
+                    "value": "Https"
+                  },
+                  {
+                    "name": "CosmosDBMaxConnectionsLimit",
+                    "value": "50"
+                  },
+                  {
+                    "name": "CosmosDBMaxParallelism",
+                    "value": "-1"
+                  },
+                  {
+                    "name": "CosmosDBMaxBufferedItemCount",
+                    "value": "0"
+                  },
+                  {
+                    "name": "FeatureManagement__UsePartitionKey",
+                    "value": "false"
+                  },
+                  {
+                    "name": "COSMOSDB_DATABASEID",
+                    "value": "invoicing"
+                  },
+                  {
+                    "name": "COSMOSDB_COLLECTIONID",
+                    "value": "utilization"
+                  },
+                  {
+                    "name": "LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT",
+                    "value": "Error"
                   }
                 ],
                 "resources": {
@@ -240,6 +321,315 @@
             }
           }
         }
+      },
+      {
+        "name": "ca-workflow",
+        "type": "Microsoft.Web/containerApps",
+        "apiVersion": "2021-03-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]"
+        ],
+        "kind": "containerapp",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "kubeEnvironmentId": "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]",
+          "configuration": {
+            "secrets": [
+              {
+                "name": "applicationinsights-instrumentationkey",
+                "value": "[parameters('applicationInsightsInstrumentationKey')]"
+              },
+              {
+                "name": "containerregistry-password",
+                "value": "[parameters('containerRegistryPassword')]"
+              },
+              {
+                "name": "namespace-sas-key",
+                "value": "[parameters('workflowNamespaceSASKey')]"
+              }
+            ],
+            "activeRevisionsMode": "Single",
+            "registries": [
+              {
+                "server": "[parameters('acrSever')]",
+                "username": "[parameters('containerRegistryUser')]",
+                "passwordSecretRef": "containerregistry-password"
+              }
+            ]
+          },
+          "template": {
+            "containers": [
+              {
+                "image": "[concat(parameters('acrSever'), '/shipping/workflow:0.1.0')]",
+                "name": "workflow-app",
+                "env": [
+                  {
+                    "name": "ApplicationInsights__InstrumentationKey",
+                    "secretref": "applicationinsights-instrumentationkey"
+                  },
+                  {
+                    "name": "QueueName",
+                    "value": "[parameters('workflowQueueName')]"
+                  },
+                  {
+                    "name": "QueueEndpoint",
+                    "value": "[parameters('wokflowNamespaceEndpoint')]"
+                  },
+                  {
+                    "name": "QueueAccessPolicyName",
+                    "value": "[parameters('workflowNamespaceSASName')]"
+                  },
+                  {
+                    "name": "QueueAccessPolicyKey",
+                    "secretref": "namespace-sas-key"
+                  },
+                  {
+                    "name": "HEALTHCHECK_INITIAL_DELAY",
+                    "value": "30000"
+                  },
+                  {
+                    "name": "SERVICE_URI_PACKAGE",
+                    "value": "[concat('https://', reference(resourceId('Microsoft.Web/containerApps', 'ca-package')).configuration.ingress.fqdn, '/api/packages/')]"
+                  },
+                  {
+                    "name": "SERVICE_URI_DRONE",
+                    "value": "[concat('https://', reference(resourceId('Microsoft.Web/containerApps', 'ca-dronescheduler')).configuration.ingress.fqdn, '/api/DroneDeliveries/')]"
+                  },
+                  {
+                    "name": "SERVICE_URI_DELIVERY",
+                    "value": "[concat('https://', reference(resourceId('Microsoft.Web/containerApps', 'ca-delivery')).configuration.ingress.fqdn, '/api/Deliveries/')]"
+                  },
+                  {
+                    "name": "LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT",
+                    "value": "Error"
+                  },
+                  {
+                    "name": "SERVICEREQUEST__MAXRETRIES",
+                    "value": "3"
+                  },
+                  {
+                    "name": "SERVICEREQUEST__CIRCUITBREAKERTHRESHOLD",
+                    "value": "0.5"
+                  },
+                  {
+                    "name": "SERVICEREQUEST__CIRCUITBREAKERSAMPLINGPERIODSECONDS",
+                    "value": "5"
+                  },
+                  {
+                    "name": "SERVICEREQUEST__CIRCUITBREAKERMINIMUMTHROUGHPUT",
+                    "value": "20"
+                  },
+                  {
+                    "name": "SERVICEREQUEST__CIRCUITBREAKERBREAKDURATION",
+                    "value": "30"
+                  },
+                  {
+                    "name": "SERVICEREQUEST__MAXBULKHEADSIZE",
+                    "value": "100"
+                  },
+                  {
+                    "name": "SERVICEREQUEST__MAXBULKHEADQUEUESIZE",
+                    "value":  "25"
+                  }
+                ],
+                "resources": {
+                    "cpu": 0.5,
+                    "memory": "1Gi"
+                }
+              }
+            ],
+            "scale": {
+              "minReplicas": 1,
+              "maxReplicas": 1
+            }
+          }
+        }
+      },
+      {
+        "name": "ca-package",
+        "type": "Microsoft.Web/containerApps",
+        "apiVersion": "2021-03-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]"
+        ],
+        "kind": "containerapp",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "kubeEnvironmentId": "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]",
+          "configuration": {
+            "secrets": [
+              {
+                "name": "applicationinsights-instrumentationkey",
+                "value": "[parameters('applicationInsightsInstrumentationKey')]"
+              },
+              {
+                "name": "containerregistry-password",
+                "value": "[parameters('containerRegistryPassword')]"
+              },
+              {
+                "name": "mongodb-connectrionstring",
+                "value": "[parameters('packageMongodbConnectionString')]"
+              }
+            ],
+            "registries": [
+              {
+                "server": "[parameters('acrSever')]",
+                "username": "[parameters('containerRegistryUser')]",
+                "passwordSecretRef": "containerregistry-password"
+              }
+            ],
+            "ingress": {
+              "external": false,
+              "targetPort": 80,
+              "transport": "Auto",
+              "traffic": [
+                {
+                  "weight": 100,
+                  "latestRevision": true
+                }
+              ],
+              "allowInsecure": false
+            }
+          },
+          "template": {
+            "containers": [
+              {
+                "image": "[concat(parameters('acrSever'), '/shipping/package:0.1.0')]",
+                "name": "package-app",
+                "env": [
+                  {
+                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                    "secretref": "applicationinsights-instrumentationkey"
+                  },
+                  {
+                    "name": "CONNECTION_STRING",
+                    "secretref": "mongodb-connectrionstring"
+                  },
+                  {
+                    "name": "COLLECTION_NAME",
+                    "value": "packages"
+                  },
+                  {
+                    "name": "LOG_LEVEL",
+                    "value": "error"
+                  },
+                  {
+                    "name": "CONTAINER_NAME",
+                    "value": "fabrikam-package"
+                  }
+                ],
+                "resources": {
+                    "cpu": 0.5,
+                    "memory": "1Gi"
+                }
+              }
+            ],
+            "scale": {
+              "minReplicas": 1,
+              "maxReplicas": 1
+            }
+          }
+        }
+      },
+      {
+        "name": "ca-ingestion",
+        "type": "Microsoft.Web/containerApps",
+        "apiVersion": "2021-03-01",
+        "dependsOn": [
+          "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]"
+        ],
+        "kind": "containerapp",
+        "location": "[resourceGroup().location]",
+        "properties": {
+          "kubeEnvironmentId": "[resourceId('Microsoft.Web/kubeEnvironments', 'cae-shipping-dronedelivery')]",
+          "configuration": {
+            "secrets": [
+              {
+                "name": "applicationinsights-instrumentationkey",
+                "value": "[parameters('applicationInsightsInstrumentationKey')]"
+              },
+              {
+                "name": "containerregistry-password",
+                "value": "[parameters('containerRegistryPassword')]"
+              },
+              {
+                "name": "namespace-sas-key",
+                "value": "[parameters('ingestionNamespaceSASKey')]"
+              }
+            ],
+            "registries": [
+              {
+                "server": "[parameters('acrSever')]",
+                "username": "[parameters('containerRegistryUser')]",
+                "passwordSecretRef": "containerregistry-password"
+              }
+            ],
+            "ingress": {
+              "external": true,
+              "targetPort": 80,
+              "transport": "Auto",
+              "traffic": [
+                {
+                  "weight": 100,
+                  "latestRevision": true
+                }
+              ],
+              "allowInsecure": false
+            }
+          },
+          "template": {
+            "containers": [
+              {
+                "image": "[concat(parameters('acrSever'), '/shipping/ingestion:0.1.0')]",
+                "name": "ingestion-app",
+                "env": [
+                  {
+                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
+                    "secretref": "applicationinsights-instrumentationkey"
+                  },
+                  {
+                    "name": "APPINSIGHTS_LOGGERLEVEL",
+                    "value": "error"
+                  },
+                  {
+                    "name": "CONTAINER_NAME",
+                    "value": "fabrikam-ingestion"
+                  },
+                  {
+                    "name": "QUEUE_NAMESPACE",
+                    "value": "[parameters('ingestionNamespaceName')]"
+                  },
+                  {
+                    "name": "QUEUE_NAME",
+                    "value": "[parameters('ingestionQueueName')]"
+                  },
+                  {
+                    "name": "QUEUE_KEYNAME",
+                    "value": "[parameters('ingestionNamespaceSASName')]"
+                  },
+                  {
+                    "name": "QUEUE_KEYVALUE",
+                    "secretref": "namespace-sas-key"
+                  }
+                ],
+                "resources": {
+                    "cpu": 1.0,
+                    "memory": "2.0Gi"
+                }
+              }
+            ],
+            "scale": {
+              "minReplicas": 1,
+              "maxReplicas": 1
+            }
+          }
+        }
       }
-    ]
+    ],
+    "outputs": {
+      "ingestionFqdn": {
+        "type": "string",
+        "value": "[reference(resourceId('Microsoft.Web/containerApps', 'ca-ingestion')).configuration.ingress.fqdn]"
+      }
+    }
 }
