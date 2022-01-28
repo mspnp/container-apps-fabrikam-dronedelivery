@@ -156,7 +156,7 @@ resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
   kind: 'containerapp'
   location: resourceGroup().location
   properties: {
-    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    kubeEnvironmentId: cae.id
     configuration: {
       secrets: [
         {
@@ -266,7 +266,7 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
   kind: 'containerapp'
   location: resourceGroup().location
   properties: {
-    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    kubeEnvironmentId: cae.id
     configuration: {
       secrets: [
         {
@@ -385,7 +385,7 @@ resource ca_package 'Microsoft.Web/containerApps@2021-03-01' = {
   kind: 'containerapp'
   location: resourceGroup().location
   properties: {
-    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    kubeEnvironmentId: cae.id
     configuration: {
       secrets: [
         {
@@ -467,7 +467,7 @@ resource ca_ingestion 'Microsoft.Web/containerApps@2021-03-01' = {
   kind: 'containerapp'
   location: resourceGroup().location
   properties: {
-    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    kubeEnvironmentId: cae.id
     configuration: {
       secrets: [
         {
