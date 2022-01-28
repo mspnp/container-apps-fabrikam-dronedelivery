@@ -139,7 +139,7 @@ Following the steps below will result in the creation of the following Azure res
    ```bash
    ACR_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.acrName.value -o tsv)
    ACR_SERVER=$(az acr show -n $ACR_NAME --query loginServer -o tsv)
-   az acr update -n yok5z6ex2n7sy --admin-enabled true
+   az acr update -n $ACR_NAME --admin-enabled true
    ACR_PASS=$(az acr credential show -n $ACR_NAME --query "passwords[0].value" -o tsv)
    ```
 
