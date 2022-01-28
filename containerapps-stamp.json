@@ -32,6 +32,12 @@
         "deliveryRedisKey": {
             "type": "String"
         },
+        "droneSchedulerCosmosdbEndpoint": {
+            "type": "String"
+        },
+        "droneSchedulerCosmosdbKey": {
+            "type": "String"
+        },
         "wokflowNamespaceEndpoint": {
             "type": "String"
         },
@@ -142,7 +148,7 @@
               }
             ],
             "ingress": {
-              "external": true,
+              "external": false,
               "targetPort": 8080,
               "transport": "Auto",
               "traffic": [
@@ -161,7 +167,7 @@
                 "name": "delivery-app",
                 "env": [
                   {
-                    "name": "ApplicationInsights--InstrumentationKey",
+                    "name": "ApplicationInsights__InstrumentationKey",
                     "secretref": "applicationinsights-instrumentationkey"
                   },
                   {
@@ -222,6 +228,10 @@
               {
                 "name": "containerregistry-password",
                 "value": "[parameters('containerRegistryPassword')]"
+              },
+              {
+                "name": "cosmosdb-key",
+                "value": "[parameters('droneSchedulerCosmosdbKey')]"
               }
             ],
             "registries": [
@@ -232,7 +242,7 @@
               }
             ],
             "ingress": {
-              "external": true,
+              "external": false,
               "targetPort": 8080,
               "transport": "Auto",
               "traffic": [
@@ -251,8 +261,52 @@
                 "name": "dronescheduler-app",
                 "env": [
                   {
-                    "name": "ApplicationInsights--InstrumentationKey",
+                    "name": "ApplicationInsights__InstrumentationKey",
                     "secretref": "applicationinsights-instrumentationkey"
+                  },
+                  {
+                    "name": "CosmosDBEndpoint",
+                    "value": "[parameters('droneSchedulerCosmosdbEndpoint')]"
+                  },
+                  {
+                    "name": "CosmosDBKey",
+                    "secretref": "cosmosdb-key"
+                  },
+                  {
+                    "name": "CosmosDBConnectionMode",
+                    "value": "Gateway"
+                  },
+                  {
+                    "name": "CosmosDBConnectionProtocol",
+                    "value": "Https"
+                  },
+                  {
+                    "name": "CosmosDBMaxConnectionsLimit",
+                    "value": "50"
+                  },
+                  {
+                    "name": "CosmosDBMaxParallelism",
+                    "value": "-1"
+                  },
+                  {
+                    "name": "CosmosDBMaxBufferedItemCount",
+                    "value": "0"
+                  },
+                  {
+                    "name": "FeatureManagement__UsePartitionKey",
+                    "value": "false"
+                  },
+                  {
+                    "name": "COSMOSDB_DATABASEID",
+                    "value": "invoicing"
+                  },
+                  {
+                    "name": "COSMOSDB_COLLECTIONID",
+                    "value": "utilization"
+                  },
+                  {
+                    "name": "LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT",
+                    "value": "Error"
                   }
                 ],
                 "resources": {
@@ -294,6 +348,7 @@
                 "value": "[parameters('workflowNamespaceSASKey')]"
               }
             ],
+            "activeRevisionsMode": "Single",
             "registries": [
               {
                 "server": "[parameters('acrSever')]",
@@ -309,7 +364,7 @@
                 "name": "workflow-app",
                 "env": [
                   {
-                    "name": "ApplicationInsights--InstrumentationKey",
+                    "name": "ApplicationInsights__InstrumentationKey",
                     "secretref": "applicationinsights-instrumentationkey"
                   },
                   {
@@ -334,15 +389,15 @@
                   },
                   {
                     "name": "SERVICE_URI_PACKAGE",
-                    "value": "http://package/api/packages/"
+                    "value": "[concat('https://', reference(resourceId('Microsoft.Web/containerApps', 'ca-package')).configuration.ingress.fqdn, '/api/packages/')]"
                   },
                   {
                     "name": "SERVICE_URI_DRONE",
-                    "value": "http://dronescheduler/api/DroneDeliveries/"
+                    "value": "[concat('https://', reference(resourceId('Microsoft.Web/containerApps', 'ca-dronescheduler')).configuration.ingress.fqdn, '/api/DroneDeliveries/')]"
                   },
                   {
                     "name": "SERVICE_URI_DELIVERY",
-                    "value": "http://delivery/api/Deliveries/"
+                    "value": "[concat('https://', reference(resourceId('Microsoft.Web/containerApps', 'ca-delivery')).configuration.ingress.fqdn, '/api/Deliveries/')]"
                   },
                   {
                     "name": "LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT",
@@ -424,7 +479,7 @@
               }
             ],
             "ingress": {
-              "external": true,
+              "external": false,
               "targetPort": 80,
               "transport": "Auto",
               "traffic": [
@@ -443,7 +498,7 @@
                 "name": "package-app",
                 "env": [
                   {
-                    "name": "ApplicationInsights--InstrumentationKey",
+                    "name": "APPINSIGHTS_INSTRUMENTATIONKEY",
                     "secretref": "applicationinsights-instrumentationkey"
                   },
                   {
@@ -570,5 +625,11 @@
           }
         }
       }
-    ]
+    ],
+    "outputs": {
+      "ingestionFqdn": {
+        "type": "string",
+        "value": "[reference(resourceId('Microsoft.Web/containerApps', 'ca-ingestion')).configuration.ingress.fqdn]"
+      }
+    }
 }

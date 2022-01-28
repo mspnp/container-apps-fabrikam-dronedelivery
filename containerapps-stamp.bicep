@@ -8,6 +8,8 @@ param deliveryCosmosdbEndpoint string
 param deliveryCosmosdbKey string
 param deliveryRedisEndpoint string
 param deliveryRedisKey string
+param droneSchedulerCosmosdbEndpoint string
+param droneSchedulerCosmosdbKey string
 param wokflowNamespaceEndpoint string
 param workflowNamespaceSASName string
 param workflowNamespaceSASKey string
@@ -88,7 +90,7 @@ resource ca_delivery 'Microsoft.Web/containerApps@2021-03-01' = {
         }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 8080
         transport: 'Auto'
         traffic: [
@@ -107,7 +109,7 @@ resource ca_delivery 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'delivery-app'
           env: [
             {
-              name: 'ApplicationInsights--InstrumentationKey'
+              name: 'ApplicationInsights__InstrumentationKey'
               secretref: 'applicationinsights-instrumentationkey'
             }
             {
@@ -154,7 +156,7 @@ resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
   kind: 'containerapp'
   location: resourceGroup().location
   properties: {
-    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    kubeEnvironmentId: cae.id
     configuration: {
       secrets: [
         {
@@ -165,6 +167,10 @@ resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'containerregistry-password'
           value: containerRegistryPassword
         }
+        {
+          name: 'cosmosdb-key'
+          value: droneSchedulerCosmosdbKey
+        }
       ]
       registries: [
         {
@@ -174,7 +180,7 @@ resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
         }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 8080
         transport: 'Auto'
         traffic: [
@@ -193,8 +199,52 @@ resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'dronescheduler-app'
           env: [
             {
-              name: 'ApplicationInsights--InstrumentationKey'
+              name: 'ApplicationInsights__InstrumentationKey'
               secretref: 'applicationinsights-instrumentationkey'
+            }
+            {
+              name: 'CosmosDBEndpoint'
+              value: droneSchedulerCosmosdbEndpoint
+            }
+            {
+              name: 'CosmosDBKey'
+              secretref: 'cosmosdb-key'
+            }
+            {
+              name: 'CosmosDBConnectionMode'
+              value: 'Gateway'
+            }
+            {
+              name: 'CosmosDBConnectionProtocol'
+              value: 'Https'
+            }
+            {
+              name: 'CosmosDBMaxConnectionsLimit'
+              value: '50'
+            }
+            {
+              name: 'CosmosDBMaxParallelism'
+              value: '-1'
+            }
+            {
+              name: 'CosmosDBMaxBufferedItemCount'
+              value: '0'
+            }
+            {
+              name: 'FeatureManagement__UsePartitionKey'
+              value: 'false'
+            }
+            {
+              name: 'COSMOSDB_DATABASEID'
+              value: 'invoicing'
+            }
+            {
+              name: 'COSMOSDB_COLLECTIONID'
+              value: 'utilization'
+            }
+            {
+              name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
+              value: 'Error'
             }
           ]
           resources: {
@@ -216,7 +266,7 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
   kind: 'containerapp'
   location: resourceGroup().location
   properties: {
-    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    kubeEnvironmentId: cae.id
     configuration: {
       secrets: [
         {
@@ -232,6 +282,7 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
           value: workflowNamespaceSASKey
         }
       ]
+      activeRevisionsMode: 'Single'
       registries: [
         {
           server: acrSever
@@ -247,7 +298,7 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'workflow-app'
           env: [
             {
-              name: 'ApplicationInsights--InstrumentationKey'
+              name: 'ApplicationInsights__InstrumentationKey'
               secretref: 'applicationinsights-instrumentationkey'
             }
             {
@@ -272,15 +323,15 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
             }
             {
               name: 'SERVICE_URI_PACKAGE'
-              value: 'http://package/api/packages/'
+              value: 'https://${ca_package.properties.configuration.ingress.fqdn}/api/packages/'
             }
             {
               name: 'SERVICE_URI_DRONE'
-              value: 'http://dronescheduler/api/DroneDeliveries/'
+              value: 'https://${ca_dronescheduler.properties.configuration.ingress.fqdn}/api/DroneDeliveries/'
             }
             {
               name: 'SERVICE_URI_DELIVERY'
-              value: 'http://delivery/api/Deliveries/'
+              value: 'https://${ca_delivery.properties.configuration.ingress.fqdn}/api/Deliveries/'
             }
             {
               name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
@@ -334,7 +385,7 @@ resource ca_package 'Microsoft.Web/containerApps@2021-03-01' = {
   kind: 'containerapp'
   location: resourceGroup().location
   properties: {
-    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    kubeEnvironmentId: cae.id
     configuration: {
       secrets: [
         {
@@ -358,7 +409,7 @@ resource ca_package 'Microsoft.Web/containerApps@2021-03-01' = {
         }
       ]
       ingress: {
-        external: true
+        external: false
         targetPort: 80
         transport: 'Auto'
         traffic: [
@@ -377,7 +428,7 @@ resource ca_package 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'package-app'
           env: [
             {
-              name: 'ApplicationInsights--InstrumentationKey'
+              name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
               secretref: 'applicationinsights-instrumentationkey'
             }
             {
@@ -416,7 +467,7 @@ resource ca_ingestion 'Microsoft.Web/containerApps@2021-03-01' = {
   kind: 'containerapp'
   location: resourceGroup().location
   properties: {
-    kubeEnvironmentId: cae_shipping_dronedelivery.id
+    kubeEnvironmentId: cae.id
     configuration: {
       secrets: [
         {
@@ -500,3 +551,5 @@ resource ca_ingestion 'Microsoft.Web/containerApps@2021-03-01' = {
     }
   }
 }
+
+output ingestionFqdn string = ca_ingestion.properties.configuration.ingress.fqdn
