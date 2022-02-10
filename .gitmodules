@@ -1,3 +1,4 @@
 [submodule "fabrikam-dronedelivery-workload"]
 	path = workload
 	url = https://github.com/mspnp/fabrikam-dronedelivery-workload
+	branch = containerapps

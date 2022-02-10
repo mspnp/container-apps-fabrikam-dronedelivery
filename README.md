@@ -1,6 +1,7 @@
 # Container Apps Example Scenario
+## Migrating a microservices workload from AKS to Azure Container Apps
 
-This repository guides you during the process of running a set of containers in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that were previously running in Azure Kubernetes Services consisting of several general purposes microservices is now being provisioned to a recently created Azure Container App environment.  This Azure managed service that is optimized for running applications that span many microservices will make containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
+This repository guides you during the process of running an example application composed of microservices in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that was previously running in Azure Kubernetes Services will be run in a newly created Azure Container App environment. This Azure managed service is optimized for running applications that span many microservices. This example will make some containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
 
 ```output
 
@@ -42,7 +43,7 @@ This repository guides you during the process of running a set of containers in 
 │         Log Analytics Workspace       ││          Application Insights          │
 └───────────────────────────────────────┘└────────────────────────────────────────┘
 
-Workflow Service: it is a message consumer app, so it needs to be deployed as single revision mode. Otherwise an old versions could still process a message if happen to be one that retrieves first.
+Workflow Service is a message consumer app, so it needs to be deployed in single revision mode, otherwise an old versions could still process a message if happen to be one that retrieves it first.
 ```
 
 For more information on how the Container Apps feature are being used in this Reference Implementation, please take a look below:
@@ -79,12 +80,12 @@ Following the steps below will result in the creation of the following Azure res
 |-------------------------------------------|---------------------------------------------------------|
 | Five Azure User Managed Identities        | These are going to give `Read` and `List` secrets permissions over Azure KeyVault to the microservices |
 | Five Azure KeyVault instances             | Secrets are saved into Azure KeyValt instances |
-| Two Azure Cosmos Db instances             | Delivery and Package services have dependencies on Azure Cosmos Db |
+| Two Azure Cosmos Db instances             | Delivery and Package services have dependencies on Azure Cosmos DB |
 | An Azure Redis Cache instance             | Delivery service uses Azure Redis cache to keep track of inflight deliveries |
 | An Azure Service Bus                      | Ingestion and Workflow services communicate using Azure Service Bus queues |
 | An Azure Application Insights instance    | All services are sending trace information to a shared Azure Application Insights instance |
 | An Azure Container Registry               | This is the private container registry where all Fabrikam workload images are uploaded and later pulled from the different Azure Container Apps |
-| An Azure Container App Environment        | It is the managed Container App environment where Container Apps are homed |
+| An Azure Container App Environment        | This is the managed Container App environment where Container Apps are deployed |
 | Five Azure Container Apps                 | These are the Azure resources that represents the five Fabrikam microservices in the Azure Container App environment |
 | An Azure Log Analytics Workspace          | This is where all the Container Apps logs are sent        |
 
@@ -125,7 +126,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Deploy the workload Azure Container Registry and Azure resources associated to them
 
    ```bash
-   az deployment group create -f workload-stamp.json -g rg-shipping-dronedelivery -p droneSchedulerPrincipalId=$DRONESCHEDULER_PRINCIPAL_ID \
+   az deployment group create -f ./workload/workload-stamp.json -g rg-shipping-dronedelivery -p droneSchedulerPrincipalId=$DRONESCHEDULER_PRINCIPAL_ID \
    -p workflowPrincipalId=$WORKFLOW_PRINCIPAL_ID \
    -p deliveryPrincipalId=$DELIVERY_PRINCIPAL_ID \
    -p ingestionPrincipalId=$INGESTION_ID_PRINCIPAL_ID \
@@ -153,7 +154,7 @@ Following the steps below will result in the creation of the following Azure res
    az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/package:0.1.0 ./workload/src/shipping/package/.
    ```
 
-1. Get Application Insights Instrumention Key
+1. Get Application Insights instrumentation key
 
    ```bash
    AI_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.appInsightsName.value -o tsv)
@@ -170,8 +171,8 @@ Following the steps below will result in the creation of the following Azure res
    DELIVERY_COSMOSDB_ENDPOINT=$(az cosmosdb show -g rg-shipping-dronedelivery -n $DELIVERY_COSMOSDB_NAME --query documentEndpoint -o tsv)
    DELIVERY_COSMOSDB_KEY=$(az cosmosdb keys list -g rg-shipping-dronedelivery -n $DELIVERY_COSMOSDB_NAME --query primaryMasterKey -o tsv)
    DELIVERY_REDIS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryRedisName.value -o tsv)
-   DELIVERY_REDIS_ENDPOINT=$(az redis show -g rg-shipping-dronedelivery  -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
-   DELIVERY_REDIS_KEY=$(az redis list-keys -g rg-shipping-dronedelivery  -n $DELIVERY_REDIS_NAME --query primaryKey -o tsv)
+   DELIVERY_REDIS_ENDPOINT=$(az redis show -g rg-shipping-dronedelivery -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
+   DELIVERY_REDIS_KEY=$(az redis list-keys -g rg-shipping-dronedelivery -n $DELIVERY_REDIS_NAME --query primaryKey -o tsv)
 
    # drone scheduler
    DRONESCHEDULER_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.droneSchedulerCosmosDbName.value -o tsv)
@@ -182,7 +183,7 @@ Following the steps below will result in the creation of the following Azure res
    WORKFLOW_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueNamespace.value -o tsv)
    WORKFLOW_NAMESPACE_ENDPOINT=$(az servicebus namespace show -g rg-shipping-dronedelivery -n $WORKFLOW_NAMESPACE_NAME --query serviceBusEndpoint -o tsv)
    WORKFLOW_NAMESPACE_SAS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.workflowServiceAccessKeyName.value -o tsv)
-   WORKFLOW_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $WORKFLOW_NAMESPACE_NAME -n $WORKFLOW_NAMESPACE_SAS_NAME  --query primaryKey -o tsv)
+   WORKFLOW_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $WORKFLOW_NAMESPACE_NAME -n $WORKFLOW_NAMESPACE_SAS_NAME --query primaryKey -o tsv)
    WORKFLOW_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueName.value -o tsv)
 
    # package
@@ -192,7 +193,7 @@ Following the steps below will result in the creation of the following Azure res
    # ingestion
    INGESTION_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueNamespace.value -o tsv)
    INGESTION_NAMESPACE_SAS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionServiceAccessKeyName.value -o tsv)
-   INGESTION_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $INGESTION_NAMESPACE_NAME -n $INGESTION_NAMESPACE_SAS_NAME  --query primaryKey -o tsv)
+   INGESTION_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $INGESTION_NAMESPACE_NAME -n $INGESTION_NAMESPACE_SAS_NAME --query primaryKey -o tsv)
    INGESTION_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueName.value -o tsv)
    ```
 
@@ -239,7 +240,7 @@ Now that you have deployed in a Container Apps Environment, you can validate its
 
 ### Steps
 
-1. Get Public IP of Application Gateway.
+1. Get public IP of Application Gateway.
 
     > :book: The app team conducts a final acceptance test to ensure that traffic is flowing end-to-end as expected. To do so, an HTTP request is submitted against the Azure Application Gateway endpoint.
 
@@ -271,13 +272,13 @@ Now that you have deployed in a Container Apps Environment, you can validate its
 
 1. You can also navigate to Application Insights to see some End to end tranction view as shown below
 
-![An End to end transaction screenshot from Application Insights](./ai.png)
+![An End to end transaction screenshot from Application Insights](./application-insights-view.png)
 
 ## Troubleshooting
 
 ### Restart a revision
 
-if you need a restart a revision with Provision Status `Failed` or for another reason you can use az cli:
+If you need a restart a revision with Provision Status `Failed` or for another reason you can use az cli:
 
 ```bash
 az containerapp revision restart -g rg-shipping-dronedelivery --app <containerapp-name> -n <containerapp-revision-name>
