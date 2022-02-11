@@ -352,94 +352,66 @@ module ca_package 'container-http.bicep' = {
   }
 }
 
-resource ca_ingestion 'Microsoft.Web/containerApps@2021-03-01' = {
+// Ingestion App
+module ca_ingestion 'container-http.bicep' = {
   name: 'ca-ingestion'
-  kind: 'containerapp'
-  location: resourceGroup().location
-  properties: {
-    kubeEnvironmentId: cae.id
-    configuration: {
-      secrets: [
-        {
-          name: 'applicationinsights-instrumentationkey'
-          value: applicationInsightsInstrumentationKey
-        }
-        {
-          name: 'containerregistry-password'
-          value: containerRegistryPassword
-        }
-        {
-          name: 'namespace-sas-key'
-          value: ingestionNamespaceSASKey
-        }
-      ]
-      registries: [
-        {
-          server: acrSever
-          username: containerRegistryUser
-          passwordSecretRef: 'containerregistry-password'
-        }
-      ]
-      ingress: {
-        external: true
-        targetPort: 80
-        transport: 'Auto'
-        traffic: [
-          {
-            weight: 100
-            latestRevision: true
-          }
-        ]
-        allowInsecure: false
+  params: {
+    location: resourceGroup().location
+    containerAppName: 'ingestion-app'
+    environmentId: cae.id
+    containerImage: '${acrSever}/shipping/ingestion:0.1.0'
+    containerPort: 80
+    cpu: '1'
+    memory: '2.0Gi'
+    isExternalIngress: false
+    containerRegistry: acrSever
+    containerRegistryUsername: containerRegistryUser
+    containerRegistryPassword: containerRegistryPassword
+    secrets: [
+      {
+        name: 'applicationinsights-instrumentationkey'
+        value: applicationInsightsInstrumentationKey
       }
-    }
-    template: {
-      containers: [
-        {
-          image: '${acrSever}/shipping/ingestion:0.1.0'
-          name: 'ingestion-app'
-          env: [
-            {
-              name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-              secretref: 'applicationinsights-instrumentationkey'
-            }
-            {
-              name: 'APPINSIGHTS_LOGGERLEVEL'
-              value: 'error'
-            }
-            {
-              name: 'CONTAINER_NAME'
-              value: 'fabrikam-ingestion'
-            }
-            {
-              name: 'QUEUE_NAMESPACE'
-              value: ingestionNamespaceName
-            }
-            {
-              name: 'QUEUE_NAME'
-              value: ingestionQueueName
-            }
-            {
-              name: 'QUEUE_KEYNAME'
-              value: ingestionNamespaceSASName
-            }
-            {
-              name: 'QUEUE_KEYVALUE'
-              secretref: 'namespace-sas-key'
-            }
-          ]
-          resources: {
-            cpu: '1'
-            memory: '2.0Gi'
-          }
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
+      {
+        name: 'containerregistry-password'
+        value: containerRegistryPassword
       }
-    }
+      {
+        name: 'namespace-sas-key'
+        value: ingestionNamespaceSASKey
+      }
+    ]
+    env: [
+      {
+        name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+        secretref: 'applicationinsights-instrumentationkey'
+      }
+      {
+        name: 'APPINSIGHTS_LOGGERLEVEL'
+        value: 'error'
+      }
+      {
+        name: 'CONTAINER_NAME'
+        value: 'fabrikam-ingestion'
+      }
+      {
+        name: 'QUEUE_NAMESPACE'
+        value: ingestionNamespaceName
+      }
+      {
+        name: 'QUEUE_NAME'
+        value: ingestionQueueName
+      }
+      {
+        name: 'QUEUE_KEYNAME'
+        value: ingestionNamespaceSASName
+      }
+      {
+        name: 'QUEUE_KEYVALUE'
+        secretref: 'namespace-sas-key'
+      }
+    ]
   }
 }
 
-output ingestionFqdn string = ca_ingestion.properties.configuration.ingress.fqdn
+output ingestionFqdn string = ca_ingestion.outputs.fqdn
