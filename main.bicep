@@ -254,7 +254,7 @@ module ca_workflow 'container-http.bicep' = {
       }
       {
         name: 'SERVICE_URI_PACKAGE'
-        value: 'https://${ca_package.properties.configuration.ingress.fqdn}/api/packages/'
+        value: 'https://${ca_package.outputs.fqdn}/api/packages/'
       }
       {
         name: 'SERVICE_URI_DRONE'
@@ -300,85 +300,55 @@ module ca_workflow 'container-http.bicep' = {
   }
 }
 
-resource ca_package 'Microsoft.Web/containerApps@2021-03-01' = {
+// Package App
+module ca_package 'container-http.bicep' = {
   name: 'ca-package'
-  kind: 'containerapp'
-  location: resourceGroup().location
-  properties: {
-    kubeEnvironmentId: cae.id
-    configuration: {
-      secrets: [
-        {
-          name: 'applicationinsights-instrumentationkey'
-          value: applicationInsightsInstrumentationKey
-        }
-        {
-          name: 'containerregistry-password'
-          value: containerRegistryPassword
-        }
-        {
-          name: 'mongodb-connectrionstring'
-          value: packageMongodbConnectionString
-        }
-      ]
-      registries: [
-        {
-          server: acrSever
-          username: containerRegistryUser
-          passwordSecretRef: 'containerregistry-password'
-        }
-      ]
-      ingress: {
-        external: false
-        targetPort: 80
-        transport: 'Auto'
-        traffic: [
-          {
-            weight: 100
-            latestRevision: true
-          }
-        ]
-        allowInsecure: false
+  params: {
+    location: resourceGroup().location
+    containerAppName: 'package-app'
+    environmentId: cae.id
+    containerImage: '${acrSever}/shipping/package:0.1.0'
+    containerPort: 80
+    isExternalIngress: false
+    containerRegistry: acrSever
+    containerRegistryUsername: containerRegistryUser
+    containerRegistryPassword: containerRegistryPassword
+    secrets: [
+      {
+        name: 'applicationinsights-instrumentationkey'
+        value: applicationInsightsInstrumentationKey
       }
-    }
-    template: {
-      containers: [
-        {
-          image: '${acrSever}/shipping/package:0.1.0'
-          name: 'package-app'
-          env: [
-            {
-              name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-              secretref: 'applicationinsights-instrumentationkey'
-            }
-            {
-              name: 'CONNECTION_STRING'
-              secretref: 'mongodb-connectrionstring'
-            }
-            {
-              name: 'COLLECTION_NAME'
-              value: 'packages'
-            }
-            {
-              name: 'LOG_LEVEL'
-              value: 'error'
-            }
-            {
-              name: 'CONTAINER_NAME'
-              value: 'fabrikam-package'
-            }
-          ]
-          resources: {
-            cpu: '0.5'
-            memory: '1Gi'
-          }
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
+      {
+        name: 'containerregistry-password'
+        value: containerRegistryPassword
       }
-    }
+      {
+        name: 'mongodb-connectrionstring'
+        value: packageMongodbConnectionString
+      }
+    ]
+    env: [
+      {
+        name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
+        secretref: 'applicationinsights-instrumentationkey'
+      }
+      {
+        name: 'CONNECTION_STRING'
+        secretref: 'mongodb-connectrionstring'
+      }
+      {
+        name: 'COLLECTION_NAME'
+        value: 'packages'
+      }
+      {
+        name: 'LOG_LEVEL'
+        value: 'error'
+      }
+      {
+        name: 'CONTAINER_NAME'
+        value: 'fabrikam-package'
+      }
+    ]
   }
 }
 
