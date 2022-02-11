@@ -57,14 +57,20 @@ resource cae 'Microsoft.Web/kubeenvironments@2021-03-01' = {
   }
 }
 
-resource ca_delivery 'Microsoft.Web/containerApps@2021-03-01' = {
+// Delivery App
+module ca_delivery 'container-http.bicep' = {
   name: 'ca-delivery'
-  kind: 'containerapp'
-  location: resourceGroup().location
-  properties: {
-    kubeEnvironmentId: cae.id
-    configuration: {
-      secrets: [
+  params: {
+    location: resourceGroup().location
+    containerAppName: 'delivery-app'
+    environmentId: cae.id
+    containerImage: '${acrSever}/shipping/delivery:0.1.0'
+    containerPort: 8080
+    isExternalIngress: false
+    containerRegistry: acrSever
+    containerRegistryUsername: containerRegistryUser
+    containerRegistryPassword: containerRegistryPassword
+    secrets: [
         {
           name: 'applicationinsights-instrumentationkey'
           value: applicationInsightsInstrumentationKey
@@ -81,73 +87,37 @@ resource ca_delivery 'Microsoft.Web/containerApps@2021-03-01' = {
           name: 'containerregistry-password'
           value: containerRegistryPassword
         }
-      ]
-      registries: [
-        {
-          server: acrSever
-          username: containerRegistryUser
-          passwordSecretRef: 'containerregistry-password'
-        }
-      ]
-      ingress: {
-        external: false
-        targetPort: 8080
-        transport: 'Auto'
-        traffic: [
-          {
-            weight: 100
-            latestRevision: true
-          }
-        ]
-        allowInsecure: false
+    ]
+    env: [
+      {
+        name: 'ApplicationInsights__InstrumentationKey'
+        secretref: 'applicationinsights-instrumentationkey'
       }
-    }
-    template: {
-      containers: [
-        {
-          image: '${acrSever}/shipping/delivery:0.1.0'
-          name: 'delivery-app'
-          env: [
-            {
-              name: 'ApplicationInsights__InstrumentationKey'
-              secretref: 'applicationinsights-instrumentationkey'
-            }
-            {
-              name: 'CosmosDB-Endpoint'
-              value: deliveryCosmosdbEndpoint
-            }
-            {
-              name: 'CosmosDB-Key'
-              secretref: 'delivery-cosmosdb-key'
-            }
-            {
-              name: 'DOCDB_DATABASEID'
-              value: deliveryCosmosdbDatabaseName
-            }
-            {
-              name: 'DOCDB_COLLECTIONID'
-              value: deliveryCosmosdbCollectionName
-            }
-            {
-              name: 'Redis-Endpoint'
-              value: deliveryRedisEndpoint
-            }
-            {
-              name: 'Redis-AccessKey'
-              secretref: 'delivery-redis-key'
-            }
-          ]
-          resources: {
-            cpu: '0.5'
-            memory: '1Gi'
-          }
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
+      {
+        name: 'CosmosDB-Endpoint'
+        value: deliveryCosmosdbEndpoint
       }
-    }
+      {
+        name: 'CosmosDB-Key'
+        secretref: 'delivery-cosmosdb-key'
+      }
+      {
+        name: 'DOCDB_DATABASEID'
+        value: deliveryCosmosdbDatabaseName
+      }
+      {
+        name: 'DOCDB_COLLECTIONID'
+        value: deliveryCosmosdbCollectionName
+      }
+      {
+        name: 'Redis-Endpoint'
+        value: deliveryRedisEndpoint
+      }
+      {
+        name: 'Redis-AccessKey'
+        secretref: 'delivery-redis-key'
+      }
+    ]
   }
 }
 
@@ -331,7 +301,7 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
             }
             {
               name: 'SERVICE_URI_DELIVERY'
-              value: 'https://${ca_delivery.properties.configuration.ingress.fqdn}/api/Deliveries/'
+              value: 'https://${ca_delivery.outputs.fqdn}/api/Deliveries/'
             }
             {
               name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
