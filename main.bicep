@@ -121,113 +121,83 @@ module ca_delivery 'container-http.bicep' = {
   }
 }
 
-resource ca_dronescheduler 'Microsoft.Web/containerApps@2021-03-01' = {
+// DroneScheduler App
+module ca_dronescheduler 'container-http.bicep' = {
   name: 'ca-dronescheduler'
-  kind: 'containerapp'
-  location: resourceGroup().location
-  properties: {
-    kubeEnvironmentId: cae.id
-    configuration: {
-      secrets: [
-        {
-          name: 'applicationinsights-instrumentationkey'
-          value: applicationInsightsInstrumentationKey
-        }
-        {
-          name: 'containerregistry-password'
-          value: containerRegistryPassword
-        }
-        {
-          name: 'cosmosdb-key'
-          value: droneSchedulerCosmosdbKey
-        }
-      ]
-      registries: [
-        {
-          server: acrSever
-          username: containerRegistryUser
-          passwordSecretRef: 'containerregistry-password'
-        }
-      ]
-      ingress: {
-        external: false
-        targetPort: 8080
-        transport: 'Auto'
-        traffic: [
-          {
-            weight: 100
-            latestRevision: true
-          }
-        ]
-        allowInsecure: false
+  params: {
+    location: resourceGroup().location
+    containerAppName: 'dronescheduler-app'
+    environmentId: cae.id
+    containerImage: '${acrSever}/shipping/dronescheduler:0.1.0'
+    containerPort: 8080
+    isExternalIngress: false
+    containerRegistry: acrSever
+    containerRegistryUsername: containerRegistryUser
+    containerRegistryPassword: containerRegistryPassword
+    secrets: [
+      {
+        name: 'applicationinsights-instrumentationkey'
+        value: applicationInsightsInstrumentationKey
       }
-    }
-    template: {
-      containers: [
-        {
-          image: '${acrSever}/shipping/dronescheduler:0.1.0'
-          name: 'dronescheduler-app'
-          env: [
-            {
-              name: 'ApplicationInsights__InstrumentationKey'
-              secretref: 'applicationinsights-instrumentationkey'
-            }
-            {
-              name: 'CosmosDBEndpoint'
-              value: droneSchedulerCosmosdbEndpoint
-            }
-            {
-              name: 'CosmosDBKey'
-              secretref: 'cosmosdb-key'
-            }
-            {
-              name: 'CosmosDBConnectionMode'
-              value: 'Gateway'
-            }
-            {
-              name: 'CosmosDBConnectionProtocol'
-              value: 'Https'
-            }
-            {
-              name: 'CosmosDBMaxConnectionsLimit'
-              value: '50'
-            }
-            {
-              name: 'CosmosDBMaxParallelism'
-              value: '-1'
-            }
-            {
-              name: 'CosmosDBMaxBufferedItemCount'
-              value: '0'
-            }
-            {
-              name: 'FeatureManagement__UsePartitionKey'
-              value: 'false'
-            }
-            {
-              name: 'COSMOSDB_DATABASEID'
-              value: 'invoicing'
-            }
-            {
-              name: 'COSMOSDB_COLLECTIONID'
-              value: 'utilization'
-            }
-            {
-              name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
-              value: 'Error'
-            }
-          ]
-          resources: {
-            cpu: '0.5'
-            memory: '1Gi'
-          }
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
+      {
+        name: 'containerregistry-password'
+        value: containerRegistryPassword
       }
-    }
+      {
+        name: 'cosmosdb-key'
+        value: droneSchedulerCosmosdbKey
+      }
+    ]
+    env: [
+      {
+        name: 'ApplicationInsights__InstrumentationKey'
+        secretref: 'applicationinsights-instrumentationkey'
+      }
+      {
+        name: 'CosmosDBEndpoint'
+        value: droneSchedulerCosmosdbEndpoint
+      }
+      {
+        name: 'CosmosDBKey'
+        secretref: 'cosmosdb-key'
+      }
+      {
+        name: 'CosmosDBConnectionMode'
+        value: 'Gateway'
+      }
+      {
+        name: 'CosmosDBConnectionProtocol'
+        value: 'Https'
+      }
+      {
+        name: 'CosmosDBMaxConnectionsLimit'
+        value: '50'
+      }
+      {
+        name: 'CosmosDBMaxParallelism'
+        value: '-1'
+      }
+      {
+        name: 'CosmosDBMaxBufferedItemCount'
+        value: '0'
+      }
+      {
+        name: 'FeatureManagement__UsePartitionKey'
+        value: 'false'
+      }
+      {
+        name: 'COSMOSDB_DATABASEID'
+        value: 'invoicing'
+      }
+      {
+        name: 'COSMOSDB_COLLECTIONID'
+        value: 'utilization'
+      }
+      {
+        name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
+        value: 'Error'
+      }
+    ]
   }
 }
 
@@ -297,7 +267,7 @@ resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
             }
             {
               name: 'SERVICE_URI_DRONE'
-              value: 'https://${ca_dronescheduler.properties.configuration.ingress.fqdn}/api/DroneDeliveries/'
+              value: 'https://${ca_dronescheduler.outputs.fqdn}/api/DroneDeliveries/'
             }
             {
               name: 'SERVICE_URI_DELIVERY'
