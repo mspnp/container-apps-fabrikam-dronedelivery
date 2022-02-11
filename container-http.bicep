@@ -2,8 +2,8 @@ param containerAppName string
 param location string = resourceGroup().location
 param environmentId string
 param containerImage string
-param containerPort int
-param isExternalIngress bool
+param containerPort int = -1
+param isExternalIngress bool = false
 param containerRegistry string
 param containerRegistryUsername string
 param env array = []
@@ -26,6 +26,7 @@ param revisionMode string = 'multiple'
 param containerRegistryPassword string
 
 var registrySecretRefName = 'containerregistry-password'
+var hasIngress = (containerPort == -1) ? false : true
 
 resource containerApp 'Microsoft.Web/containerApps@2021-03-01' = {
   name: containerAppName
@@ -43,7 +44,7 @@ resource containerApp 'Microsoft.Web/containerApps@2021-03-01' = {
           passwordSecretRef: registrySecretRefName
         }
       ]
-      ingress: {
+      ingress: hasIngress ? {
         external: isExternalIngress
         targetPort: containerPort
         transport: 'auto'
@@ -54,7 +55,7 @@ resource containerApp 'Microsoft.Web/containerApps@2021-03-01' = {
           }
         ]
         allowInsecure: false
-      }
+      } : null
     }
     template: {
       containers: [
@@ -76,4 +77,4 @@ resource containerApp 'Microsoft.Web/containerApps@2021-03-01' = {
   }
 }
 
-output fqdn string = containerApp.properties.configuration.ingress.fqdn
+output fqdn string = hasIngress ? containerApp.properties.configuration.ingress.fqdn : ''

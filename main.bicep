@@ -201,122 +201,102 @@ module ca_dronescheduler 'container-http.bicep' = {
   }
 }
 
-resource ca_workflow 'Microsoft.Web/containerApps@2021-03-01' = {
+// Workflow App
+module ca_workflow 'container-http.bicep' = {
   name: 'ca-workflow'
-  kind: 'containerapp'
-  location: resourceGroup().location
-  properties: {
-    kubeEnvironmentId: cae.id
-    configuration: {
-      secrets: [
-        {
-          name: 'applicationinsights-instrumentationkey'
-          value: applicationInsightsInstrumentationKey
-        }
-        {
-          name: 'containerregistry-password'
-          value: containerRegistryPassword
-        }
-        {
-          name: 'namespace-sas-key'
-          value: workflowNamespaceSASKey
-        }
-      ]
-      activeRevisionsMode: 'Single'
-      registries: [
-        {
-          server: acrSever
-          username: containerRegistryUser
-          passwordSecretRef: 'containerregistry-password'
-        }
-      ]
-    }
-    template: {
-      containers: [
-        {
-          image: '${acrSever}/shipping/workflow:0.1.0'
-          name: 'workflow-app'
-          env: [
-            {
-              name: 'ApplicationInsights__InstrumentationKey'
-              secretref: 'applicationinsights-instrumentationkey'
-            }
-            {
-              name: 'QueueName'
-              value: workflowQueueName
-            }
-            {
-              name: 'QueueEndpoint'
-              value: wokflowNamespaceEndpoint
-            }
-            {
-              name: 'QueueAccessPolicyName'
-              value: workflowNamespaceSASName
-            }
-            {
-              name: 'QueueAccessPolicyKey'
-              secretref: 'namespace-sas-key'
-            }
-            {
-              name: 'HEALTHCHECK_INITIAL_DELAY'
-              value: '30000'
-            }
-            {
-              name: 'SERVICE_URI_PACKAGE'
-              value: 'https://${ca_package.properties.configuration.ingress.fqdn}/api/packages/'
-            }
-            {
-              name: 'SERVICE_URI_DRONE'
-              value: 'https://${ca_dronescheduler.outputs.fqdn}/api/DroneDeliveries/'
-            }
-            {
-              name: 'SERVICE_URI_DELIVERY'
-              value: 'https://${ca_delivery.outputs.fqdn}/api/Deliveries/'
-            }
-            {
-              name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
-              value: 'Error'
-            }
-            {
-              name: 'SERVICEREQUEST__MAXRETRIES'
-              value: '3'
-            }
-            {
-              name: 'SERVICEREQUEST__CIRCUITBREAKERTHRESHOLD'
-              value: '0.5'
-            }
-            {
-              name: 'SERVICEREQUEST__CIRCUITBREAKERSAMPLINGPERIODSECONDS'
-              value: '5'
-            }
-            {
-              name: 'SERVICEREQUEST__CIRCUITBREAKERMINIMUMTHROUGHPUT'
-              value: '20'
-            }
-            {
-              name: 'SERVICEREQUEST__CIRCUITBREAKERBREAKDURATION'
-              value: '30'
-            }
-            {
-              name: 'SERVICEREQUEST__MAXBULKHEADSIZE'
-              value: '100'
-            }
-            {
-              name: 'SERVICEREQUEST__MAXBULKHEADQUEUESIZE'
-              value: '25'
-            }
-          ]
-          resources: {
-            cpu: '0.5'
-            memory: '1Gi'
-          }
-        }
-      ]
-      scale: {
-        minReplicas: 1
-        maxReplicas: 1
+  params: {
+    location: resourceGroup().location
+    containerAppName: 'workflow-app'
+    environmentId: cae.id
+    containerImage: '${acrSever}/shipping/workflow:0.1.0'
+    revisionMode: 'single'
+    containerRegistry: acrSever
+    containerRegistryUsername: containerRegistryUser
+    containerRegistryPassword: containerRegistryPassword
+    secrets: [
+      {
+        name: 'applicationinsights-instrumentationkey'
+        value: applicationInsightsInstrumentationKey
       }
-    }
+      {
+        name: 'containerregistry-password'
+        value: containerRegistryPassword
+      }
+      {
+        name: 'namespace-sas-key'
+        value: workflowNamespaceSASKey
+      }
+    ]
+    env: [
+      {
+        name: 'ApplicationInsights__InstrumentationKey'
+        secretref: 'applicationinsights-instrumentationkey'
+      }
+      {
+        name: 'QueueName'
+        value: workflowQueueName
+      }
+      {
+        name: 'QueueEndpoint'
+        value: wokflowNamespaceEndpoint
+      }
+      {
+        name: 'QueueAccessPolicyName'
+        value: workflowNamespaceSASName
+      }
+      {
+        name: 'QueueAccessPolicyKey'
+        secretref: 'namespace-sas-key'
+      }
+      {
+        name: 'HEALTHCHECK_INITIAL_DELAY'
+        value: '30000'
+      }
+      {
+        name: 'SERVICE_URI_PACKAGE'
+        value: 'https://${ca_package.properties.configuration.ingress.fqdn}/api/packages/'
+      }
+      {
+        name: 'SERVICE_URI_DRONE'
+        value: 'https://${ca_dronescheduler.outputs.fqdn}/api/DroneDeliveries/'
+      }
+      {
+        name: 'SERVICE_URI_DELIVERY'
+        value: 'https://${ca_delivery.outputs.fqdn}/api/Deliveries/'
+      }
+      {
+        name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
+        value: 'Error'
+      }
+      {
+        name: 'SERVICEREQUEST__MAXRETRIES'
+        value: '3'
+      }
+      {
+        name: 'SERVICEREQUEST__CIRCUITBREAKERTHRESHOLD'
+        value: '0.5'
+      }
+      {
+        name: 'SERVICEREQUEST__CIRCUITBREAKERSAMPLINGPERIODSECONDS'
+        value: '5'
+      }
+      {
+        name: 'SERVICEREQUEST__CIRCUITBREAKERMINIMUMTHROUGHPUT'
+        value: '20'
+      }
+      {
+        name: 'SERVICEREQUEST__CIRCUITBREAKERBREAKDURATION'
+        value: '30'
+      }
+      {
+        name: 'SERVICEREQUEST__MAXBULKHEADSIZE'
+        value: '100'
+      }
+      {
+        name: 'SERVICEREQUEST__MAXBULKHEADQUEUESIZE'
+        value: '25'
+      }
+    ]
   }
 }
 
