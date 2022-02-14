@@ -265,9 +265,15 @@ Now that you have deployed in a Container Apps Environment, you can validate its
         "tag": "mytag",
         "weight": 10
       },
-      "pickupLocation": "my pickup",
-      "pickupTime": "2019-05-08T20:00:00.000Z"
-    }' > deliveryresponse.json
+      "pickupLocation": "mypickup",
+      "pickupTime": "2022-02-14T20:00:00.000Z"
+    }'
+   ```
+
+   The response to the request printed in your terminal should look similar to the one shown below:
+
+   ```output
+   {"deliveryId":"5453d09a-a826-436f-8e7d-4ff706367b04","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2021-02-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
    ```
 
 1. You can also navigate to Application Insights to see some End to end tranction view as shown below
