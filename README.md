@@ -301,6 +301,8 @@ Now that you have deployed in a Container Apps Environment, you can validate its
    PUT DroneDeliveries/Put [id] (1)
    ```
 
+   :book: Above result demostrates that the http request initiated from the client has been ingested by `IngestionController/scheduleDeliveryAsync` to be later consumed by the `Workflow` background process to be sent to `Deliveries/Put`, `/api/packages/mypackage` and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
+
 ## Troubleshooting
 
 ### Restart a revision
