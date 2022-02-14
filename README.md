@@ -159,6 +159,7 @@ Following the steps below will result in the creation of the following Azure res
    ```bash
    AI_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.appInsightsName.value -o tsv)
    AI_KEY=$(az resource show -g rg-shipping-dronedelivery -n $AI_NAME --resource-type "Microsoft.Insights/components" --query properties.InstrumentationKey -o tsv)
+   AI_ID=$(az resource show -g rg-shipping-dronedelivery -n $AI_NAME --resource-type "Microsoft.Insights/components" --query properties.AppId -o tsv)
    ```
 
 1. Get microservices details
@@ -276,9 +277,29 @@ Now that you have deployed in a Container Apps Environment, you can validate its
    {"deliveryId":"5453d09a-a826-436f-8e7d-4ff706367b04","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2021-02-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
    ```
 
-1. You can also navigate to Application Insights to see some End to end transaction view as shown below
+1. Query Application Insights to ensure your request have been ingested by the underlaying services
 
-![An End to end transaction screenshot from Application Insights](./application-insights-view.png)
+   ```bash
+   az monitor app-insights query --app $AI_ID --analytics-query 'let timeGrain=5m;
+   let dataset=requests
+       | where client_Type != "Browser" ;
+   dataset
+   | summarize count_=sum(itemCount) by operation_Name
+   | order by count_ desc
+   | project strcat(operation_Name," (", count_, ")")' --query tables[0].rows[] -o table
+   ```
+
+   The following output demonstrates the type of response to expect from the CLI command.
+
+   ```output
+   Result
+   --------------------------------------------------
+   POST IngestionController/scheduleDeliveryAsync (1)
+   PUT Deliveries/Put [id] (1)
+   PUT /api/packages/mypackage (1)
+   GET /api/packages/mypackage (1)
+   PUT DroneDeliveries/Put [id] (1)
+   ```
 
 ## Troubleshooting
 
