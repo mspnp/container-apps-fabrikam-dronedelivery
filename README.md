@@ -276,7 +276,7 @@ Now that you have deployed in a Container Apps Environment, you can validate its
    {"deliveryId":"5453d09a-a826-436f-8e7d-4ff706367b04","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2021-02-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
    ```
 
-1. You can also navigate to Application Insights to see some End to end tranction view as shown below
+1. You can also navigate to Application Insights to see some End to end transaction view as shown below
 
 ![An End to end transaction screenshot from Application Insights](./application-insights-view.png)
 
