@@ -280,10 +280,7 @@ Now that you have deployed in a Container Apps Environment, you can validate its
 1. Query Application Insights to ensure your request have been ingested by the underlaying services
 
    ```bash
-   az monitor app-insights query --app $AI_ID --analytics-query 'let timeGrain=5m;
-   let dataset=requests
-       | where client_Type != "Browser" ;
-   dataset
+   az monitor app-insights query --app $AI_ID --analytics-query 'requests
    | summarize count_=sum(itemCount) by operation_Name
    | order by count_ desc
    | project strcat(operation_Name," (", count_, ")")' --query tables[0].rows[] -o table
