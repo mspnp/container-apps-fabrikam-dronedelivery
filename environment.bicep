@@ -1,4 +1,4 @@
-param location string
+param location string = resourceGroup().location
 param environmentName string
 
 var containerEnvironmentName = 'cae-${environmentName}'

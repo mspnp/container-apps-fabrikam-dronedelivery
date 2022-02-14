@@ -24,7 +24,6 @@ param ingestionQueueName string
 module env_shipping_dronedelivery 'environment.bicep' = {
   name: 'env-shipping-dronedelivery'
   params: {
-    location: resourceGroup().location
     environmentName: 'shipping-dronedelivery'
   }
 }
