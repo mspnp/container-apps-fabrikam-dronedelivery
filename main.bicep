@@ -20,40 +20,12 @@ param ingestionNamespaceSASName string
 param ingestionNamespaceSASKey string
 param ingestionQueueName string
 
-resource la 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
-  name: 'la-shipping-dronedelivery'
-  location: resourceGroup().location
-  properties: {
-    sku: {
-      name: 'PerGB2018'
-    }
-    retentionInDays: 30
-    features: {
-      legacy: 0
-      searchVersion: 1
-      enableLogAccessUsingOnlyResourcePermissions: true
-    }
-    workspaceCapping: {
-      dailyQuotaGb: -1
-    }
-    publicNetworkAccessForIngestion: 'Enabled'
-    publicNetworkAccessForQuery: 'Enabled'
-  }
-}
-
-resource cae 'Microsoft.Web/kubeenvironments@2021-03-01' = {
-  name: 'cae-shipping-dronedelivery'
-  kind: 'containerenvironment'
-  location: resourceGroup().location
-  properties: {
-    type: 'managed'
-    appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: la.properties.customerId
-        sharedKey: listKeys(la.id, '2021-06-01').primarySharedKey
-      }
-    }
+// Drone Delivery App Environment
+module env_shipping_dronedelivery 'environment.bicep' = {
+  name: 'env-shipping-dronedelivery'
+  params: {
+    location: resourceGroup().location
+    environmentName: 'shipping-dronedelivery'
   }
 }
 
@@ -63,7 +35,7 @@ module ca_delivery 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'delivery-app'
-    environmentId: cae.id
+    environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/delivery:0.1.0'
     containerPort: 8080
     isExternalIngress: false
@@ -127,7 +99,7 @@ module ca_dronescheduler 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'dronescheduler-app'
-    environmentId: cae.id
+    environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/dronescheduler:0.1.0'
     containerPort: 8080
     isExternalIngress: false
@@ -207,7 +179,7 @@ module ca_workflow 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'workflow-app'
-    environmentId: cae.id
+    environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/workflow:0.1.0'
     revisionMode: 'single'
     containerRegistry: acrSever
@@ -306,7 +278,7 @@ module ca_package 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'package-app'
-    environmentId: cae.id
+    environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/package:0.1.0'
     containerPort: 80
     isExternalIngress: false
@@ -358,7 +330,7 @@ module ca_ingestion 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'ingestion-app'
-    environmentId: cae.id
+    environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/ingestion:0.1.0'
     containerPort: 80
     cpu: '1'
