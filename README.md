@@ -159,6 +159,7 @@ Following the steps below will result in the creation of the following Azure res
    ```bash
    AI_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.appInsightsName.value -o tsv)
    AI_KEY=$(az resource show -g rg-shipping-dronedelivery -n $AI_NAME --resource-type "Microsoft.Insights/components" --query properties.InstrumentationKey -o tsv)
+   AI_ID=$(az resource show -g rg-shipping-dronedelivery -n $AI_NAME --resource-type "Microsoft.Insights/components" --query properties.AppId -o tsv)
    ```
 
 1. Get microservices details
@@ -265,14 +266,39 @@ Now that you have deployed in a Container Apps Environment, you can validate its
         "tag": "mytag",
         "weight": 10
       },
-      "pickupLocation": "my pickup",
-      "pickupTime": "2019-05-08T20:00:00.000Z"
-    }' > deliveryresponse.json
+      "pickupLocation": "mypickup",
+      "pickupTime": "'$(date -u +%FT%T.%3NZ)'"
+    }'
    ```
 
-1. You can also navigate to Application Insights to see some End to end tranction view as shown below
+   The response to the request printed in your terminal should look similar to the one shown below:
 
-![An End to end transaction screenshot from Application Insights](./application-insights-view.png)
+   ```output
+   {"deliveryId":"5453d09a-a826-436f-8e7d-4ff706367b04","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2021-02-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
+   ```
+
+1. Query Application Insights to ensure your request have been ingested by the underlaying services
+
+   ```bash
+   az monitor app-insights query --app $AI_ID --analytics-query 'requests
+   | summarize count_=sum(itemCount) by operation_Name
+   | order by count_ desc
+   | project strcat(operation_Name," (", count_, ")")' --query tables[0].rows[] -o table
+   ```
+
+   The following output demonstrates the type of response to expect from the CLI command.
+
+   ```output
+   Result
+   --------------------------------------------------
+   POST IngestionController/scheduleDeliveryAsync (1)
+   PUT Deliveries/Put [id] (1)
+   PUT /api/packages/mypackage (1)
+   GET /api/packages/mypackage (1)
+   PUT DroneDeliveries/Put [id] (1)
+   ```
+
+   :book: Above result demostrates that the http request initiated from the client has been ingested by `IngestionController/scheduleDeliveryAsync` to be later consumed by the `Workflow` background process to be sent to `Deliveries/Put`, `/api/packages/mypackage` and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
 
 ## Troubleshooting
 
