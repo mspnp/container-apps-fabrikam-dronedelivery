@@ -208,7 +208,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Deploy the Container Apps ARM template
 
    ```bash
-   az deployment group create -f containerapps-stamp.bicep -g rg-shipping-dronedelivery -p \
+   az deployment group create -f main.bicep -g rg-shipping-dronedelivery -p \
       acrSever=$ACR_SERVER \
       containerRegistryUser=$ACR_NAME \
       containerRegistryPassword=$ACR_PASS \
