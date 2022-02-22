@@ -1,4 +1,9 @@
 # Container Apps Example Scenario
+
+## Introduction
+
+Fabrikam inc has created a new operations team, and under its organization there is a brown field app called Drone Delivery. This application been running for a while in AKS (Kubernetes), and while they are huge fans of containers to build microservices and K8s, it has been discovered that it is not making use of any of the advance features like custom Service Mesh or Autoscaling among others.  The team has detected an opportunity to be more efficient at the devops level, and this is why they are now looking into a new fully managed Container App service to experiment with Fabrikam Drone Delivery. This will allow them to publish and run containarized microservices at scale, faster than before, reducing the complexity, saving resources by using scale to `0` built-in autoscaling capability, and without losing all the container advantages they love.  Azure Container Apps is a new cloud native serverless managed service that is just using AKS with KEDA behind the scenes to deploy and run containerized applications.
+
 ## Migrating a microservices workload from AKS to Azure Container Apps
 
 This repository guides you during the process of running an example application composed of microservices in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that was previously running in Azure Kubernetes Services will be run in a newly created Azure Container App environment. This Azure managed service is optimized for running applications that span many microservices. This example will make some containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
@@ -323,3 +328,11 @@ az containerapp revision restart -g rg-shipping-dronedelivery --app <containerap
    ```bash
    az group delete -n rg-shipping-dronedelivery -y
    ```
+
+## Next Steps
+
+The team has been able to migrate Fabrikam Drone Delivery on top of Azure Container Apps, they are now laying out a new migration and modernization plan that will include:
+
+1. [Start using DAPR](https://docs.microsoft.com/azure/container-apps/microservices#dapr-integration).
+1. [Bring your own VNET](https://docs.microsoft.com/azure/container-apps/vnet-custom?tabs=bash&pivots=azure-portal).
+
