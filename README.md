@@ -337,6 +337,6 @@ az containerapp revision restart -g rg-shipping-dronedelivery --app <containerap
 
 The team has been able to migrate Fabrikam Drone Delivery on top of Azure Container Apps, they are now laying out a new migration and modernization plan that will include:
 
-1. [Start using DAPR](https://docs.microsoft.com/azure/container-apps/microservices#dapr-integration).
-1. [Bring your own VNET](https://docs.microsoft.com/azure/container-apps/vnet-custom?tabs=bash&pivots=azure-portal).
+1. [Start using DAPR](https://docs.microsoft.com/azure/container-apps/microservices#dapr-integration)
+1. [Bring your own VNET](https://docs.microsoft.com/azure/container-apps/vnet-custom?tabs=bash&pivots=azure-portal)
 
