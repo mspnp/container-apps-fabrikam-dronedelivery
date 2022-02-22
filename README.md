@@ -2,7 +2,11 @@
 
 ## Introduction
 
-Fabrikam inc has created a new operations team, and under its organization there is a brown field app called Drone Delivery. This application been running for a while in AKS (Kubernetes), and while they are huge fans of containers to build microservices and K8s, it has been discovered that it is not making use of any of the advance features like custom Service Mesh or Autoscaling among others.  The team has detected an opportunity to be more efficient at the devops level, and this is why they are now looking into a new fully managed Container App service to experiment with Fabrikam Drone Delivery. This will allow them to publish and run containarized microservices at scale, faster than before, reducing the complexity, saving resources by using scale to `0` built-in autoscaling capability, and without losing all the container advantages they love.  Azure Container Apps is a new cloud native serverless managed service that is just using AKS with KEDA behind the scenes to deploy and run containerized applications.
+Fabrikam inc has created a new operations team, and under its organization there is a brown field app called Drone Delivery. This application been running for a while in AKS (Kubernetes), and while they are huge fans of containers to build microservices and K8s, it has been discovered that it is not making use of any of the advance features like custom Service Mesh or Autoscaling among others.
+
+The team has detected an opportunity to be more efficient at the devops level, and this is why they are now looking into a new fully managed Container App service to experiment with Fabrikam Drone Delivery. This will allow them to publish and run containarized microservices at scale, faster than before, reducing the complexity, saving resources by using scale to `0` built-in autoscaling capability, and without losing all the container advantages they love.
+
+Azure Container Apps is a new cloud native serverless managed service that is just using AKS with KEDA behind the scenes to deploy and run containerized applications.
 
 ## Migrating a microservices workload from AKS to Azure Container Apps
 
