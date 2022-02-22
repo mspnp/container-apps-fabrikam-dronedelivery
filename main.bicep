@@ -20,7 +20,7 @@ param ingestionNamespaceSASName string
 param ingestionNamespaceSASKey string
 param ingestionQueueName string
 
-// Drone Delivery App Environment Ingestion
+// Drone Delivery App Environment Frontend
 module env_shipping_dronedelivery_front 'environment.bicep' = {
   name: 'env-shipping-dronedelivery-front'
   params: {
