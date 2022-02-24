@@ -4,9 +4,9 @@
 
 Fabrikam inc has created a new operations team, and under its organization there is a brown field app called [Drone Delivery](https://github.com/mspnp/fabrikam-dronedelivery-workload/tree/beb2c60f9450ce04038fb95aa0110ab4143fc76a). This application been running for a while in [AKS (Kubernetes)](https://github.com/mspnp/microservices-reference-implementation), and while they are huge fans of containers to build microservices and K8s, it has been discovered that it is not making use of any of the advance features like custom Service Mesh or Autoscaling among others.
 
-The team has detected an opportunity to be more efficient at the devops level, and this is why they are now looking into a new fully managed Container App service to experiment with Fabrikam Drone Delivery. This will allow them to publish and run containarized microservices at scale, faster than before, reducing the complexity, saving resources by using scale to `0` built-in autoscaling capability, and without losing all the container advantages they love.
+The team has detected an opportunity to be more efficient at the DevOps level, and this is why they are now looking into a new fully managed Container App service to experiment with Fabrikam Drone Delivery. This will allow them to publish and run containerized microservices at scale faster than before while reducing the complexity, saving resources by using scale to `0` built-in autoscaling capability, and without losing all the container advantages they love.
 
-Fabrikam Drone Delivery does not require external and internal services to be seated SxS, since they niether communicate directly with each other or share resources such as compute and/or memory. The development team has implemented a publish & subscribe pattern to loose coupled internet-facing rest apis from all underlying services. Thanks to simplicity introduced by Azure Container Apps, it is now easier than ever to deploy the solution with a clear separation of concerns between FrontEnd and Backend by using multiple Container App Environments. Additionally, the team is envisioning that this also might contribute to lay down a better network topology by Bringing Their Own VNETs in the future.
+Fabrikam Drone Delivery does not require external and internal services to be seated SxS, since they neither communicate directly with each other or share resources such as compute and/or memory. The development team has implemented a publish & subscribe pattern to loosely couple internet-facing rest apis from all underlying services. Thanks to simplicity introduced by Azure Container Apps, it is now easier than ever to deploy the solution with a clear separation of concerns between Frontend and Backend by using multiple Container App Environments. Additionally, the team is envisioning that this also might contribute to laying down a better network topology by using a custom VNET in the future.
 
 Azure Container Apps is a new cloud native serverless managed service that is just using AKS with KEDA behind the scenes to deploy and run containerized applications.
 
@@ -342,5 +342,5 @@ az containerapp revision restart -g rg-shipping-dronedelivery --app <containerap
 The team has been able to migrate and run Fabrikam Drone Delivery on top of Azure Container Apps. They are now laying out a new migration and modernization plan that will include:
 
 1. [Start using DAPR](https://docs.microsoft.com/azure/container-apps/microservices#dapr-integration)
-1. [Bring your own VNET](https://docs.microsoft.com/azure/container-apps/vnet-custom?tabs=bash&pivots=azure-portal)
+1. [Use a custom VNET](https://docs.microsoft.com/azure/container-apps/vnet-custom?tabs=bash&pivots=azure-portal)
 
