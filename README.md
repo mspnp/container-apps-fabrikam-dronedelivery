@@ -58,11 +58,11 @@ Workflow Service is a message consumer app, so it needs to be deployed in single
 For more information on how the Container Apps feature are being used in this Reference Implementation, please take a look below:
 
 - [HTTPS ingress, this allows to expose the Ingestion service to internet.](https://docs.microsoft.com/en-us/azure/container-apps/ingress)
-- [Internal service discovery, Delivery, DroneScheduler and Package services must be internally reacheable by Workflow service](https://docs.microsoft.com/en-us/azure/container-apps/connect-apps)
-- [Securely mange secrets, all services secrets are handled using this feature](https://docs.microsoft.com/en-us/azure/container-apps/secure-app)
+- [Internal service discovery, Delivery, DroneScheduler and Package services must be internally reachable by Workflow service](https://docs.microsoft.com/en-us/azure/container-apps/connect-apps)
+- [Securely manage secrets, all services secrets are handled using this feature](https://docs.microsoft.com/en-us/azure/container-apps/secure-app)
 - [Run containers from any registry, the Fabrikam Drone Delivery uses ACR to publish its Docker images](https://docs.microsoft.com/en-us/azure/container-apps/containers)
 - [Use ARM templates to deploy my application, there is no need for another layer of indirection like Helm charts. All the Drone Delivery containers are part of the ARM templates](https://docs.microsoft.com/en-us/azure/container-apps/get-started)
-- [Logs, see the container logs directly in Log Analyticis without configuring any provider from code or Azure service](https://docs.microsoft.com/en-us/azure/container-apps/monitor).
+- [Logs, see the container logs directly in Log Analytics without configuring any provider from code or Azure service](https://docs.microsoft.com/en-us/azure/container-apps/monitor).
 
 ## Prerequisites
 
@@ -88,7 +88,7 @@ Following the steps below will result in the creation of the following Azure res
 | Object                                    | Purpose                                                 |
 |-------------------------------------------|---------------------------------------------------------|
 | Five Azure User Managed Identities        | These are going to give `Read` and `List` secrets permissions over Azure KeyVault to the microservices |
-| Five Azure KeyVault instances             | Secrets are saved into Azure KeyValt instances |
+| Five Azure KeyVault instances             | Secrets are saved into Azure KeyVault instances |
 | Two Azure Cosmos Db instances             | Delivery and Package services have dependencies on Azure Cosmos DB |
 | An Azure Redis Cache instance             | Delivery service uses Azure Redis cache to keep track of inflight deliveries |
 | An Azure Service Bus                      | Ingestion and Workflow services communicate using Azure Service Bus queues |
@@ -250,9 +250,9 @@ Now that you have deployed in a Container Apps Environment, you can validate its
 
 ### Steps
 
-1. Get public IP of Application Gateway.
+1. Get the Ingestion FQDN
 
-    > :book: The app team conducts a final acceptance test to ensure that traffic is flowing end-to-end as expected. To do so, an HTTP request is submitted against the Azure Application Gateway endpoint.
+    > :book: The app team conducts a final acceptance test to ensure that traffic is flowing end-to-end as expected. To do so, an HTTP request is submitted against the ingestion external ingress.
 
    ```bash
    INGESTION_FQDN=$(az deployment group show -g rg-shipping-dronedelivery -n main --query properties.outputs.ingestionFqdn.value -o tsv)
@@ -309,7 +309,7 @@ Now that you have deployed in a Container Apps Environment, you can validate its
    PUT DroneDeliveries/Put [id] (1)
    ```
 
-   :book: Above result demostrates that the http request initiated from the client has been ingested by `IngestionController/scheduleDeliveryAsync` to be later consumed by the `Workflow` background process to be sent to `Deliveries/Put`, `/api/packages/mypackage` and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
+   :book: Above result demonstrates that the http request initiated from the client has been ingested by `IngestionController/scheduleDeliveryAsync` to be later consumed by the `Workflow` background process to be sent to `Deliveries/Put`, `/api/packages/mypackage` and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
 
 ## Troubleshooting
 
