@@ -334,7 +334,7 @@ module ca_ingestion 'container-http.bicep' = {
     containerPort: 80
     cpu: '1'
     memory: '2.0Gi'
-    isExternalIngress: false
+    isExternalIngress: true
     containerRegistry: acrSever
     containerRegistryUsername: containerRegistryUser
     containerRegistryPassword: containerRegistryPassword

@@ -246,7 +246,7 @@ Now that you have deployed in a Container Apps Environment, you can validate its
     > :book: The app team conducts a final acceptance test to ensure that traffic is flowing end-to-end as expected. To do so, an HTTP request is submitted against the Azure Application Gateway endpoint.
 
    ```bash
-   INGESTION_FQDN=$(az deployment group show -g rg-shipping-dronedelivery -n containerapps-stamp --query properties.outputs.ingestionFqdn.value -o tsv)
+   INGESTION_FQDN=$(az deployment group show -g rg-shipping-dronedelivery -n main --query properties.outputs.ingestionFqdn.value -o tsv)
    ```
 
 1. Send a request to https://dronedelivery.fabrikam.com.
@@ -278,6 +278,8 @@ Now that you have deployed in a Container Apps Environment, you can validate its
    ```
 
 1. Query Application Insights to ensure your request have been ingested by the underlaying services
+
+   :stopwatch: It might take five minutes for the query results to be available.
 
    ```bash
    az monitor app-insights query --app $AI_ID --analytics-query 'requests
