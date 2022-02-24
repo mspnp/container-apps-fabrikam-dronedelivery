@@ -21,10 +21,10 @@ param ingestionNamespaceSASKey string
 param ingestionQueueName string
 
 // Drone Delivery App Environment Frontend
-module env_shipping_dronedelivery_front 'environment.bicep' = {
-  name: 'env-shipping-dronedelivery-front'
+module env_shipping_dronedelivery_frontend 'environment.bicep' = {
+  name: 'env-shipping-dronedelivery-frontend'
   params: {
-    environmentName: 'shipping-dronedelivery-front'
+    environmentName: 'shipping-dronedelivery-frontend'
   }
 }
 
@@ -337,7 +337,7 @@ module ca_ingestion 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'ca-ingestion-svc'
-    environmentId: env_shipping_dronedelivery_front.outputs.id
+    environmentId: env_shipping_dronedelivery_frontend.outputs.id
     containerImage: '${acrSever}/shipping/ingestion:0.1.0'
     containerPort: 80
     cpu: '1'
