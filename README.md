@@ -250,9 +250,9 @@ Now that you have deployed in a Container Apps Environment, you can validate its
 
 ### Steps
 
-1. Get public IP of Application Gateway.
+1. Get the Ingestion FQDN
 
-    > :book: The app team conducts a final acceptance test to ensure that traffic is flowing end-to-end as expected. To do so, an HTTP request is submitted against the Azure Application Gateway endpoint.
+    > :book: The app team conducts a final acceptance test to ensure that traffic is flowing end-to-end as expected. To do so, an HTTP request is submitted against the ingestion external ingress.
 
    ```bash
    INGESTION_FQDN=$(az deployment group show -g rg-shipping-dronedelivery -n main --query properties.outputs.ingestionFqdn.value -o tsv)
