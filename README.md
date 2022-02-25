@@ -4,53 +4,59 @@
 
 Fabrikam inc has created a new operations team, and under its organization there is a brown field app called [Drone Delivery](https://github.com/mspnp/fabrikam-dronedelivery-workload/tree/beb2c60f9450ce04038fb95aa0110ab4143fc76a). This application been running for a while in [AKS (Kubernetes)](https://github.com/mspnp/microservices-reference-implementation), and while they are huge fans of containers to build microservices and K8s, it has been discovered that it is not making use of any of the advance features like custom Service Mesh or Autoscaling among others.
 
-The team has detected an opportunity to be more efficient at the devops level, and this is why they are now looking into a new fully managed Container App service to experiment with Fabrikam Drone Delivery. This will allow them to publish and run containarized microservices at scale, faster than before, reducing the complexity, saving resources by using scale to `0` built-in autoscaling capability, and without losing all the container advantages they love.
+The team has detected an opportunity to be more efficient at the DevOps level, and this is why they are now looking into a new fully managed Container App service to experiment with Fabrikam Drone Delivery. This will allow them to publish and run containerized microservices at scale faster than before while reducing the complexity, saving resources by using scale to `0` built-in autoscaling capability, and without losing all the container advantages they love.
+
+Fabrikam Drone Delivery has two different dev teams, one is dedicated to Frontend while the other one is fully focused in the backend. Frontend services are external endpoints that can be reached by their clients, and do not require to be seated SxS with backend services, since they neither communicate directly with each other or share resources such as compute and/or memory. The development teams have implemented a publish & subscribe pattern to loosely couple internet-facing rest apis from all underlying services. This allows to keep all backend services remain internal to the organization. Thanks to simplicity introduced by Azure Container Apps, it is now easier than ever to deploy the solution with a clear separation of concerns between Frontend and Backend by using multiple Container App Environments. Additionally, the team is envisioning that this also might contribute to laying down a better network topology by using a custom VNET in the future.
+
+The operations team is ready to execute a migration plan but they know it is not an easy task. Managing multiple environments will be really convenient, since it is enabling the possibility to start experimenting with one Azure Container Environment at the time, while the another one stays in AKS (Kubernetes) until the new infrastracture gets stabilized. Once the team feels confident, they will proceed with the subsequent environments, and it will be just mater of enrounting the traffic properly.
+
+Additionally, it has been evaluated the possiblity of having Azure App Service in the FrontEnd, but they know that sooner rather than later the Frontend dev team will populate its Azure Container App Environment with many services, and they will need to scale individually.
 
 Azure Container Apps is a new cloud native serverless managed service that is just using AKS with KEDA behind the scenes to deploy and run containerized applications.
 
 ## Migrating a microservices workload from AKS to Azure Container Apps
 
-This repository guides you during the process of running an example application composed of microservices in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that was previously running in Azure Kubernetes Services will be run in a newly created Azure Container App environment. This Azure managed service is optimized for running applications that span many microservices. This example will make some containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
+This repository guides you during the process of running an example application composed of microservices in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that was previously running in Azure Kubernetes Services will be run in two Azure Container App environments. This Azure managed service is optimized for running applications that span many microservices. This example will make some containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
 
 ```output
 
-                         ┌─────────────┐      ┌─────────────┐       ┌─────────────┐
-                         │   Azure     │      │   Azure     │       │   Azure     │
-            ┌───────────►│   Service   │      │   Key Vault │       │   Container │
-            │            │   Bus       │      │             │       │   Registry  │
-            │            └─────┬───────┘      └─────────────┘       └─────────────┘
-            │                  │
-┌───────────│──────────────────│───────────────Azure Container App Environment────┐
-│           │                  │                                                  │
-│           │                  │                                                  │
-│           │                  │                                ┌─────────────┐   │     ┌─────────────┐
-│           │                  │                                │             │   │     │   Azure     │
-│           │                  │                 ┌─────────────►│   Package   │────────►│   MongoDb   │
-│           │                  │                 │              │   Container │   │     │             │
-│           │                  │                 │              │   App       │   │     └─────────────┘
-│           │                  │                 │              └─────────────┘   │
-│           │                  │                 │                                │
-│   ┌───────┴─────┐            │          ┌──────┴──────┐       ┌─────────────┐   │     ┌─────────────┐
-│   │             │            │          │             │       │  Drone      │   │     │   Azure     │
-│   │  Ingestion  │            │          │  Workflow   │       │  Scheduler  │ ───────►│   CosmosDb  │
-│   │  Container  │            └─────────►│  Container  ├──────►│  Container  │   │     │             │
-│   │  App        │                       │  App        │       │  App        │   │     └─────────────┘
-│   └─────────────┘                       └──────┬──────┘       └─────────────┘   │
-│                                                │                                │
-│                                                │              ┌─────────────┐   │     ┌─────────────┐
-│                                                │              │             │   │     │   Azure     │
-│                                                │              │  Delivery   │ ───────►│   Redis     │
-│                                                └─────────────►│  Container  │   │     │   Cache     │
-│                                                               │  App        │   │     └─────────────┘
-│                                                               └─────────────┘   │
-│                                                                                 │
-│                                                                                 │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-┌───────────────────────────────────────┐┌────────────────────────────────────────┐
-│         Azure                         ││          Azure Monitor                 │
-│         Log Analytics Workspace       ││          Application Insights          │
-└───────────────────────────────────────┘└────────────────────────────────────────┘
+                                                      ┌─────────────┐      ┌─────────────┐       ┌─────────────┐
+                                                      │   Azure     │      │   Azure     │       │   Azure     │
+          ┌──────────────────────────────────────────►│   Service   │      │   Key Vault │       │   Container │
+          │                                           │   Bus       │      │             │       │   Registry  │
+          │                                           └─────-┬──────┘      └─────────────┘       └─────────────┘
+          │                                                  │
+┌─────────│─Azure Container App Environment Frontend──┐   ┌──│────────Azure Container App Environment Backend───┐
+│         │                                           │   │  │                                                  │
+│         │                                           │   │  │                                                  │
+│         │                                           │   │  │                                ┌─────────────┐   │     ┌─────────────┐
+│         │                                           │   │  │                                │             │   │     │   Azure     │
+│         │                                           │   │  │                 ┌─────────────►│   Package   │────────►│   MongoDb   │
+│         │                                           │   │  │                 │              │   Container │   │     │             │
+│         │                                           │   │  │                 │              │   App       │   │     └─────────────┘
+│         │                                           │   │  │                 │              └─────────────┘   │
+│         │                                           │   │  │                 │                                │
+│   ┌─────┴───────┐                                   │   │  │          ┌──────┴──────┐       ┌─────────────┐   │     ┌─────────────┐
+│   │             │                                   │   │  │          │             │       │  Drone      │   │     │   Azure     │
+│   │  Ingestion  │                                   │   │  │          │  Workflow   │       │  Scheduler  │ ───────►│   CosmosDb  │
+│   │  Container  │                                   │   │  └─────────►│  Container  ├──────►│  Container  │   │     │             │
+│   │  App        │                                   │   │             │  App        │       │  App        │   │     └─────────────┘
+│   └─────────────┘                                   │   │             └──────┬──────┘       └─────────────┘   │
+│                                                     │   │                    │                                │
+│                                                     │   │                    │              ┌─────────────┐   │     ┌─────────────┐
+│                                                     │   │                    │              │             │   │     │   Azure     │
+│                                                     │   │                    │              │  Delivery   │ ───────►│   Redis     │
+│                                                     │   │                    └─────────────►│  Container  │   │     │   Cache     │
+│                                                     │   │                                   │  App        │   │     └─────────────┘
+│                                                     │   │                                   └─────────────┘   │
+│                                                     │   │                                                     │     ┌───────────────┐
+│                                                     │   │                                                     │     │ Azure Monitor │
+└─────────────────────────────────────────────────────┘   └─────────────────────────────────────────────────────┘     │ App Insights  │
+                                                                                                                      └───────────────┘
+┌─────────────────────────────────────────────────────┐   ┌─────────────────────────────────────────────────────┐
+│                 Azure                               │   │                   Azure                             │
+│                 Log Analytics Workspace             │   │                   Log Analytics Workspace           │
+└─────────────────────────────────────────────────────┘   └─────────────────────────────────────────────────────┘
 
 Workflow Service is a message consumer app, so it needs to be deployed in single revision mode, otherwise an old versions could still process a message if happen to be one that retrieves it first.
 ```
@@ -94,9 +100,9 @@ Following the steps below will result in the creation of the following Azure res
 | An Azure Service Bus                      | Ingestion and Workflow services communicate using Azure Service Bus queues |
 | An Azure Application Insights instance    | All services are sending trace information to a shared Azure Application Insights instance |
 | An Azure Container Registry               | This is the private container registry where all Fabrikam workload images are uploaded and later pulled from the different Azure Container Apps |
-| An Azure Container App Environment        | This is the managed Container App environment where Container Apps are deployed |
+| Two Azure Container App Environments      | Two separated environments are created, one for a containarized public rest api and one for backend compaonents. Container Apps are deployed to one or the another environment respectively. |
 | Five Azure Container Apps                 | These are the Azure resources that represents the five Fabrikam microservices in the Azure Container App environment |
-| An Azure Log Analytics Workspace          | This is where all the Container Apps logs are sent        |
+| Two Azure Log Analytics Workspaces        | Adding one per Container App Environment. This is where all the Container Apps logs are sent        |
 
 ## Clone the repository
 
@@ -340,5 +346,5 @@ az containerapp revision restart -g rg-shipping-dronedelivery --app <containerap
 The team has been able to migrate and run Fabrikam Drone Delivery on top of Azure Container Apps. They are now laying out a new migration and modernization plan that will include:
 
 1. [Start using DAPR](https://docs.microsoft.com/azure/container-apps/microservices#dapr-integration)
-1. [Bring your own VNET](https://docs.microsoft.com/azure/container-apps/vnet-custom?tabs=bash&pivots=azure-portal)
+1. [Use a custom VNET](https://docs.microsoft.com/azure/container-apps/vnet-custom?tabs=bash&pivots=azure-portal)
 
