@@ -18,26 +18,26 @@ This repository guides you during the process of running an example application 
 
                                                       ┌─────────────┐      ┌─────────────┐       ┌─────────────┐
                                                       │   Azure     │      │   Azure     │       │   Azure     │
-            ┌────────────────────────────────────────►│   Service   │      │   Key Vault │       │   Container │
-            │                                         │   Bus       │      │             │       │   Registry  │
-            │                                         └─────-┬──────┘      └─────────────┘       └─────────────┘
-            │                                                │
-┌───────────│───Azure Container App Environmen Front──┐   ┌──│────────Azure Container App Environment Backend───┐
-│           │                                         │   │  │                                                  │
-│           │                                         │   │  │                                                  │
-│           │                                         │   │  │                                ┌─────────────┐   │     ┌─────────────┐
-│           │                                         │   │  │                                │             │   │     │   Azure     │
-│           │                                         │   │  │                 ┌─────────────►│   Package   │────────►│   MongoDb   │
-│           │                                         │   │  │                 │              │   Container │   │     │             │
-│           │                                         │   │  │                 │              │   App       │   │     └─────────────┘
-│           │                                         │   │  │                 │              └─────────────┘   │
-│           │                                         │   │  │                 │                                │
-│     ┌─────┴───────┐                                 │   │  │          ┌──────┴──────┐       ┌─────────────┐   │     ┌─────────────┐
-│     │             │                                 │   │  │          │             │       │  Drone      │   │     │   Azure     │
-│     │  Ingestion  │                                 │   │  │          │  Workflow   │       │  Scheduler  │ ───────►│   CosmosDb  │
-│     │  Container  │                                 │   │  └─────────►│  Container  ├──────►│  Container  │   │     │             │
-│     │  App        │                                 │   │             │  App        │       │  App        │   │     └─────────────┘
-│     └─────────────┘                                 │   │             └──────┬──────┘       └─────────────┘   │
+          ┌──────────────────────────────────────────►│   Service   │      │   Key Vault │       │   Container │
+          │                                           │   Bus       │      │             │       │   Registry  │
+          │                                           └─────-┬──────┘      └─────────────┘       └─────────────┘
+          │                                                  │
+┌─────────│─Azure Container App Environment Frontend──┐   ┌──│────────Azure Container App Environment Backend───┐
+│         │                                           │   │  │                                                  │
+│         │                                           │   │  │                                                  │
+│         │                                           │   │  │                                ┌─────────────┐   │     ┌─────────────┐
+│         │                                           │   │  │                                │             │   │     │   Azure     │
+│         │                                           │   │  │                 ┌─────────────►│   Package   │────────►│   MongoDb   │
+│         │                                           │   │  │                 │              │   Container │   │     │             │
+│         │                                           │   │  │                 │              │   App       │   │     └─────────────┘
+│         │                                           │   │  │                 │              └─────────────┘   │
+│         │                                           │   │  │                 │                                │
+│   ┌─────┴───────┐                                   │   │  │          ┌──────┴──────┐       ┌─────────────┐   │     ┌─────────────┐
+│   │             │                                   │   │  │          │             │       │  Drone      │   │     │   Azure     │
+│   │  Ingestion  │                                   │   │  │          │  Workflow   │       │  Scheduler  │ ───────►│   CosmosDb  │
+│   │  Container  │                                   │   │  └─────────►│  Container  ├──────►│  Container  │   │     │             │
+│   │  App        │                                   │   │             │  App        │       │  App        │   │     └─────────────┘
+│   └─────────────┘                                   │   │             └──────┬──────┘       └─────────────┘   │
 │                                                     │   │                    │                                │
 │                                                     │   │                    │              ┌─────────────┐   │     ┌─────────────┐
 │                                                     │   │                    │              │             │   │     │   Azure     │
