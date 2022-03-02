@@ -87,16 +87,16 @@ Following the steps below will result in the creation of the following Azure res
 
 | Object                                    | Purpose                                                 |
 |-------------------------------------------|---------------------------------------------------------|
-| Five Azure User Managed Identities        | These are going to give `Read` and `List` secrets permissions over Azure KeyVault to the microservices |
-| Five Azure KeyVault instances             | Secrets are saved into Azure KeyVault instances |
+| An Azure Container App Environment        | This is the managed Container App environment where Container Apps are deployed |
+| Five Azure Container Apps                 | These are the Azure resources that represents the five Fabrikam microservices in the Azure Container App environment |
+| An Azure Container Registry               | This is the private container registry where all Fabrikam workload images are uploaded and later pulled from the different Azure Container Apps |
+| An Azure Log Analytics Workspace          | This is where all the Container Apps logs are sent        |
+| An Azure Application Insights instance    | All services are sending trace information to a shared Azure Application Insights instance |
 | Two Azure Cosmos Db instances             | Delivery and Package services have dependencies on Azure Cosmos DB |
 | An Azure Redis Cache instance             | Delivery service uses Azure Redis cache to keep track of inflight deliveries |
 | An Azure Service Bus                      | Ingestion and Workflow services communicate using Azure Service Bus queues |
-| An Azure Application Insights instance    | All services are sending trace information to a shared Azure Application Insights instance |
-| An Azure Container Registry               | This is the private container registry where all Fabrikam workload images are uploaded and later pulled from the different Azure Container Apps |
-| An Azure Container App Environment        | This is the managed Container App environment where Container Apps are deployed |
-| Five Azure Container Apps                 | These are the Azure resources that represents the five Fabrikam microservices in the Azure Container App environment |
-| An Azure Log Analytics Workspace          | This is where all the Container Apps logs are sent        |
+| Five Azure User Managed Identities        | These are going to give `Read` and `List` secrets permissions over Azure KeyVault to the microservices. :warning: This is currently not use in use from this Reference Implementation. |
+| Five Azure KeyVault instances             | Secrets are saved into Azure KeyVault instances. :warning: This is currently not use in use from this Reference Implementation. |
 
 ## Clone the repository
 
