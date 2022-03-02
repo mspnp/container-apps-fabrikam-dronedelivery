@@ -335,6 +335,10 @@ az containerapp revision restart -g rg-shipping-dronedelivery --app <containerap
    az group delete -n rg-shipping-dronedelivery -y
    ```
 
+## Contributions and License
+
+For information on contributing to this project, see [CONTRIBUTING.md](./CONTRIBUTING.md). The license is included in [LICENSE](./LICENSE).
+
 ## Next Steps
 
 The team has been able to migrate and run Fabrikam Drone Delivery on top of Azure Container Apps. They are now laying out a new migration and modernization plan that will include:
