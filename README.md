@@ -342,3 +342,8 @@ The team has been able to migrate and run Fabrikam Drone Delivery on top of Azur
 1. [Start using DAPR](https://docs.microsoft.com/azure/container-apps/microservices#dapr-integration)
 1. [Bring your own VNET](https://docs.microsoft.com/azure/container-apps/vnet-custom?tabs=bash&pivots=azure-portal)
 
+## Contributions
+
+Please see our [contributor guide](./CONTRIBUTING.md).
+
+This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact <opencode@microsoft.com> with any additional questions or comments.
