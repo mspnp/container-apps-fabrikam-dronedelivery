@@ -25,7 +25,7 @@ resource la 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   }
 }
 
-resource cae 'Microsoft.Web/kubeenvironments@2021-03-01' = {
+resource cae 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
   name: containerEnvironmentName
   kind: 'containerenvironment'
   location: location
