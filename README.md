@@ -276,7 +276,7 @@ Now that you have deployed in a Container Apps Environment, you can validate its
         "weight": 10
       },
       "pickupLocation": "mypickup",
-      "pickupTime": "'$(date -u +%FT%T.%3NZ)'"
+      "pickupTime": "'$(date -u +%FT%TZ)'"
     }'
    ```
 
