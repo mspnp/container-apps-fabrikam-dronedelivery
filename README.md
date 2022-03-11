@@ -209,10 +209,10 @@ Following the steps below will result in the creation of the following Azure res
 
 ## Deploy Azure Container App
 
-1. Register the Azure Resource Manager provider for `Microsoft.Web`
+1. Register the Azure Resource Manager provider for `Microsoft.App`
 
    ```bash
-   az provider register --namespace Microsoft.Web
+   az provider register --namespace Microsoft.App
    ```
 
 1. Deploy the Container Apps (Preview) ARM template

@@ -28,12 +28,12 @@ param containerRegistryPassword string
 var registrySecretRefName = 'containerregistry-password'
 var hasIngress = (containerPort == -1) ? false : true
 
-resource containerApp 'Microsoft.Web/containerApps@2021-03-01' = {
+resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
   name: containerAppName
   kind: 'containerapp'
   location: location
   properties: {
-    kubeEnvironmentId: environmentId
+    managedEnvironmentId: environmentId
     configuration: {
       activeRevisionsMode: revisionMode
       secrets: secrets
