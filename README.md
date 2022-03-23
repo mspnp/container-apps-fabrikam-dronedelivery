@@ -81,7 +81,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Deploy the workload's prerequisites
 
    ```bash
-   az deployment sub create --name workload-stamp-prereqs --location eastus --template-file ./workload/workload-stamp-prereqs.json
+   az deployment sub create --name workload-stamp-prereqs --location eastus --template-file ./workload/workload-stamp-prereqs.json -p resourceGroupLocation=eastus
    ```
 
 1. Get the workload User Assigned Identities
@@ -295,6 +295,12 @@ az containerapp revision restart -g rg-shipping-dronedelivery --app <containerap
 
    ```bash
    az group delete -n rg-shipping-dronedelivery -y
+   ```
+
+1. Delete the stored deployment data at subscription level
+
+   ```bash
+   az deployment sub delete -n workload-stamp-prereqs
    ```
 
 ## Next Steps
