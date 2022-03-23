@@ -12,45 +12,7 @@ Azure Container Apps is a new cloud native serverless managed service that is ju
 
 This repository guides you during the process of running an example application composed of microservices in Azure Container Apps (Preview). In this example scenario, the Fabrikam Drone Delivery app that was previously running in Azure Kubernetes Services will be run in a newly created Azure Container App environment. This Azure managed service is optimized for running applications that span many microservices. This example will make some containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
 
-```output
-
-                         ┌─────────────┐      ┌─────────────┐       ┌─────────────┐
-                         │   Azure     │      │   Azure     │       │   Azure     │
-            ┌───────────►│   Service   │      │   Key Vault │       │   Container │
-            │            │   Bus       │      │             │       │   Registry  │
-            │            └─────┬───────┘      └─────────────┘       └─────────────┘
-            │                  │
-┌───────────│──────────────────│───────────────Azure Container App Environment────┐
-│           │                  │                                                  │
-│           │                  │                                                  │
-│           │                  │                                ┌─────────────┐   │     ┌─────────────┐
-│           │                  │                                │             │   │     │   Azure     │
-│           │                  │                 ┌─────────────►│   Package   │────────►│   MongoDb   │
-│           │                  │                 │              │   Container │   │     │             │
-│           │                  │                 │              │   App       │   │     └─────────────┘
-│           │                  │                 │              └─────────────┘   │
-│           │                  │                 │                                │
-│   ┌───────┴─────┐            │          ┌──────┴──────┐       ┌─────────────┐   │     ┌─────────────┐
-│   │             │            │          │             │       │  Drone      │   │     │   Azure     │
-│   │  Ingestion  │            │          │  Workflow   │       │  Scheduler  │ ───────►│   CosmosDb  │
-│   │  Container  │            └─────────►│  Container  ├──────►│  Container  │   │     │             │
-│   │  App        │                       │  App        │       │  App        │   │     └─────────────┘
-│   └─────────────┘                       └──────┬──────┘       └─────────────┘   │
-│                                                │                                │
-│                                                │              ┌─────────────┐   │     ┌─────────────┐
-│                                                │              │             │   │     │   Azure     │
-│                                                │              │  Delivery   │ ───────►│   Redis     │
-│                                                └─────────────►│  Container  │   │     │   Cache     │
-│                                                               │  App        │   │     └─────────────┘
-│                                                               └─────────────┘   │
-│                                                                                 │
-│                                                                                 │
-└─────────────────────────────────────────────────────────────────────────────────┘
-
-┌───────────────────────────────────────┐┌────────────────────────────────────────┐
-│         Azure                         ││          Azure Monitor                 │
-│         Log Analytics Workspace       ││          Application Insights          │
-└───────────────────────────────────────┘└────────────────────────────────────────┘
+![Runtime architecture](microservices-with-container-apps-runtime-diagram.png)
 
 Workflow Service is a message consumer app, so it needs to be deployed in single revision mode, otherwise an old versions could still process a message if happen to be one that retrieves it first.
 ```
