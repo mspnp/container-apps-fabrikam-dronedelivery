@@ -14,8 +14,7 @@ This repository guides you during the process of running an example application 
 
 ![Runtime architecture](microservices-with-container-apps-runtime-diagram.png)
 
-Workflow Service is a message consumer app, so it needs to be deployed in single revision mode, otherwise an old versions could still process a message if happen to be one that retrieves it first.
-```
+❗ Workflow Service is a message consumer app, so it needs to be deployed in single revision mode, otherwise an old versions could still process a message if happen to be one that retrieves it first. The rest of the microservices are configured with multiple revision mode value.
 
 For more information on how the Container Apps feature are being used in this Reference Implementation, please take a look below:
 
