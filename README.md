@@ -1,4 +1,4 @@
-# Container Apps (Preview) Example Scenario
+# Container Apps Example Scenario
 
 ## Introduction
 
@@ -8,9 +8,9 @@ The team has detected an opportunity to be more efficient at the devops level, a
 
 Azure Container Apps is a new cloud native serverless managed service that is just using AKS with KEDA behind the scenes to deploy and run containerized applications.
 
-## Migrating a microservices workload from AKS to Azure Container Apps (Preview)
+## Migrating a microservices workload from AKS to Azure Container Apps
 
-This repository guides you during the process of running an example application composed of microservices in Azure Container Apps (Preview). In this example scenario, the Fabrikam Drone Delivery app that was previously running in Azure Kubernetes Services will be run in a newly created Azure Container App environment. This Azure managed service is optimized for running applications that span many microservices. This example will make some containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
+This repository guides you during the process of running an example application composed of microservices in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that was previously running in Azure Kubernetes Services will be run in a newly created Azure Container App environment. This Azure managed service is optimized for running applications that span many microservices. This example will make some containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
 
 ![Runtime architecture](microservices-with-container-apps-runtime-diagram.png)
 
@@ -103,7 +103,7 @@ Following the steps below will result in the creation of the following Azure res
    -p packagePrincipalId=$PACKAGE_ID_PRINCIPAL_ID
    ```
 
-   :warning: Azure KeyVault and Managed Identities may be integrated in the future with Container Apps (Preview) in this Reference Implementation.
+   :warning: Azure KeyVault and Managed Identities may be integrated in the future with Container Apps in this Reference Implementation.
 
 1. Obtain the ACR server details
 
@@ -176,7 +176,7 @@ Following the steps below will result in the creation of the following Azure res
    az provider register --namespace Microsoft.App
    ```
 
-1. Deploy the Container Apps (Preview) ARM template
+1. Deploy the Container Apps ARM template
 
    ```bash
    az deployment group create -f main.bicep -g rg-shipping-dronedelivery -p \
@@ -203,7 +203,7 @@ Following the steps below will result in the creation of the following Azure res
       ingestionQueueName=$INGESTION_QUEUE_NAME
    ```
 
-   :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently in _Preview_ with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
+   :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
 
 ## Validation
 
@@ -304,7 +304,7 @@ az containerapp revision restart -g rg-shipping-dronedelivery --app <containerap
 
 ## Next Steps
 
-The team has been able to migrate and run Fabrikam Drone Delivery on top of Azure Container Apps (Preview). They are now laying out a new migration and modernization plan that will include:
+The team has been able to migrate and run Fabrikam Drone Delivery on top of Azure Container Apps. They are now laying out a new migration and modernization plan that will include:
 
 1. [Start using DAPR](https://docs.microsoft.com/azure/container-apps/microservices#dapr-integration)
 1. [Bring your own VNET](https://docs.microsoft.com/azure/container-apps/vnet-custom?tabs=bash&pivots=azure-portal)
