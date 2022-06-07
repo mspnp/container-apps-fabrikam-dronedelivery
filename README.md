@@ -56,7 +56,7 @@ Following the steps below will result in the creation of the following Azure res
 | Two Azure Cosmos Db instances             | Delivery and Package services have dependencies on Azure Cosmos DB |
 | An Azure Redis Cache instance             | Delivery service uses Azure Redis cache to keep track of inflight deliveries |
 | An Azure Service Bus                      | Ingestion and Workflow services communicate using Azure Service Bus queues |
-| Five Azure User Managed Identities        | These are going to give `Read` and `List` secrets permissions over Azure KeyVault to the microservices. :warning: This is currently not use in use from this Reference Implementation. |
+| Five Azure User Managed Identities        | These are going to give `Read` and `List` secrets permissions over Azure KeyVault to the microservices.|
 | Five Azure KeyVault instances             | Secrets are saved into Azure KeyVault instances. :warning: This is currently not use in use from this Reference Implementation. |
 
 ## Clone the repository
@@ -102,8 +102,6 @@ Following the steps below will result in the creation of the following Azure res
    -p ingestionPrincipalId=$INGESTION_ID_PRINCIPAL_ID \
    -p packagePrincipalId=$PACKAGE_ID_PRINCIPAL_ID
    ```
-
-   :warning: Azure KeyVault and Managed Identities may be integrated in the future with Container Apps in this Reference Implementation.
 
 1. Obtain the ACR server details
 

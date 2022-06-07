@@ -5,9 +5,8 @@ param applicationInsightsInstrumentationKey string
 param deliveryCosmosdbDatabaseName string
 param deliveryCosmosdbCollectionName string
 param deliveryCosmosdbEndpoint string
-param deliveryCosmosdbKey string
 param deliveryRedisEndpoint string
-param deliveryRedisKey string
+param deliveryKeyVaultUri string
 param droneSchedulerCosmosdbEndpoint string
 param droneSchedulerCosmosdbKey string
 param wokflowNamespaceEndpoint string
@@ -47,14 +46,6 @@ module ca_delivery 'container-http.bicep' = {
           value: applicationInsightsInstrumentationKey
         }
         {
-          name: 'delivery-cosmosdb-key'
-          value: deliveryCosmosdbKey
-        }
-        {
-          name: 'delivery-redis-key'
-          value: deliveryRedisKey
-        }
-        {
           name: 'containerregistry-password'
           value: containerRegistryPassword
         }
@@ -69,10 +60,6 @@ module ca_delivery 'container-http.bicep' = {
         value: deliveryCosmosdbEndpoint
       }
       {
-        name: 'CosmosDB-Key'
-        secretref: 'delivery-cosmosdb-key'
-      }
-      {
         name: 'DOCDB_DATABASEID'
         value: deliveryCosmosdbDatabaseName
       }
@@ -85,8 +72,8 @@ module ca_delivery 'container-http.bicep' = {
         value: deliveryRedisEndpoint
       }
       {
-        name: 'Redis-AccessKey'
-        secretref: 'delivery-redis-key'
+        name: 'KEY_VAULT_URI'
+        value: deliveryKeyVaultUri
       }
     ]
   }
