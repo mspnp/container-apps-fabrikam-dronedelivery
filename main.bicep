@@ -1,3 +1,7 @@
+targetScope = 'resourceGroup'
+
+/*** PARAMETERS ***/
+
 param acrSever string
 param containerRegistryUser string
 param containerRegistryPassword string
@@ -19,6 +23,15 @@ param ingestionNamespaceSASName string
 param ingestionNamespaceSASKey string
 param ingestionQueueName string
 
+/*** EXISTING RESOURCE GROUP RESOURCES ***/
+
+resource miDelivery 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: 'uid-delivery'
+  scope: resourceGroup()
+}
+
+/*** RESOURCES ***/
+
 // Drone Delivery App Environment
 module env_shipping_dronedelivery 'environment.bicep' = {
   name: 'env-shipping-dronedelivery'
@@ -33,6 +46,7 @@ module ca_delivery 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'delivery-app'
+    containerAppUserAssignedResourceId: miDelivery.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/delivery:0.1.0'
     containerPort: 8080
@@ -74,6 +88,10 @@ module ca_delivery 'container-http.bicep' = {
       {
         name: 'KEY_VAULT_URI'
         value: deliveryKeyVaultUri
+      }
+      {
+        name: 'AZURE_CLIENT_ID'
+        value: miDelivery.properties.clientId
       }
     ]
   }
@@ -371,5 +389,7 @@ module ca_ingestion 'container-http.bicep' = {
     ]
   }
 }
+
+/*** OUTPUTS ***/
 
 output ingestionFqdn string = ca_ingestion.outputs.fqdn

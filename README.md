@@ -138,10 +138,9 @@ Following the steps below will result in the creation of the following Azure res
    DELIVERY_DATABASE_NAME="${DELIVERY_COSMOSDB_NAME}-db"
    DELIVERY_COLLECTION_NAME="${DELIVERY_COSMOSDB_NAME}-col"
    DELIVERY_COSMOSDB_ENDPOINT=$(az cosmosdb show -g rg-shipping-dronedelivery -n $DELIVERY_COSMOSDB_NAME --query documentEndpoint -o tsv)
-   DELIVERY_COSMOSDB_KEY=$(az cosmosdb keys list -g rg-shipping-dronedelivery -n $DELIVERY_COSMOSDB_NAME --query primaryMasterKey -o tsv)
    DELIVERY_REDIS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryRedisName.value -o tsv)
    DELIVERY_REDIS_ENDPOINT=$(az redis show -g rg-shipping-dronedelivery -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
-   DELIVERY_REDIS_KEY=$(az redis list-keys -g rg-shipping-dronedelivery -n $DELIVERY_REDIS_NAME --query primaryKey -o tsv)
+   DELIVERY_KEYVAULT_URI=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryKeyVaultUri.value -o tsv)
 
    # drone scheduler
    DRONESCHEDULER_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.droneSchedulerCosmosDbName.value -o tsv)
@@ -185,9 +184,8 @@ Following the steps below will result in the creation of the following Azure res
       deliveryCosmosdbDatabaseName=$DELIVERY_DATABASE_NAME \
       deliveryCosmosdbCollectionName=$DELIVERY_COLLECTION_NAME \
       deliveryCosmosdbEndpoint=$DELIVERY_COSMOSDB_ENDPOINT \
-      deliveryCosmosdbKey=$DELIVERY_COSMOSDB_KEY \
       deliveryRedisEndpoint=$DELIVERY_REDIS_ENDPOINT \
-      deliveryRedisKey=$DELIVERY_REDIS_KEY \
+      deliveryKeyVaultUri=$DELIVERY_KEYVAULT_URI \
       droneSchedulerCosmosdbEndpoint=$DRONESCHEDULER_COSMOSDB_ENDPOINT \
       droneSchedulerCosmosdbKey=$DRONESCHEDULER_COSMOSDB_KEY \
       wokflowNamespaceEndpoint=$WORKFLOW_NAMESPACE_ENDPOINT \
