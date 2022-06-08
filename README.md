@@ -203,7 +203,7 @@ Following the steps below will result in the creation of the following Azure res
       ingestionQueueName=$INGESTION_QUEUE_NAME
    ```
 
-   :eyes: Please note that Azure Container Apps as well as this ARM API specification are currently with [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
+   :eyes: Please note that Azure Container Apps as well as this ARM API specification currently have [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
 
 ## Validation
 
