@@ -12,7 +12,7 @@ param deliveryCosmosdbEndpoint string
 param deliveryRedisEndpoint string
 param deliveryKeyVaultUri string
 param droneSchedulerCosmosdbEndpoint string
-param droneSchedulerCosmosdbKey string
+param droneSchedulerKeyVaultUri string
 param wokflowNamespaceEndpoint string
 param workflowNamespaceSASName string
 param workflowNamespaceSASKey string
@@ -27,6 +27,11 @@ param ingestionQueueName string
 
 resource miDelivery 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
   name: 'uid-delivery'
+  scope: resourceGroup()
+}
+
+resource miDroneScheduler 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: 'uid-dronescheduler'
   scope: resourceGroup()
 }
 
@@ -103,6 +108,7 @@ module ca_dronescheduler 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'dronescheduler-app'
+    containerAppUserAssignedResourceId: miDroneScheduler.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/dronescheduler:0.1.0'
     containerPort: 8080
@@ -119,10 +125,6 @@ module ca_dronescheduler 'container-http.bicep' = {
         name: 'containerregistry-password'
         value: containerRegistryPassword
       }
-      {
-        name: 'cosmosdb-key'
-        value: droneSchedulerCosmosdbKey
-      }
     ]
     env: [
       {
@@ -132,10 +134,6 @@ module ca_dronescheduler 'container-http.bicep' = {
       {
         name: 'CosmosDBEndpoint'
         value: droneSchedulerCosmosdbEndpoint
-      }
-      {
-        name: 'CosmosDBKey'
-        secretref: 'cosmosdb-key'
       }
       {
         name: 'CosmosDBConnectionMode'
@@ -172,6 +170,14 @@ module ca_dronescheduler 'container-http.bicep' = {
       {
         name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
         value: 'Error'
+      }
+      {
+        name: 'KEY_VAULT_URI'
+        value: droneSchedulerKeyVaultUri
+      }
+      {
+        name: 'AZURE_CLIENT_ID'
+        value: miDroneScheduler.properties.clientId
       }
     ]
   }

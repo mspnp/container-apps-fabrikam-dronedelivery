@@ -145,7 +145,7 @@ Following the steps below will result in the creation of the following Azure res
    # drone scheduler
    DRONESCHEDULER_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.droneSchedulerCosmosDbName.value -o tsv)
    DRONESCHEDULER_COSMOSDB_ENDPOINT=$(az cosmosdb show -g rg-shipping-dronedelivery -n $DRONESCHEDULER_COSMOSDB_NAME --query documentEndpoint -o tsv)
-   DRONESCHEDULER_COSMOSDB_KEY=$(az cosmosdb keys list -g rg-shipping-dronedelivery -n $DRONESCHEDULER_COSMOSDB_NAME --query primaryMasterKey -o tsv)
+   DRONESCHEDULER_KEYVAULT_URI=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.droneSchedulerKeyVaultUri.value -o tsv)
 
    # workflow
    WORKFLOW_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueNamespace.value -o tsv)
@@ -187,7 +187,7 @@ Following the steps below will result in the creation of the following Azure res
       deliveryRedisEndpoint=$DELIVERY_REDIS_ENDPOINT \
       deliveryKeyVaultUri=$DELIVERY_KEYVAULT_URI \
       droneSchedulerCosmosdbEndpoint=$DRONESCHEDULER_COSMOSDB_ENDPOINT \
-      droneSchedulerCosmosdbKey=$DRONESCHEDULER_COSMOSDB_KEY \
+      droneSchedulerKeyVaultUri=$DRONESCHEDULER_KEYVAULT_URI \
       wokflowNamespaceEndpoint=$WORKFLOW_NAMESPACE_ENDPOINT \
       workflowNamespaceSASName=$WORKFLOW_NAMESPACE_SAS_NAME \
       workflowNamespaceSASKey=$WORKFLOW_NAMESPACE_SAS_KEY \
