@@ -35,6 +35,11 @@ resource miDroneScheduler 'Microsoft.ManagedIdentity/userAssignedIdentities@2018
   scope: resourceGroup()
 }
 
+resource miWorkflow 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: 'uid-workflow'
+  scope: resourceGroup()
+}
+
 /*** RESOURCES ***/
 
 // Drone Delivery App Environment
@@ -189,6 +194,7 @@ module ca_workflow 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'workflow-app'
+    containerAppUserAssignedResourceId: miWorkflow.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/workflow:0.1.0'
     revisionMode: 'single'
