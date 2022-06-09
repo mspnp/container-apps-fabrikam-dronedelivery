@@ -45,6 +45,11 @@ resource miPackage 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30'
   scope: resourceGroup()
 }
 
+resource miIngestion 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: 'uid-ingestion'
+  scope: resourceGroup()
+}
+
 /*** RESOURCES ***/
 
 // Drone Delivery App Environment
@@ -352,6 +357,7 @@ module ca_ingestion 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'ingestion-app'
+    containerAppUserAssignedResourceId: miIngestion.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/ingestion:0.1.0'
     containerPort: 80
