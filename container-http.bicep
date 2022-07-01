@@ -1,4 +1,9 @@
+targetScope = 'resourceGroup'
+
+/*** PARAMETERS ***/
+
 param containerAppName string
+param containerAppUserAssignedResourceId string
 param location string = resourceGroup().location
 param environmentId string
 param containerImage string
@@ -25,13 +30,23 @@ param revisionMode string = 'multiple'
 @secure()
 param containerRegistryPassword string
 
+/*** VARIABLES ***/
+
 var registrySecretRefName = 'containerregistry-password'
 var hasIngress = (containerPort == -1) ? false : true
+
+/*** RESOURCES ***/
 
 resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
   name: containerAppName
   kind: 'containerapp'
   location: location
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${containerAppUserAssignedResourceId}': {}
+    }
+  }
   properties: {
     managedEnvironmentId: environmentId
     configuration: {
@@ -76,5 +91,8 @@ resource containerApp 'Microsoft.App/containerApps@2022-01-01-preview' = {
     }
   }
 }
+
+
+/*** OUTPUT ***/
 
 output fqdn string = hasIngress ? containerApp.properties.configuration.ingress.fqdn : ''

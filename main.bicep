@@ -1,3 +1,7 @@
+targetScope = 'resourceGroup'
+
+/*** PARAMETERS ***/
+
 param acrSever string
 param containerRegistryUser string
 param containerRegistryPassword string
@@ -5,11 +9,10 @@ param applicationInsightsInstrumentationKey string
 param deliveryCosmosdbDatabaseName string
 param deliveryCosmosdbCollectionName string
 param deliveryCosmosdbEndpoint string
-param deliveryCosmosdbKey string
 param deliveryRedisEndpoint string
-param deliveryRedisKey string
+param deliveryKeyVaultUri string
 param droneSchedulerCosmosdbEndpoint string
-param droneSchedulerCosmosdbKey string
+param droneSchedulerKeyVaultUri string
 param wokflowNamespaceEndpoint string
 param workflowNamespaceSASName string
 param workflowNamespaceSASKey string
@@ -19,6 +22,35 @@ param ingestionNamespaceName string
 param ingestionNamespaceSASName string
 param ingestionNamespaceSASKey string
 param ingestionQueueName string
+
+/*** EXISTING RESOURCE GROUP RESOURCES ***/
+
+resource miDelivery 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: 'uid-delivery'
+  scope: resourceGroup()
+}
+
+resource miDroneScheduler 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: 'uid-dronescheduler'
+  scope: resourceGroup()
+}
+
+resource miWorkflow 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: 'uid-workflow'
+  scope: resourceGroup()
+}
+
+resource miPackage 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: 'uid-package'
+  scope: resourceGroup()
+}
+
+resource miIngestion 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
+  name: 'uid-ingestion'
+  scope: resourceGroup()
+}
+
+/*** RESOURCES ***/
 
 // Drone Delivery App Environment
 module env_shipping_dronedelivery 'environment.bicep' = {
@@ -34,6 +66,7 @@ module ca_delivery 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'delivery-app'
+    containerAppUserAssignedResourceId: miDelivery.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/delivery:0.1.0'
     containerPort: 8080
@@ -45,14 +78,6 @@ module ca_delivery 'container-http.bicep' = {
         {
           name: 'applicationinsights-instrumentationkey'
           value: applicationInsightsInstrumentationKey
-        }
-        {
-          name: 'delivery-cosmosdb-key'
-          value: deliveryCosmosdbKey
-        }
-        {
-          name: 'delivery-redis-key'
-          value: deliveryRedisKey
         }
         {
           name: 'containerregistry-password'
@@ -69,10 +94,6 @@ module ca_delivery 'container-http.bicep' = {
         value: deliveryCosmosdbEndpoint
       }
       {
-        name: 'CosmosDB-Key'
-        secretref: 'delivery-cosmosdb-key'
-      }
-      {
         name: 'DOCDB_DATABASEID'
         value: deliveryCosmosdbDatabaseName
       }
@@ -85,8 +106,12 @@ module ca_delivery 'container-http.bicep' = {
         value: deliveryRedisEndpoint
       }
       {
-        name: 'Redis-AccessKey'
-        secretref: 'delivery-redis-key'
+        name: 'KEY_VAULT_URI'
+        value: deliveryKeyVaultUri
+      }
+      {
+        name: 'AZURE_CLIENT_ID'
+        value: miDelivery.properties.clientId
       }
     ]
   }
@@ -98,6 +123,7 @@ module ca_dronescheduler 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'dronescheduler-app'
+    containerAppUserAssignedResourceId: miDroneScheduler.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/dronescheduler:0.1.0'
     containerPort: 8080
@@ -114,10 +140,6 @@ module ca_dronescheduler 'container-http.bicep' = {
         name: 'containerregistry-password'
         value: containerRegistryPassword
       }
-      {
-        name: 'cosmosdb-key'
-        value: droneSchedulerCosmosdbKey
-      }
     ]
     env: [
       {
@@ -127,10 +149,6 @@ module ca_dronescheduler 'container-http.bicep' = {
       {
         name: 'CosmosDBEndpoint'
         value: droneSchedulerCosmosdbEndpoint
-      }
-      {
-        name: 'CosmosDBKey'
-        secretref: 'cosmosdb-key'
       }
       {
         name: 'CosmosDBConnectionMode'
@@ -168,6 +186,14 @@ module ca_dronescheduler 'container-http.bicep' = {
         name: 'LOGGING__ApplicationInsights__LOGLEVEL__DEFAULT'
         value: 'Error'
       }
+      {
+        name: 'KEY_VAULT_URI'
+        value: droneSchedulerKeyVaultUri
+      }
+      {
+        name: 'AZURE_CLIENT_ID'
+        value: miDroneScheduler.properties.clientId
+      }
     ]
   }
 }
@@ -178,6 +204,7 @@ module ca_workflow 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'workflow-app'
+    containerAppUserAssignedResourceId: miWorkflow.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/workflow:0.1.0'
     revisionMode: 'single'
@@ -277,6 +304,7 @@ module ca_package 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'package-app'
+    containerAppUserAssignedResourceId: miPackage.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/package:0.1.0'
     containerPort: 80
@@ -329,6 +357,7 @@ module ca_ingestion 'container-http.bicep' = {
   params: {
     location: resourceGroup().location
     containerAppName: 'ingestion-app'
+    containerAppUserAssignedResourceId: miIngestion.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerImage: '${acrSever}/shipping/ingestion:0.1.0'
     containerPort: 80
@@ -384,5 +413,7 @@ module ca_ingestion 'container-http.bicep' = {
     ]
   }
 }
+
+/*** OUTPUTS ***/
 
 output ingestionFqdn string = ca_ingestion.outputs.fqdn

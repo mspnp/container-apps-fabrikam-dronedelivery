@@ -10,7 +10,7 @@ Azure Container Apps is a new cloud native serverless managed service that is ju
 
 ## Migrating a microservices workload from AKS to Azure Container Apps
 
-This repository guides you during the process of running an example application composed of microservices in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that was previously running in Azure Kubernetes Services will be run in a newly created Azure Container App environment. This Azure managed service is optimized for running applications that span many microservices. This example will make some containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner.
+This repository guides you during the process of running an example application composed of microservices in Azure Container Apps. In this example scenario, the Fabrikam Drone Delivery app that was previously running in Azure Kubernetes Services will be run in a newly created Azure Container App environment. This Azure managed service is optimized for running applications that span many microservices. This example will make some containers internet-facing via an HTTPS ingress, and internally accessible thanks to its built-in DNS-based service discovery capability. Additionally, it will manage their secrets in a secure manner and authenticate against Azure KeyVault resources using User Managed Identities.
 
 ![Runtime architecture](microservices-with-container-apps-runtime-diagram.png)
 
@@ -18,12 +18,13 @@ This repository guides you during the process of running an example application 
 
 For more information on how the Container Apps feature are being used in this Reference Implementation, please take a look below:
 
-- [HTTPS ingress, this allows to expose the Ingestion service to internet.](https://docs.microsoft.com/en-us/azure/container-apps/ingress)
-- [Internal service discovery, Delivery, DroneScheduler and Package services must be internally reachable by Workflow service](https://docs.microsoft.com/en-us/azure/container-apps/connect-apps)
-- [Securely manage secrets, all services secrets are handled using this feature](https://docs.microsoft.com/en-us/azure/container-apps/secure-app)
-- [Run containers from any registry, the Fabrikam Drone Delivery uses ACR to publish its Docker images](https://docs.microsoft.com/en-us/azure/container-apps/containers)
-- [Use ARM templates to deploy my application, there is no need for another layer of indirection like Helm charts. All the Drone Delivery containers are part of the ARM templates](https://docs.microsoft.com/en-us/azure/container-apps/get-started)
-- [Logs, see the container logs directly in Log Analytics without configuring any provider from code or Azure service](https://docs.microsoft.com/en-us/azure/container-apps/monitor).
+- [HTTPS ingress, this allows to expose the Ingestion service to internet.](https://docs.microsoft.com/azure/container-apps/ingress)
+- [Internal service discovery, Delivery, DroneScheduler and Package services must be internally reachable by Workflow service](https://docs.microsoft.com/azure/container-apps/connect-apps)
+- [Use user-assigned identities when authenticating into Azure KeyVault from Delivery and DroneScheduler services](https://docs.microsoft.com/azure/container-apps/managed-identity?tabs=arm%2Cdotnet#add-a-user-assigned-identity)
+- [Securely manage secrets for Package, Ingestion and Workflow services](https://docs.microsoft.com/azure/container-apps/secure-app)
+- [Run containers from any registry, the Fabrikam Drone Delivery uses ACR to publish its Docker images](https://docs.microsoft.com/azure/container-apps/containers)
+- [Use ARM templates to deploy my application, there is no need for another layer of indirection like Helm charts. All the Drone Delivery containers are part of the ARM templates](https://docs.microsoft.com/azure/container-apps/get-started)
+- [Logs, see the container logs directly in Log Analytics without configuring any provider from code or Azure service](https://docs.microsoft.com/azure/container-apps/monitor).
 
 ## Prerequisites
 
@@ -56,8 +57,8 @@ Following the steps below will result in the creation of the following Azure res
 | Two Azure Cosmos Db instances             | Delivery and Package services have dependencies on Azure Cosmos DB |
 | An Azure Redis Cache instance             | Delivery service uses Azure Redis cache to keep track of inflight deliveries |
 | An Azure Service Bus                      | Ingestion and Workflow services communicate using Azure Service Bus queues |
-| Five Azure User Managed Identities        | These are going to give `Read` and `List` secrets permissions over Azure KeyVault to the microservices. :warning: This is currently not use in use from this Reference Implementation. |
-| Five Azure KeyVault instances             | Secrets are saved into Azure KeyVault instances. :warning: This is currently not use in use from this Reference Implementation. |
+| Five Azure User Managed Identities        | These are going to give `Read` and `List` secrets permissions over Azure KeyVault to the microservices.|
+| Five Azure KeyVault instances             | Secrets are saved into Azure KeyVault instances. :warning: Currently only 2 out of 5 instances are being used as part of this reference implementation |
 
 ## Clone the repository
 
@@ -93,6 +94,9 @@ Following the steps below will result in the creation of the following Azure res
    INGESTION_ID_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n uid-ingestion --query principalId -o tsv)
    ```
 
+   > **Warning**
+   > As part of this initial migration, only Delivery and DroneScheduler services are making actual use of the Manage Identities to access their Azure KeyVault instances.
+
 1. Deploy the workload Azure Container Registry and Azure resources associated to them
 
    ```bash
@@ -102,8 +106,6 @@ Following the steps below will result in the creation of the following Azure res
    -p ingestionPrincipalId=$INGESTION_ID_PRINCIPAL_ID \
    -p packagePrincipalId=$PACKAGE_ID_PRINCIPAL_ID
    ```
-
-   :warning: Azure KeyVault and Managed Identities may be integrated in the future with Container Apps in this Reference Implementation.
 
 1. Obtain the ACR server details
 
@@ -140,15 +142,14 @@ Following the steps below will result in the creation of the following Azure res
    DELIVERY_DATABASE_NAME="${DELIVERY_COSMOSDB_NAME}-db"
    DELIVERY_COLLECTION_NAME="${DELIVERY_COSMOSDB_NAME}-col"
    DELIVERY_COSMOSDB_ENDPOINT=$(az cosmosdb show -g rg-shipping-dronedelivery -n $DELIVERY_COSMOSDB_NAME --query documentEndpoint -o tsv)
-   DELIVERY_COSMOSDB_KEY=$(az cosmosdb keys list -g rg-shipping-dronedelivery -n $DELIVERY_COSMOSDB_NAME --query primaryMasterKey -o tsv)
    DELIVERY_REDIS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryRedisName.value -o tsv)
    DELIVERY_REDIS_ENDPOINT=$(az redis show -g rg-shipping-dronedelivery -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
-   DELIVERY_REDIS_KEY=$(az redis list-keys -g rg-shipping-dronedelivery -n $DELIVERY_REDIS_NAME --query primaryKey -o tsv)
+   DELIVERY_KEYVAULT_URI=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryKeyVaultUri.value -o tsv)
 
    # drone scheduler
    DRONESCHEDULER_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.droneSchedulerCosmosDbName.value -o tsv)
    DRONESCHEDULER_COSMOSDB_ENDPOINT=$(az cosmosdb show -g rg-shipping-dronedelivery -n $DRONESCHEDULER_COSMOSDB_NAME --query documentEndpoint -o tsv)
-   DRONESCHEDULER_COSMOSDB_KEY=$(az cosmosdb keys list -g rg-shipping-dronedelivery -n $DRONESCHEDULER_COSMOSDB_NAME --query primaryMasterKey -o tsv)
+   DRONESCHEDULER_KEYVAULT_URI=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.droneSchedulerKeyVaultUri.value -o tsv)
 
    # workflow
    WORKFLOW_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueNamespace.value -o tsv)
@@ -187,11 +188,10 @@ Following the steps below will result in the creation of the following Azure res
       deliveryCosmosdbDatabaseName=$DELIVERY_DATABASE_NAME \
       deliveryCosmosdbCollectionName=$DELIVERY_COLLECTION_NAME \
       deliveryCosmosdbEndpoint=$DELIVERY_COSMOSDB_ENDPOINT \
-      deliveryCosmosdbKey=$DELIVERY_COSMOSDB_KEY \
       deliveryRedisEndpoint=$DELIVERY_REDIS_ENDPOINT \
-      deliveryRedisKey=$DELIVERY_REDIS_KEY \
+      deliveryKeyVaultUri=$DELIVERY_KEYVAULT_URI \
       droneSchedulerCosmosdbEndpoint=$DRONESCHEDULER_COSMOSDB_ENDPOINT \
-      droneSchedulerCosmosdbKey=$DRONESCHEDULER_COSMOSDB_KEY \
+      droneSchedulerKeyVaultUri=$DRONESCHEDULER_KEYVAULT_URI \
       wokflowNamespaceEndpoint=$WORKFLOW_NAMESPACE_ENDPOINT \
       workflowNamespaceSASName=$WORKFLOW_NAMESPACE_SAS_NAME \
       workflowNamespaceSASKey=$WORKFLOW_NAMESPACE_SAS_KEY \
