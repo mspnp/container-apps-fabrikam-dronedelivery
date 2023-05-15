@@ -84,23 +84,33 @@ Following the steps below will result in the creation of the following Azure res
    az login
    ```
 
-1. Deploy the workload's user managed identities.
-
-   > This deploys two resource groups (rg-shipping-dronedelivery and rg-shipping-dronedelivery-acr) and one managed identity per microservice, to later be assigned to roles on various services.
+1. Create a resource group for your deployment.
 
    ```bash
-   # [This takes about one minute.]
-   az deployment sub create --name workload-stamp-prereqs --location eastus --template-file ./workload/workload-stamp-prereqs.json -p resourceGroupLocation=eastus
+   az group create -n rg-shipping-dronedelivery -l eastus2
+   ```
+1. Deploy the workload's resources.
 
-   DELIVERY_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n uid-delivery --query principalId -o tsv) && \
-   DRONESCHEDULER_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n uid-dronescheduler --query principalId -o tsv) && \
-   WORKFLOW_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n uid-workflow --query principalId -o tsv) && \
-   PACKAGE_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n uid-package --query principalId -o tsv) && \
-   INGESTION_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n uid-ingestion --query principalId -o tsv)
+   > This deploys all of the dependencies of the various microservices in the workload. None of these resources are for the application platform, but instead are tied directly to the drone delivery workload. For example, the per-microservice Key Vault, the per-microservice data stores, the message queue, logging sinks, etc. These same resources would exist no matter if the application platform was Azure Container Apps or Kubernetes or App Service.
+
+   ```bash
+   # [This takes about 18 minute.]
+   az deployment group create \
+      -n workload-resources   \
+      -g rg-shipping-dronedelivery       \
+      -f ./workload/workload-stamp.bicep \
+      -p location=eastus2
+   
+
+   DELIVERY_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n mi-delivery --query principalId -o tsv) && \
+   DRONESCHEDULER_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n mi-dronescheduler --query principalId -o tsv) && \
+   WORKFLOW_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n mi-workflow --query principalId -o tsv) && \
+   PACKAGE_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n mi-package --query principalId -o tsv) && \
+   INGESTION_PRINCIPAL_ID=$(az identity show -g rg-shipping-dronedelivery -n mi-ingestion --query principalId -o tsv)
    ```
 
    > **Warning**
-   > Please note that only the Delivery and DroneScheduler services are making actual use of the manage identities to access their Azure Key Vault instances.
+   > Please note that only the Delivery and DroneScheduler services are making actual use of the manage identities to access their Azure Key Vault instances, but all are using their identities for Azure Container Registry access.
 
 1. Deploy the workload's resources.
 
