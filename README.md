@@ -120,6 +120,7 @@ Following the steps below will result in the creation of the following Azure res
    ```bash
    ACR_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.acrName.value -o tsv)
    ACR_SERVER=$(az acr show -n $ACR_NAME --query loginServer -o tsv)
+   ACR_ID=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.acrId.value -o tsv)
    ```
 
 1. Build, tag, and host the five microservice container images in ACR.
@@ -176,24 +177,14 @@ Following the steps below will result in the creation of the following Azure res
    INGESTION_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueName.value -o tsv)
    ```
 
-1. Enable Azure Container Registry's admin access.
+1. Deploy the Container Apps ARM template.
 
-   > For this brownfield workload deployment, the Azure Container Registry instance uses legacy admin user access. While this ideally would be an AcrPull RBAC assignment, for this deployment, consider this technical debt and not guidance. Also making imparative changes like this outside of your IaC is never encouraged.
-
-   ```bash
-   # [This takes about one minute.]
-   az acr update -n $ACR_NAME --admin-enabled true
-   ACR_PASS=$(az acr credential show -n $ACR_NAME --query "passwords[0].value" -o tsv)
-   ```
-
-1. Deploy the Container Apps ARM template
+   > This deploys the Azure Container Apps Environment and each microservice, pulling from Azure Container Registry via managed identity.
 
    ```bash
-   # [This takes about eight minutes.]
+   # [This takes about nine minutes.]
    az deployment group create -f main.bicep -g rg-shipping-dronedelivery -p \
-      acrSever=$ACR_SERVER \
-      containerRegistryUser=$ACR_NAME \
-      containerRegistryPassword=$ACR_PASS \
+      containerRegistryResourceId=$ACR_ID
       applicationInsightsInstrumentationKey=$AI_KEY \
       deliveryCosmosdbDatabaseName=$DELIVERY_DATABASE_NAME \
       deliveryCosmosdbCollectionName=$DELIVERY_COLLECTION_NAME \

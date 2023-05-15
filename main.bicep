@@ -2,22 +2,13 @@ targetScope = 'resourceGroup'
 
 /*** PARAMETERS ***/
 
-@description('The FQDN of the ACR instance containing all the microservice containers.')
-@minLength(12)
-param acrSever string
-
-@description('The admin user name of the acrServer provided.')
-@minLength(5)
-param containerRegistryUser string
-
-@description('The admin user password of the acrServer provided.')
-@secure()
-@minLength(5)
-param containerRegistryPassword string
-
 @description('The Application Insights key used for all of the logging done by the microservices.')
 @minLength(20)
 param applicationInsightsInstrumentationKey string
+
+@description('The resource ID of the existing Azure Container Registry that contains all the microservices.')
+@minLength(40)
+param containerRegistryResourceId string
 
 @description('The Cosmos DB database name used by the Delivery service.')
 @minLength(1)
@@ -139,20 +130,15 @@ module ca_delivery 'container-http.bicep' = {
     containerAppName: 'delivery-app'
     containerAppUserAssignedResourceId: miDelivery.id
     environmentId: env_shipping_dronedelivery.outputs.id
-    containerImage: '${acrSever}/shipping/delivery:0.1.0'
+    containerRegistryResourceId: containerRegistryResourceId
+    containerImage: 'shipping/delivery:0.1.0'
     containerPort: 8080
     isExternalIngress: false
-    containerRegistry: acrSever
-    containerRegistryUsername: containerRegistryUser
-    containerRegistryPassword: containerRegistryPassword
+    revisionMode: 'multiple'
     secrets: [
         {
           name: 'applicationinsights-instrumentationkey'
           value: applicationInsightsInstrumentationKey
-        }
-        {
-          name: 'containerregistry-password'
-          value: containerRegistryPassword
         }
     ]
     env: [
@@ -196,20 +182,15 @@ module ca_dronescheduler 'container-http.bicep' = {
     containerAppName: 'dronescheduler-app'
     containerAppUserAssignedResourceId: miDroneScheduler.id
     environmentId: env_shipping_dronedelivery.outputs.id
-    containerImage: '${acrSever}/shipping/dronescheduler:0.1.0'
+    containerRegistryResourceId: containerRegistryResourceId
+    containerImage: 'shipping/dronescheduler:0.1.0'
     containerPort: 8080
     isExternalIngress: false
-    containerRegistry: acrSever
-    containerRegistryUsername: containerRegistryUser
-    containerRegistryPassword: containerRegistryPassword
+    revisionMode: 'multiple'
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
-      }
-      {
-        name: 'containerregistry-password'
-        value: containerRegistryPassword
       }
     ]
     env: [
@@ -277,20 +258,14 @@ module ca_workflow 'container-http.bicep' = {
     containerAppName: 'workflow-app'
     containerAppUserAssignedResourceId: miWorkflow.id
     environmentId: env_shipping_dronedelivery.outputs.id
-    containerImage: '${acrSever}/shipping/workflow:0.1.0'
+    containerRegistryResourceId: containerRegistryResourceId
+    containerImage: 'shipping/workflow:0.1.0'
     revisionMode: 'single'
-    containerRegistry: acrSever
-    containerRegistryUsername: containerRegistryUser
-    containerRegistryPassword: containerRegistryPassword
     isExternalIngress: false
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
-      }
-      {
-        name: 'containerregistry-password'
-        value: containerRegistryPassword
       }
       {
         name: 'namespace-sas-key'
@@ -378,20 +353,15 @@ module ca_package 'container-http.bicep' = {
     containerAppName: 'package-app'
     containerAppUserAssignedResourceId: miPackage.id
     environmentId: env_shipping_dronedelivery.outputs.id
-    containerImage: '${acrSever}/shipping/package:0.1.0'
+    containerRegistryResourceId: containerRegistryResourceId
+    containerImage: 'shipping/package:0.1.0'
     containerPort: 80
     isExternalIngress: false
-    containerRegistry: acrSever
-    containerRegistryUsername: containerRegistryUser
-    containerRegistryPassword: containerRegistryPassword
+    revisionMode: 'multiple'
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
-      }
-      {
-        name: 'containerregistry-password'
-        value: containerRegistryPassword
       }
       {
         name: 'mongodb-connectrionstring'
@@ -431,22 +401,17 @@ module ca_ingestion 'container-http.bicep' = {
     containerAppName: 'ingestion-app'
     containerAppUserAssignedResourceId: miIngestion.id
     environmentId: env_shipping_dronedelivery.outputs.id
-    containerImage: '${acrSever}/shipping/ingestion:0.1.0'
+    containerRegistryResourceId: containerRegistryResourceId
+    containerImage: 'shipping/ingestion:0.1.0'
     containerPort: 80
     cpu: '1'
     memory: '2.0Gi'
     isExternalIngress: true
-    containerRegistry: acrSever
-    containerRegistryUsername: containerRegistryUser
-    containerRegistryPassword: containerRegistryPassword
+    revisionMode: 'multiple'
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
-      }
-      {
-        name: 'containerregistry-password'
-        value: containerRegistryPassword
       }
       {
         name: 'namespace-sas-key'
