@@ -56,6 +56,12 @@ Following the steps below will result in the creation of the following Azure res
 
   [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)   
 
+- The required [resource providers registered](https://learn.microsoft.com/azure/azure-resource-manager/management/resource-providers-and-types#azure-cli).
+   - `Microsoft.App`
+   - `Microsoft.Cache`
+   - `Microsoft.DocumentDB`
+   - `Microsoft.KeyVault`
+   - `Microsoft.ServiceBus`
 ### Steps
 
 1. Clone this repository.
@@ -127,7 +133,7 @@ Following the steps below will result in the creation of the following Azure res
    az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/package:0.1.0 ./workload/src/shipping/package/.
    ```
 
-1. Get Application Insights instrumentation key
+1. Get the Application Insights instrumentation key.
 
    ```bash
    AI_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.appInsightsName.value -o tsv)
@@ -135,10 +141,10 @@ Following the steps below will result in the creation of the following Azure res
    AI_ID=$(az resource show -g rg-shipping-dronedelivery -n $AI_NAME --resource-type "Microsoft.Insights/components" --query properties.AppId -o tsv)
    ```
 
-1. Get microservices details
+1. Get microservices configuration details
 
    ```bash
-   # delivery
+   # Delivery
    DELIVERY_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryCosmosDbName.value -o tsv)
    DELIVERY_DATABASE_NAME="${DELIVERY_COSMOSDB_NAME}-db"
    DELIVERY_COLLECTION_NAME="${DELIVERY_COSMOSDB_NAME}-col"
@@ -147,23 +153,23 @@ Following the steps below will result in the creation of the following Azure res
    DELIVERY_REDIS_ENDPOINT=$(az redis show -g rg-shipping-dronedelivery -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
    DELIVERY_KEYVAULT_URI=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.deliveryKeyVaultUri.value -o tsv)
 
-   # drone scheduler
+   # Drone scheduler
    DRONESCHEDULER_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.droneSchedulerCosmosDbName.value -o tsv)
    DRONESCHEDULER_COSMOSDB_ENDPOINT=$(az cosmosdb show -g rg-shipping-dronedelivery -n $DRONESCHEDULER_COSMOSDB_NAME --query documentEndpoint -o tsv)
    DRONESCHEDULER_KEYVAULT_URI=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.droneSchedulerKeyVaultUri.value -o tsv)
 
-   # workflow
+   # Workflow
    WORKFLOW_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueNamespace.value -o tsv)
    WORKFLOW_NAMESPACE_ENDPOINT=$(az servicebus namespace show -g rg-shipping-dronedelivery -n $WORKFLOW_NAMESPACE_NAME --query serviceBusEndpoint -o tsv)
    WORKFLOW_NAMESPACE_SAS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.workflowServiceAccessKeyName.value -o tsv)
    WORKFLOW_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $WORKFLOW_NAMESPACE_NAME -n $WORKFLOW_NAMESPACE_SAS_NAME --query primaryKey -o tsv)
    WORKFLOW_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueName.value -o tsv)
 
-   # package
+   # Package
    PACKAGE_MONGODB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.packageMongoDbName.value -o tsv)
    PACKAGE_MONGODB_CONNNECTIONSTRING=$(az cosmosdb keys list --type connection-strings -g rg-shipping-dronedelivery --name $PACKAGE_MONGODB_NAME --query "connectionStrings[0].connectionString" -o tsv | sed 's/==/%3D%3D/g')
 
-   # ingestion
+   # Ingestion
    INGESTION_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionQueueNamespace.value -o tsv)
    INGESTION_NAMESPACE_SAS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-stamp --query properties.outputs.ingestionServiceAccessKeyName.value -o tsv)
    INGESTION_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $INGESTION_NAMESPACE_NAME -n $INGESTION_NAMESPACE_SAS_NAME --query primaryKey -o tsv)
@@ -175,21 +181,15 @@ Following the steps below will result in the creation of the following Azure res
    > For this brownfield workload deployment, the Azure Container Registry instance uses legacy admin user access. While this ideally would be an AcrPull RBAC assignment, for this deployment, consider this technical debt and not guidance. Also making imparative changes like this outside of your IaC is never encouraged.
 
    ```bash
+   # [This takes about one minute.]
    az acr update -n $ACR_NAME --admin-enabled true
    ACR_PASS=$(az acr credential show -n $ACR_NAME --query "passwords[0].value" -o tsv)
-   ```
-
-## Deploy Azure Container App
-
-1. Register the Azure Resource Manager provider for `Microsoft.App`
-
-   ```bash
-   az provider register --namespace Microsoft.App
    ```
 
 1. Deploy the Container Apps ARM template
 
    ```bash
+   # [This takes about eight minutes.]
    az deployment group create -f main.bicep -g rg-shipping-dronedelivery -p \
       acrSever=$ACR_SERVER \
       containerRegistryUser=$ACR_NAME \
@@ -213,11 +213,9 @@ Following the steps below will result in the creation of the following Azure res
       ingestionQueueName=$INGESTION_QUEUE_NAME
    ```
 
-   :eyes: Please note that Azure Container Apps as well as this ARM API specification currently have [limited `location` support](https://azure.microsoft.com/global-infrastructure/services/?products=container-apps).
+## Try it out
 
-## Validation
-
-Now that you have deployed in a Container Apps Environment, you can validate its functionality. This section will help you to validate the workload is exposed through a Container Apps External Ingress and responding to HTTP requests correctly.
+Now that you have deployed your Container Apps Environment, you can validate its functionality. This section will help you to validate the workload is exposed through a Container Apps HTTP ingress flow and responding to HTTP requests correctly.
 
 ### Steps
 
@@ -254,12 +252,12 @@ Now that you have deployed in a Container Apps Environment, you can validate its
    The response to the request printed in your terminal should look similar to the one shown below:
 
    ```output
-   {"deliveryId":"5453d09a-a826-436f-8e7d-4ff706367b04","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2021-02-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
+   {"deliveryId":"5453d09a-a826-436f-8e7d-4ff706367b04","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2023-05-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
    ```
 
-1. Query Application Insights to ensure your request have been ingested by the underlaying services
+1. Query Application Insights to ensure your request has been ingested by the underlaying services.
 
-   :stopwatch: It might take five minutes for the query results to be available.
+   :stopwatch: It might take five minutes for the full query results to be available.
 
    ```bash
    az monitor app-insights query --app $AI_ID --analytics-query 'requests
@@ -280,7 +278,7 @@ Now that you have deployed in a Container Apps Environment, you can validate its
    PUT DroneDeliveries/Put [id] (1)
    ```
 
-   :book: Above result demonstrates that the http request initiated from the client has been ingested by `IngestionController/scheduleDeliveryAsync` to be later consumed by the `Workflow` background process to be sent to `Deliveries/Put`, `/api/packages/mypackage` and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
+   :book: Above result demonstrates that the HTTP request, initiated from the client, has been ingested by `IngestionController/scheduleDeliveryAsync` to be later consumed by the `Workflow` background process to be sent to `Deliveries/Put`, `/api/packages/mypackage` and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
 
 ## Troubleshooting
 
@@ -316,8 +314,8 @@ az containerapp revision restart -g rg-shipping-dronedelivery --app <containerap
 
 The team has been able to migrate and run Fabrikam Drone Delivery on top of Azure Container Apps. They are now laying out a new migration and modernization plan that will include:
 
-1. [Start using DAPR](https://docs.microsoft.com/azure/container-apps/microservices#dapr-integration)
-1. [Bring your own VNET](https://docs.microsoft.com/azure/container-apps/vnet-custom?tabs=bash&pivots=azure-portal)
+1. [Start using DAPR](https://learn.microsoft.com/azure/container-apps/microservices#dapr-integration)
+1. [Bring your own virtual network](https://learn.microsoft.com/azure/container-apps/vnet-custom)
 
 ## Contributions
 
