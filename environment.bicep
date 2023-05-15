@@ -1,11 +1,16 @@
-param location string = resourceGroup().location
-param environmentName string
+targetScope = 'resourceGroup'
 
-var containerEnvironmentName = 'cae-${environmentName}'
-var logAnalyticsWorkspaceName = 'la-${environmentName}'
+/*** PARAMETERS ***/
 
-resource la 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
-  name: logAnalyticsWorkspaceName
+@description('The location to deploy all resources.')
+@minLength(1)
+param location string
+
+/*** RESOURCES ***/
+
+@description('Log analytics workspace used for Application Insights and Azure Diagnostics.')
+resource la 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+  name: 'la-shipping-dronedelivery'
   location: location
   properties: {
     sku: {
@@ -13,8 +18,6 @@ resource la 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
     }
     retentionInDays: 30
     features: {
-      legacy: 0
-      searchVersion: 1
       enableLogAccessUsingOnlyResourcePermissions: true
     }
     workspaceCapping: {
@@ -25,12 +28,12 @@ resource la 'Microsoft.OperationalInsights/workspaces@2021-06-01' = {
   }
 }
 
-resource cae 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
-  name: containerEnvironmentName
+@description('The Azure Container Apps Environment')
+resource cae 'Microsoft.App/managedEnvironments@2022-11-01-preview' = {
+  name: 'cae-shipping-dronedelivery'
   kind: 'containerenvironment'
   location: location
   properties: {
-    type: 'managed'
     appLogsConfiguration: {
       destination: 'log-analytics'
       logAnalyticsConfiguration: {
@@ -38,7 +41,37 @@ resource cae 'Microsoft.App/managedEnvironments@2022-01-01-preview' = {
         sharedKey: la.listKeys().primarySharedKey
       }
     }
+    customDomainConfiguration: null
+    daprAIConnectionString: null
+    daprAIInstrumentationKey: null
+    daprConfiguration: null
+    infrastructureResourceGroup: 'rg-aca-managed-shipping-dronedelivery'
+    kedaConfiguration: null
+    vnetConfiguration: {
+      infrastructureSubnetId: null
+      internal: false
+      platformReservedCidr: null
+      platformReservedDnsIP: null
+    }
+    zoneRedundant: true
   }
 }
+
+@description('Azure diagnostics for Container Apps Environment')
+resource d 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: cae
+  properties: {
+    workspaceId: la.id
+    logs: [
+      {
+        categoryGroup: 'allLogs'
+        enabled: true
+      }
+    ]
+  }
+}
+
+/*** OUTPUT ***/
 
 output id string = cae.id
