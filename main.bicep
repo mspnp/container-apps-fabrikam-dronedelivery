@@ -351,6 +351,10 @@ module ca_workflow 'container-http.bicep' = {
         name: 'SERVICEREQUEST__MAXBULKHEADQUEUESIZE'
         value: '25'
       }
+      {
+        name: 'AzureServicesAuthConnectionString'
+        value: 'RunAs=App;AppId=${miWorkflow.properties.clientId}'
+      }
     ]
   }
 }
