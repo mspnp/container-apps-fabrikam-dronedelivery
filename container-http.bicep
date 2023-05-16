@@ -116,8 +116,14 @@ resource containerApp 'Microsoft.App/containerApps@2022-11-01-preview' = {
     environmentId: environmentId
     workloadProfileName: null
     configuration: {
-      secrets: secrets
       activeRevisionsMode: revisionMode
+      secrets: secrets
+      registries: [
+        {
+          server: existingContainerRegistry.properties.loginServer
+          identity: existingManagedIdentity.id
+        }
+      ]
       ingress: hasIngress ? {
         external: isExternalIngress
         targetPort: containerPort
@@ -138,12 +144,6 @@ resource containerApp 'Microsoft.App/containerApps@2022-11-01-preview' = {
           affinity: 'none'
         }
       } : null
-      registries: [
-        {
-          server: existingContainerRegistry.properties.loginServer
-          identity: existingManagedIdentity.id
-        }
-      ]
       dapr: {
         enabled: false
       }

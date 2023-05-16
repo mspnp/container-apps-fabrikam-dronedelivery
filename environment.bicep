@@ -30,13 +30,13 @@ resource cae 'Microsoft.App/managedEnvironments@2022-11-01-preview' = {
   name: 'cae-shipping-dronedelivery'
   location: location
   properties: {
-    vnetConfiguration: null
     appLogsConfiguration: {
       destination: 'azure-monitor' // Uses diagnostics settings below
       logAnalyticsConfiguration: null
     }
     zoneRedundant: false
     workloadProfiles: null
+    vnetConfiguration: null
     infrastructureResourceGroup: null
   }
 }
