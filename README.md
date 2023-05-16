@@ -242,7 +242,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
 
 1. Query Application Insights to ensure your request has been ingested by the underlaying services.
 
-   :stopwatch: It might take five minutes for the full query results to be available.
+   :stopwatch: It might take ten minutes for the full query results to be available.
 
    ```bash
    az monitor app-insights query --app $AI_ID --analytics-query 'requests
