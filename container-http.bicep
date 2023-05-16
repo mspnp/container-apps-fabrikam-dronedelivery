@@ -116,38 +116,38 @@ resource containerApp 'Microsoft.App/containerApps@2022-11-01-preview' = {
     environmentId: environmentId
     workloadProfileName: null
     configuration: {
+      secrets: secrets
       activeRevisionsMode: revisionMode
-      dapr: {
-        enabled: false
-      }
       ingress: hasIngress ? {
-        allowInsecure: false
-        clientCertificateMode: 'ignore'
-        corsPolicy: null
-        customDomains: []
-        exposedPort: null
         external: isExternalIngress
-        ipSecurityRestrictions: []
+        targetPort: containerPort
+        exposedPort: 0
+        transport: 'auto'
+        traffic: [
+          {
+            weight: 100
+            latestRevision: true
+          }
+        ]
+        customDomains: null
+        allowInsecure: false
+        ipSecurityRestrictions: null
+        corsPolicy: null
+        clientCertificateMode: 'ignore'
         stickySessions: {
           affinity: 'none'
         }
-        targetPort: containerPort
-        traffic: [
-          {
-            latestRevision: true
-            weight: 100
-          }
-        ]
-        transport: 'auto'
       } : null
-      maxInactiveRevisions: 10
       registries: [
         {
           server: existingContainerRegistry.properties.loginServer
           identity: existingManagedIdentity.id
         }
       ]
-      secrets: secrets
+      dapr: {
+        enabled: false
+      }
+      maxInactiveRevisions: 10
     }
     template: {
       containers: [
@@ -155,29 +155,23 @@ resource containerApp 'Microsoft.App/containerApps@2022-11-01-preview' = {
           image: '${existingContainerRegistry.properties.loginServer}/${containerImage}'
           name: containerAppName
           env: env
-          args: []
-          command: []
-          probes: []
           resources: {
-            #disable-next-line BCP036 // https://github.com/Azure/bicep-types-az/issues/1404
-            cpu: cpu
+            cpu: json(cpu)
             memory: memory
           }
-          volumeMounts: []
         }
       ]
-      initContainers: []
+      initContainers: null
       revisionSuffix: null
       scale: {
-        maxReplicas: 1
         minReplicas: 1
-        rules: []
+        maxReplicas: 1
+        rules: null
       }
-      volumes: []
+      volumes: null
     }
   }
 }
-
 
 /*** OUTPUT ***/
 

@@ -30,31 +30,19 @@ resource cae 'Microsoft.App/managedEnvironments@2022-11-01-preview' = {
   name: 'cae-shipping-dronedelivery'
   location: location
   properties: {
+    vnetConfiguration: null
     appLogsConfiguration: {
-      destination: 'log-analytics'
-      logAnalyticsConfiguration: {
-        customerId: la.properties.customerId
-        sharedKey: la.listKeys().primarySharedKey
-      }
-    }
-    customDomainConfiguration: null
-    daprAIConnectionString: null
-    daprAIInstrumentationKey: null
-    daprConfiguration: null
-    infrastructureResourceGroup: 'rg-aca-managed-shipping-dronedelivery'
-    kedaConfiguration: null
-    vnetConfiguration: {
-      infrastructureSubnetId: null
-      internal: false
-      platformReservedCidr: null
-      platformReservedDnsIP: null
+      destination: 'azure-monitor' // Uses diagnostics settings below
+      logAnalyticsConfiguration: null
     }
     zoneRedundant: false
+    workloadProfiles: null
+    infrastructureResourceGroup: null
   }
 }
 
 @description('Azure diagnostics for Container Apps Environment')
-resource d 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+resource dsCae 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
   name: 'default'
   scope: cae
   properties: {
