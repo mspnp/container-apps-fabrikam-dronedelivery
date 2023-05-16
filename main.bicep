@@ -172,6 +172,10 @@ module ca_delivery 'container-http.bicep' = {
         name: 'AZURE_CLIENT_ID'
         value: miDelivery.properties.clientId
       }
+      {
+        name: 'AzureServicesAuthConnectionString'
+        value: 'RunAs=App;AppId=${miDelivery.properties.clientId}'
+      }
     ]
   }
 }
@@ -247,6 +251,10 @@ module ca_dronescheduler 'container-http.bicep' = {
       {
         name: 'AZURE_CLIENT_ID'
         value: miDroneScheduler.properties.clientId
+      }
+      {
+        name: 'AzureServicesAuthConnectionString'
+        value: 'RunAs=App;AppId=${miDroneScheduler.properties.clientId}'
       }
     ]
   }
