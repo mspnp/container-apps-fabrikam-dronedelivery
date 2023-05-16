@@ -6,9 +6,10 @@ targetScope = 'resourceGroup'
 @minLength(1)
 param containerRegistryName string
 
-@description('The existing user managed identity resource id to grant the ACR pull role to.')
-@minLength(100)
-param containerAppUserAssignedResourceId string
+@description('The existing user managed identity pricipal id to grant the ACR pull role to. This is a GUID.')
+@minLength(36)
+@maxLength(36)
+param containerAppUserPrincipalId string
 
 @description('Name of the Azure Containers Apps resource.')
 @minLength(1)
@@ -31,10 +32,10 @@ resource builtInAcrPullRole 'Microsoft.Authorization/roleDefinitions@2022-04-01'
 
 @description('The ACR Pull role assignment between the managed identity and the ACR instance.')
 resource acrPullAssignment 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name: guid(containerAppUserAssignedResourceId, builtInAcrPullRole.id, existingContainerRegistry.id)
+  name: guid(containerAppUserPrincipalId, builtInAcrPullRole.id, existingContainerRegistry.id)
   scope: existingContainerRegistry
   properties: {
-    principalId: containerAppUserAssignedResourceId
+    principalId: containerAppUserPrincipalId
     roleDefinitionId: builtInAcrPullRole.id
     description: 'Allows the ${containerAppName} to pull images from this container registry.'
     principalType: 'ServicePrincipal'

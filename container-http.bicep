@@ -75,6 +75,18 @@ resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2023-
   name: split(containerRegistryResourceId, '/')[8]
 }
 
+@description('Resource group of the existing managed identity')
+resource managedIdentityResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' existing = {
+  scope: subscription()
+  name: split(containerAppUserAssignedResourceId, '/')[4]
+}
+
+@description('Existing managed identity for this service')
+resource existingManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  scope: managedIdentityResourceGroup
+  name: split(containerAppUserAssignedResourceId, '/')[8]
+}
+
 /*** RESOURCES ***/
 
 @description('Ensure the user managed identity has ACR pull rights to the container registry.')
@@ -82,7 +94,7 @@ module acrPull './acrpull-roleassignment.bicep' = {
   name: 'acrpull-${containerAppName}'
   scope: containerRegistryResourceGroup
   params: {
-    containerAppUserAssignedResourceId: containerAppUserAssignedResourceId
+    containerAppUserPrincipalId: existingManagedIdentity.properties.principalId
     containerRegistryName: existingContainerRegistry.name
     containerAppName: containerAppName
   }
@@ -97,7 +109,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-11-01-preview' = {
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${containerAppUserAssignedResourceId}': {}
+      '${existingManagedIdentity.id}': {}
     }
   }
   properties: {
@@ -132,7 +144,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-11-01-preview' = {
       registries: [
         {
           server: existingContainerRegistry.properties.loginServer
-          identity: containerAppUserAssignedResourceId
+          identity: existingManagedIdentity.id
         }
       ]
       secrets: secrets
@@ -147,6 +159,7 @@ resource containerApp 'Microsoft.App/containerApps@2022-11-01-preview' = {
           command: []
           probes: []
           resources: {
+            #disable-next-line BCP036 // https://github.com/Azure/bicep-types-az/issues/1404
             cpu: cpu
             memory: memory
           }

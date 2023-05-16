@@ -28,7 +28,6 @@ resource la 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
 @description('The Azure Container Apps Environment')
 resource cae 'Microsoft.App/managedEnvironments@2022-11-01-preview' = {
   name: 'cae-shipping-dronedelivery'
-  kind: 'containerenvironment'
   location: location
   properties: {
     appLogsConfiguration: {
