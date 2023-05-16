@@ -6,27 +6,24 @@ targetScope = 'resourceGroup'
 @minLength(1)
 param location string
 
-/*** RESOURCES ***/
+@description('The resource ID of log analytics sink used by all the resources in the microservices. Will also be used for the app platform resources.')
+@minLength(40)
+param logAnalyticsResourceId string
 
-@description('Log analytics workspace used for Application Insights and Azure Diagnostics.')
-resource la 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
-  name: 'la-shipping-dronedelivery'
-  location: location
-  properties: {
-    sku: {
-      name: 'PerGB2018'
-    }
-    retentionInDays: 30
-    features: {
-      enableLogAccessUsingOnlyResourcePermissions: true
-    }
-    workspaceCapping: {
-      dailyQuotaGb: -1
-    }
-    publicNetworkAccessForIngestion: 'Enabled'
-    publicNetworkAccessForQuery: 'Enabled'
-  }
+/*** EXISTING RESOURCES ***/
+
+@description('Resource group of the provided log analytics workspace.')
+resource laResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' existing = {
+  name: split(logAnalyticsResourceId, '/')[4]
+  scope: subscription(split(logAnalyticsResourceId, '/')[2])
 }
+
+resource la 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+  name: split(logAnalyticsResourceId, '/')[8]
+  scope: laResourceGroup
+}
+
+/*** RESOURCES ***/
 
 @description('The Azure Container Apps Environment')
 resource cae 'Microsoft.App/managedEnvironments@2022-11-01-preview' = {
@@ -53,7 +50,7 @@ resource cae 'Microsoft.App/managedEnvironments@2022-11-01-preview' = {
       platformReservedCidr: null
       platformReservedDnsIP: null
     }
-    zoneRedundant: true
+    zoneRedundant: false
   }
 }
 

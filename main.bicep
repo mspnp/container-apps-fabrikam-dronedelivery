@@ -2,6 +2,10 @@ targetScope = 'resourceGroup'
 
 /*** PARAMETERS ***/
 
+@description('The resource ID of log analytics sink used by all the resources in the microservices. Will also be used for the app platform resources.')
+@minLength(40)
+param logAnalyticsResourceId string
+
 @description('The Application Insights key used for all of the logging done by the microservices.')
 @minLength(20)
 param applicationInsightsInstrumentationKey string
@@ -26,6 +30,7 @@ param deliveryCosmosdbEndpoint string
 @minLength(23)
 param deliveryRedisEndpoint string
 
+#disable-next-line no-hardcoded-env-urls
 @description('The Key Vault HTTP endpoint used by the Delivery service. Should be in the form of https://instanceName.vault.azure.net/')
 @minLength(24)
 param deliveryKeyVaultUri string
@@ -34,6 +39,7 @@ param deliveryKeyVaultUri string
 @minLength(24)
 param droneSchedulerCosmosdbEndpoint string
 
+#disable-next-line no-hardcoded-env-urls
 @description('The Key Vault HTTP endpoint used by the Scheduler service. Should be in the form of https://instanceName.vault.azure.net/')
 @minLength(24)
 param droneSchedulerKeyVaultUri string
@@ -80,7 +86,7 @@ param ingestionQueueName string
 @minLength(5)
 param location string = resourceGroup().location
 
-/*** EXISTING RESOURCE GROUP RESOURCES ***/
+/*** EXISTING RESOURCES ***/
 
 @description('The existing managed identity for the Delivery service.')
 resource miDelivery 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
@@ -114,6 +120,7 @@ module env_shipping_dronedelivery 'environment.bicep' = {
   name: 'env-shipping-dronedelivery'
   params: {
     location: location
+    logAnalyticsResourceId: logAnalyticsResourceId
   }
 }
 

@@ -70,7 +70,7 @@ Following the steps below will result in the creation of the following Azure res
    git clone --recurse-submodules https://github.com/mspnp/container-apps-fabrikam-dronedelivery.git
    ```
 
-   :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can [install Windows Subsystem for Linux](https://learn.microsoft.com/windows/wsl/install#install) to run Bash by entering the following command in PowerShell or Windows Command Prompt and then restarting your machine: `wsl --install`
+   :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can [install Windows Subsystem for Linux](https://learn.microsoft.com/windows/wsl/install#install).
 
 1. Navigate to the container-apps-fabrikam-dronedelivery folder
 
@@ -94,7 +94,7 @@ Following the steps below will result in the creation of the following Azure res
    > This deploys all of the dependencies of the various microservices in the workload. None of these resources are for the application platform, but instead are tied directly to the drone delivery workload. For example, the per-microservice Key Vault, the per-microservice data stores, the message queue, logging sinks, etc. These same resources would exist no matter if the application platform was Azure Container Apps or Kubernetes or App Service.
 
    ```bash
-   # [This takes about 18 minute.]
+   # [This takes about 18 minutes.]
    az deployment group create \
       -n workload-resources   \
       -g rg-shipping-dronedelivery       \
@@ -121,17 +121,16 @@ Following the steps below will result in the creation of the following Azure res
    az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/package:0.1.0 ./workload/src/shipping/package/.
    ```
 
-1. Get the Application Insights instrumentation key.
+1. Get microservices configuration details from the workload resource deployment
 
    ```bash
    AI_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.appInsightsName.value -o tsv)
-   AI_KEY=$(az resource show -g rg-shipping-dronedelivery -n $AI_NAME --resource-type "Microsoft.Insights/components" --query properties.InstrumentationKey -o tsv)
-   AI_ID=$(az resource show -g rg-shipping-dronedelivery -n $AI_NAME --resource-type "Microsoft.Insights/components" --query properties.AppId -o tsv)
-   ```
+   AI_KEY=$(az monitor app-insights component show -g rg-shipping-dronedelivery -a $AI_NAME --query instrumentationKey -o tsv)
+   AI_ID=$(az monitor app-insights component show -g rg-shipping-dronedelivery -a $AI_NAME --query appId -o tsv)
+   LA_WORKSPACE_ID=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.laWorkspace.value -o tsv)
 
-1. Get microservices configuration details
+   echo -e "AI_NAME=${AI_NAME}\nAI_KEY=${AI_KEY}\nAI_ID=${AI_ID}\nLA_WORKSPACE_ID=${LA_WORKSPACE_ID}"
 
-   ```bash
    # Delivery
    DELIVERY_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.deliveryCosmosDbName.value -o tsv)
    DELIVERY_DATABASE_NAME="${DELIVERY_COSMOSDB_NAME}-db"
@@ -141,10 +140,14 @@ Following the steps below will result in the creation of the following Azure res
    DELIVERY_REDIS_ENDPOINT=$(az redis show -g rg-shipping-dronedelivery -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
    DELIVERY_KEYVAULT_URI=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.deliveryKeyVaultUri.value -o tsv)
 
+   echo -e "DELIVERY_COSMOSDB_NAME=${DELIVERY_COSMOSDB_NAME}\nDELIVERY_DATABASE_NAME=${DELIVERY_DATABASE_NAME}\nDELIVERY_COLLECTION_NAME=${DELIVERY_COLLECTION_NAME}\nDELIVERY_COSMOSDB_ENDPOINT=${DELIVERY_COSMOSDB_ENDPOINT}\nDELIVERY_REDIS_NAME=${DELIVERY_REDIS_NAME}\nDELIVERY_REDIS_ENDPOINT=${DELIVERY_REDIS_ENDPOINT}\nDELIVERY_KEYVAULT_URI=${DELIVERY_KEYVAULT_URI}"
+
    # Drone scheduler
    DRONESCHEDULER_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.droneSchedulerCosmosDbName.value -o tsv)
    DRONESCHEDULER_COSMOSDB_ENDPOINT=$(az cosmosdb show -g rg-shipping-dronedelivery -n $DRONESCHEDULER_COSMOSDB_NAME --query documentEndpoint -o tsv)
    DRONESCHEDULER_KEYVAULT_URI=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.droneSchedulerKeyVaultUri.value -o tsv)
+
+   echo -e "DRONESCHEDULER_COSMOSDB_NAME=${DRONESCHEDULER_COSMOSDB_NAME}\nDRONESCHEDULER_COSMOSDB_ENDPOINT=${DRONESCHEDULER_COSMOSDB_ENDPOINT}\nDRONESCHEDULER_KEYVAULT_URI=${DRONESCHEDULER_KEYVAULT_URI}"
 
    # Workflow
    WORKFLOW_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.ingestionQueueNamespace.value -o tsv)
@@ -153,15 +156,21 @@ Following the steps below will result in the creation of the following Azure res
    WORKFLOW_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $WORKFLOW_NAMESPACE_NAME -n $WORKFLOW_NAMESPACE_SAS_NAME --query primaryKey -o tsv)
    WORKFLOW_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.ingestionQueueName.value -o tsv)
 
+   echo -e "WORKFLOW_NAMESPACE_NAME=${WORKFLOW_NAMESPACE_NAME}\nWORKFLOW_NAMESPACE_ENDPOINT=${WORKFLOW_NAMESPACE_ENDPOINT}\nWORKFLOW_NAMESPACE_SAS_NAME=${WORKFLOW_NAMESPACE_SAS_NAME}\nWORKFLOW_NAMESPACE_SAS_KEY=${WORKFLOW_NAMESPACE_SAS_KEY}\nWORKFLOW_QUEUE_NAME=${WORKFLOW_QUEUE_NAME}"
+
    # Package
    PACKAGE_MONGODB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.packageMongoDbName.value -o tsv)
    PACKAGE_MONGODB_CONNNECTIONSTRING=$(az cosmosdb keys list --type connection-strings -g rg-shipping-dronedelivery --name $PACKAGE_MONGODB_NAME --query "connectionStrings[0].connectionString" -o tsv | sed 's/==/%3D%3D/g')
+
+   echo -e "PACKAGE_MONGODB_NAME=${PACKAGE_MONGODB_NAME}\nPACKAGE_MONGODB_CONNNECTIONSTRING=${PACKAGE_MONGODB_CONNNECTIONSTRING}"
 
    # Ingestion
    INGESTION_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.ingestionQueueNamespace.value -o tsv)
    INGESTION_NAMESPACE_SAS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.ingestionServiceAccessKeyName.value -o tsv)
    INGESTION_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $INGESTION_NAMESPACE_NAME -n $INGESTION_NAMESPACE_SAS_NAME --query primaryKey -o tsv)
    INGESTION_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.ingestionQueueName.value -o tsv)
+
+   echo -e "INGESTION_NAMESPACE_NAME=${INGESTION_NAMESPACE_NAME}\nINGESTION_NAMESPACE_SAS_NAME=${INGESTION_NAMESPACE_SAS_NAME}\nINGESTION_NAMESPACE_SAS_KEY=${INGESTION_NAMESPACE_SAS_KEY}\nINGESTION_QUEUE_NAME=${INGESTION_QUEUE_NAME}"
    ```
 
 1. Deploy the Container Apps ARM template.
@@ -173,8 +182,9 @@ Following the steps below will result in the creation of the following Azure res
    ```bash
    # [This takes about nine minutes.]
    az deployment group create -f main.bicep -g rg-shipping-dronedelivery -p \
-      containerRegistryResourceId=$ACR_ID
+      logAnalyticsResourceId=$LA_WORKSPACE_ID \
       applicationInsightsInstrumentationKey=$AI_KEY \
+      containerRegistryResourceId=$ACR_ID \
       deliveryCosmosdbDatabaseName=$DELIVERY_DATABASE_NAME \
       deliveryCosmosdbCollectionName=$DELIVERY_COLLECTION_NAME \
       deliveryCosmosdbEndpoint=$DELIVERY_COSMOSDB_ENDPOINT \
