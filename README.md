@@ -87,9 +87,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Create a resource group for your deployment.
 
    ```bash
-   RESOURCE_GROUP=rg-shipping-dronedelivery
-
-   az group create -n $RESOURCE_GROUP -l eastus2
+   az group create -n rg-shipping-dronedelivery -l eastus2
    ```
 
 1. Deploy all the dependencies of the various microservices that comprise the workload.
@@ -98,13 +96,13 @@ Following the steps below will result in the creation of the following Azure res
 
    ```bash
    # [This takes about 18 minutes.]
-   az deployment group create -n workload-resources -g $RESOURCE_GROUP -f ./workload/workload-stamp.bicep
+   az deployment group create -n workload-resources -g rg-shipping-dronedelivery -f ./workload/workload-stamp.bicep
    ```
 
 1. Build, tag, and host the five microservice container images in ACR.
 
    ```bash
-   ACR_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.acrName.value -o tsv)
+   ACR_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.acrName.value -o tsv)
    ACR_SERVER=$(az acr show -n $ACR_NAME --query loginServer -o tsv)
 
    # [This takes about 10 minutes.]
@@ -118,52 +116,52 @@ Following the steps below will result in the creation of the following Azure res
 1. Get the microservices configuration details from the workload resource deployment.
 
    ```bash
-   AI_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.appInsightsName.value -o tsv)
-   AI_KEY=$(az monitor app-insights component show -g $RESOURCE_GROUP -a $AI_NAME --query instrumentationKey -o tsv)
-   AI_ID=$(az monitor app-insights component show -g $RESOURCE_GROUP -a $AI_NAME --query appId -o tsv)
-   ACR_ID=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.acrId.value -o tsv)
-   LA_WORKSPACE_ID=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.laWorkspace.value -o tsv)
+   AI_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.appInsightsName.value -o tsv)
+   AI_KEY=$(az monitor app-insights component show -g rg-shipping-dronedelivery -a $AI_NAME --query instrumentationKey -o tsv)
+   AI_ID=$(az monitor app-insights component show -g rg-shipping-dronedelivery -a $AI_NAME --query appId -o tsv)
+   ACR_ID=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.acrId.value -o tsv)
+   LA_WORKSPACE_ID=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.laWorkspace.value -o tsv)
 
    echo -e "\nCommon Config:\nAI_NAME=${AI_NAME}\nAI_KEY=${AI_KEY}\nAI_ID=${AI_ID}\nACR_ID=${ACR_ID}\nLA_WORKSPACE_ID=${LA_WORKSPACE_ID}\n"
 
    # Delivery
-   DELIVERY_COSMOSDB_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.deliveryCosmosDbName.value -o tsv)
+   DELIVERY_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.deliveryCosmosDbName.value -o tsv)
    DELIVERY_DATABASE_NAME="${DELIVERY_COSMOSDB_NAME}-db"
    DELIVERY_COLLECTION_NAME="${DELIVERY_COSMOSDB_NAME}-col"
-   DELIVERY_COSMOSDB_ENDPOINT=$(az cosmosdb show -g $RESOURCE_GROUP -n $DELIVERY_COSMOSDB_NAME --query documentEndpoint -o tsv)
-   DELIVERY_REDIS_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.deliveryRedisName.value -o tsv)
-   DELIVERY_REDIS_ENDPOINT=$(az redis show -g $RESOURCE_GROUP -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
-   DELIVERY_KEYVAULT_URI=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.deliveryKeyVaultUri.value -o tsv)
+   DELIVERY_COSMOSDB_ENDPOINT=$(az cosmosdb show -g rg-shipping-dronedelivery -n $DELIVERY_COSMOSDB_NAME --query documentEndpoint -o tsv)
+   DELIVERY_REDIS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.deliveryRedisName.value -o tsv)
+   DELIVERY_REDIS_ENDPOINT=$(az redis show -g rg-shipping-dronedelivery -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
+   DELIVERY_KEYVAULT_URI=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.deliveryKeyVaultUri.value -o tsv)
 
    echo -e "\nDelivery Config:\nDELIVERY_COSMOSDB_NAME=${DELIVERY_COSMOSDB_NAME}\nDELIVERY_DATABASE_NAME=${DELIVERY_DATABASE_NAME}\nDELIVERY_COLLECTION_NAME=${DELIVERY_COLLECTION_NAME}\nDELIVERY_COSMOSDB_ENDPOINT=${DELIVERY_COSMOSDB_ENDPOINT}\nDELIVERY_REDIS_NAME=${DELIVERY_REDIS_NAME}\nDELIVERY_REDIS_ENDPOINT=${DELIVERY_REDIS_ENDPOINT}\nDELIVERY_KEYVAULT_URI=${DELIVERY_KEYVAULT_URI}\n"
 
    # Drone scheduler
-   DRONESCHEDULER_COSMOSDB_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.droneSchedulerCosmosDbName.value -o tsv)
-   DRONESCHEDULER_COSMOSDB_ENDPOINT=$(az cosmosdb show -g $RESOURCE_GROUP -n $DRONESCHEDULER_COSMOSDB_NAME --query documentEndpoint -o tsv)
-   DRONESCHEDULER_KEYVAULT_URI=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.droneSchedulerKeyVaultUri.value -o tsv)
+   DRONESCHEDULER_COSMOSDB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.droneSchedulerCosmosDbName.value -o tsv)
+   DRONESCHEDULER_COSMOSDB_ENDPOINT=$(az cosmosdb show -g rg-shipping-dronedelivery -n $DRONESCHEDULER_COSMOSDB_NAME --query documentEndpoint -o tsv)
+   DRONESCHEDULER_KEYVAULT_URI=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.droneSchedulerKeyVaultUri.value -o tsv)
 
    echo -e "\nScheduler Config:\nDRONESCHEDULER_COSMOSDB_NAME=${DRONESCHEDULER_COSMOSDB_NAME}\nDRONESCHEDULER_COSMOSDB_ENDPOINT=${DRONESCHEDULER_COSMOSDB_ENDPOINT}\nDRONESCHEDULER_KEYVAULT_URI=${DRONESCHEDULER_KEYVAULT_URI}\n"
 
    # Workflow
-   WORKFLOW_NAMESPACE_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.ingestionQueueNamespace.value -o tsv)
-   WORKFLOW_NAMESPACE_ENDPOINT=$(az servicebus namespace show -g $RESOURCE_GROUP -n $WORKFLOW_NAMESPACE_NAME --query serviceBusEndpoint -o tsv)
-   WORKFLOW_NAMESPACE_SAS_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.workflowServiceAccessKeyName.value -o tsv)
-   WORKFLOW_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g $RESOURCE_GROUP --namespace-name $WORKFLOW_NAMESPACE_NAME -n $WORKFLOW_NAMESPACE_SAS_NAME --query primaryKey -o tsv)
-   WORKFLOW_QUEUE_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.ingestionQueueName.value -o tsv)
+   WORKFLOW_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.ingestionQueueNamespace.value -o tsv)
+   WORKFLOW_NAMESPACE_ENDPOINT=$(az servicebus namespace show -g rg-shipping-dronedelivery -n $WORKFLOW_NAMESPACE_NAME --query serviceBusEndpoint -o tsv)
+   WORKFLOW_NAMESPACE_SAS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.workflowServiceAccessKeyName.value -o tsv)
+   WORKFLOW_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $WORKFLOW_NAMESPACE_NAME -n $WORKFLOW_NAMESPACE_SAS_NAME --query primaryKey -o tsv)
+   WORKFLOW_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.ingestionQueueName.value -o tsv)
 
    echo -e "\nWorkflow Config:\nWORKFLOW_NAMESPACE_NAME=${WORKFLOW_NAMESPACE_NAME}\nWORKFLOW_NAMESPACE_ENDPOINT=${WORKFLOW_NAMESPACE_ENDPOINT}\nWORKFLOW_NAMESPACE_SAS_NAME=${WORKFLOW_NAMESPACE_SAS_NAME}\nWORKFLOW_NAMESPACE_SAS_KEY=${WORKFLOW_NAMESPACE_SAS_KEY}\nWORKFLOW_QUEUE_NAME=${WORKFLOW_QUEUE_NAME}\n"
 
    # Package
-   PACKAGE_MONGODB_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.packageMongoDbName.value -o tsv)
-   PACKAGE_MONGODB_CONNNECTIONSTRING=$(az cosmosdb keys list --type connection-strings -g $RESOURCE_GROUP --name $PACKAGE_MONGODB_NAME --query "connectionStrings[0].connectionString" -o tsv | sed 's/==/%3D%3D/g')
+   PACKAGE_MONGODB_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.packageMongoDbName.value -o tsv)
+   PACKAGE_MONGODB_CONNNECTIONSTRING=$(az cosmosdb keys list --type connection-strings -g rg-shipping-dronedelivery --name $PACKAGE_MONGODB_NAME --query "connectionStrings[0].connectionString" -o tsv | sed 's/==/%3D%3D/g')
 
    echo -e "\nPackage Config:\nPACKAGE_MONGODB_NAME=${PACKAGE_MONGODB_NAME}\nPACKAGE_MONGODB_CONNNECTIONSTRING=${PACKAGE_MONGODB_CONNNECTIONSTRING}\n"
 
    # Ingestion
-   INGESTION_NAMESPACE_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.ingestionQueueNamespace.value -o tsv)
-   INGESTION_NAMESPACE_SAS_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.ingestionServiceAccessKeyName.value -o tsv)
-   INGESTION_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g $RESOURCE_GROUP --namespace-name $INGESTION_NAMESPACE_NAME -n $INGESTION_NAMESPACE_SAS_NAME --query primaryKey -o tsv)
-   INGESTION_QUEUE_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-resources --query properties.outputs.ingestionQueueName.value -o tsv)
+   INGESTION_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.ingestionQueueNamespace.value -o tsv)
+   INGESTION_NAMESPACE_SAS_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.ingestionServiceAccessKeyName.value -o tsv)
+   INGESTION_NAMESPACE_SAS_KEY=$(az servicebus namespace authorization-rule keys list -g rg-shipping-dronedelivery --namespace-name $INGESTION_NAMESPACE_NAME -n $INGESTION_NAMESPACE_SAS_NAME --query primaryKey -o tsv)
+   INGESTION_QUEUE_NAME=$(az deployment group show -g rg-shipping-dronedelivery -n workload-resources --query properties.outputs.ingestionQueueName.value -o tsv)
 
    echo -e "\nIngestion Config:\nINGESTION_NAMESPACE_NAME=${INGESTION_NAMESPACE_NAME}\nINGESTION_NAMESPACE_SAS_NAME=${INGESTION_NAMESPACE_SAS_NAME}\nINGESTION_NAMESPACE_SAS_KEY=${INGESTION_NAMESPACE_SAS_KEY}\nINGESTION_QUEUE_NAME=${INGESTION_QUEUE_NAME}"
    ```
@@ -176,7 +174,7 @@ Following the steps below will result in the creation of the following Azure res
 
    ```bash
    # [This takes about four minutes.]
-   az deployment group create -f main.bicep -g $RESOURCE_GROUP -p \
+   az deployment group create -f main.bicep -g rg-shipping-dronedelivery -p \
       logAnalyticsResourceId=$LA_WORKSPACE_ID \
       applicationInsightsInstrumentationKey=$AI_KEY \
       containerRegistryResourceId=$ACR_ID \
@@ -204,17 +202,17 @@ Now that you have deployed your Container Apps Environment, you can validate its
 
 ### Steps
 
-1. Get the Ingestion FQDN
+1. Get the Ingestion service's FQDN
 
     > :book: The app team conducts a final acceptance test to ensure that traffic is flowing end-to-end as expected. To do so, an HTTP request is submitted against the ingestion external ingress.
 
    ```bash
-   INGESTION_FQDN=$(az deployment group show -g $RESOURCE_GROUP -n main --query properties.outputs.ingestionFqdn.value -o tsv)
+   INGESTION_FQDN=$(az deployment group show -g rg-shipping-dronedelivery -n main --query properties.outputs.ingestionFqdn.value -o tsv)
    ```
 
-1. Send a request to https://dronedelivery.fabrikam.com.
+1. Create a delivery request using your microservices hosted on ACA.
 
-   > :bulb: Since the certificate used for TLS is self-signed, the request disables TLS validation using the '-k' option.
+   > This calls the the only Internet-exposed service.  This kick offs the five microservices to perform the request.
 
    ```bash
    curl -X POST "https://${INGESTION_FQDN}/api/deliveryrequests" --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{
@@ -247,23 +245,23 @@ Now that you have deployed your Container Apps Environment, you can validate its
    ```bash
    az monitor app-insights query --app $AI_ID --analytics-query 'requests
    | summarize count_=sum(itemCount) by operation_Name
-   | order by count_ desc
+   | order by operation_Name
    | project strcat(operation_Name," (", count_, ")")' --query tables[0].rows[] -o table
    ```
 
-   The following output demonstrates the type of response to expect from the CLI command.
+   The following output demonstrates the type of response to expect from the Application Insights query.
 
    ```output
    Result
    --------------------------------------------------
-   POST IngestionController/scheduleDeliveryAsync (1)
+   PUT DroneDeliveries/Put [id] (1)
    PUT Deliveries/Put [id] (1)
    PUT /api/packages/mypackage (1)
+   POST IngestionController/scheduleDeliveryAsync (1)
    GET /api/packages/mypackage (1)
-   PUT DroneDeliveries/Put [id] (1)
    ```
 
-   :book: Above result demonstrates that the HTTP request, initiated from the client, has been ingested by `IngestionController/scheduleDeliveryAsync` to be later consumed by the `Workflow` background process to be sent to `Deliveries/Put`, `/api/packages/mypackage` and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
+   :book: Above result demonstrates that the HTTP request, initiated from the client, has been ingested by `IngestionController/scheduleDeliveryAsync` to be later consumed by the Workflow background service to be sent to `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
 
 ## Troubleshooting
 
@@ -272,7 +270,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
 If you need a restart a revision with Provision Status `Failed` or for another reason you can use az cli:
 
 ```bash
-az containerapp revision restart -g $RESOURCE_GROUP --app <containerapp-name> -n <containerapp-revision-name>
+az containerapp revision restart -g rg-shipping-dronedelivery --app <containerapp-name> -n <containerapp-revision-name>
 ```
 
 ## :broom: Clean up
@@ -280,7 +278,7 @@ az containerapp revision restart -g $RESOURCE_GROUP --app <containerapp-name> -n
 1. Delete the resource group that contains all the resources
 
    ```bash
-   az group delete -n $RESOURCE_GROUP -y
+   az group delete -n rg-shipping-dronedelivery -y
    ```
 
 1. Purge deleted Key Vaults related to this deployment.
