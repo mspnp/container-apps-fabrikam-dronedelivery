@@ -2,52 +2,115 @@ targetScope = 'resourceGroup'
 
 /*** PARAMETERS ***/
 
-param acrSever string
-param containerRegistryUser string
-param containerRegistryPassword string
+@description('The resource ID of log analytics sink used by all the resources in the microservices. Will also be used for the app platform resources.')
+@minLength(40)
+param logAnalyticsResourceId string
+
+@description('The Application Insights key used for all of the logging done by the microservices.')
+@minLength(20)
 param applicationInsightsInstrumentationKey string
+
+@description('The resource ID of the existing Azure Container Registry that contains all the microservices.')
+@minLength(40)
+param containerRegistryResourceId string
+
+@description('The Cosmos DB database name used by the Delivery service.')
+@minLength(1)
 param deliveryCosmosdbDatabaseName string
+
+@description('The Cosmos DB collection name used by the Delivery service.')
+@minLength(1)
 param deliveryCosmosdbCollectionName string
+
+@description('The Cosmos DB HTTP endpoint used by the Delivery service. Should be in the form of https://databaseName.documents.azure.com:443/')
+@minLength(24)
 param deliveryCosmosdbEndpoint string
+
+@description('The FQDN of the Redis instance used by the Delivery service. Should be in the form of instanceName.redis.cache.windows.net')
+@minLength(23)
 param deliveryRedisEndpoint string
+
+#disable-next-line no-hardcoded-env-urls
+@description('The Key Vault HTTP endpoint used by the Delivery service. Should be in the form of https://instanceName.vault.azure.net/')
+@minLength(24)
 param deliveryKeyVaultUri string
+
+@description('The Cosmos DB HTTP endpoint used by the Scheduler service. Should be in the form of https://databaseName.documents.azure.com:443/')
+@minLength(24)
 param droneSchedulerCosmosdbEndpoint string
+
+#disable-next-line no-hardcoded-env-urls
+@description('The Key Vault HTTP endpoint used by the Scheduler service. Should be in the form of https://instanceName.vault.azure.net/')
+@minLength(24)
 param droneSchedulerKeyVaultUri string
+
+@description('The Service Bus HTTP endpoint used by the Workflow service. Should be in the form of https://namespaceName.servicebus.windows.net:443/')
+@minLength(24)
 param wokflowNamespaceEndpoint string
+
+@description('The Service Bus Queue Access Policy Name for the Workflow service.')
+@minLength(1)
 param workflowNamespaceSASName string
+
+@description('The Service Bus Queue Access Policy SaS key for the Workflow service.')
+@secure()
+@minLength(5)
 param workflowNamespaceSASKey string
+
+@description('The Service Bus Queue Name for the Workflow service.')
+@minLength(1)
 param workflowQueueName string
+
+@description('The Mongo DB connection string for the Package service. Should be in the form of mongodb://user:secret@instanceName.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@appName@')
+@secure()
+@minLength(60)
 param packageMongodbConnectionString string
+
+@description('The Service Bus namespace for the Ingestion service.')
+@minLength(1)
 param ingestionNamespaceName string
+
+@description('The Service Bus Queue Access Policy Name for the Ingestion service.')
+@minLength(1)
 param ingestionNamespaceSASName string
+
+@description('The Service Bus Queue Access Policy SaS key for the Ingestion service.')
+@minLength(5)
 param ingestionNamespaceSASKey string
+
+@description('The Service Bus Queue Name for the Ingestion service.')
+@minLength(1)
 param ingestionQueueName string
 
-/*** EXISTING RESOURCE GROUP RESOURCES ***/
+@description('The location to deploy all new resources.')
+@minLength(5)
+param location string = resourceGroup().location
 
-resource miDelivery 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
-  name: 'uid-delivery'
-  scope: resourceGroup()
+/*** EXISTING RESOURCES ***/
+
+@description('The existing managed identity for the Delivery service.')
+resource miDelivery 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: 'mi-delivery'
 }
 
-resource miDroneScheduler 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
-  name: 'uid-dronescheduler'
-  scope: resourceGroup()
+@description('The existing managed identity for the Scheduler service.')
+resource miDroneScheduler 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: 'mi-dronescheduler'
 }
 
-resource miWorkflow 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
-  name: 'uid-workflow'
-  scope: resourceGroup()
+@description('The existing managed identity for the Workflow service.')
+resource miWorkflow 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: 'mi-workflow'
 }
 
-resource miPackage 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
-  name: 'uid-package'
-  scope: resourceGroup()
+@description('The existing managed identity for the Package service.')
+resource miPackage 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: 'mi-package'
 }
 
-resource miIngestion 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-30' existing = {
-  name: 'uid-ingestion'
-  scope: resourceGroup()
+@description('The existing managed identity for the Ingestion service.')
+resource miIngestion 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+  name: 'mi-ingestion'
 }
 
 /*** RESOURCES ***/
@@ -56,7 +119,8 @@ resource miIngestion 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-11-3
 module env_shipping_dronedelivery 'environment.bicep' = {
   name: 'env-shipping-dronedelivery'
   params: {
-    environmentName: 'shipping-dronedelivery'
+    location: location
+    logAnalyticsResourceId: logAnalyticsResourceId
   }
 }
 
@@ -64,24 +128,19 @@ module env_shipping_dronedelivery 'environment.bicep' = {
 module ca_delivery 'container-http.bicep' = {
   name: 'ca-delivery'
   params: {
-    location: resourceGroup().location
+    location: location
     containerAppName: 'delivery-app'
     containerAppUserAssignedResourceId: miDelivery.id
     environmentId: env_shipping_dronedelivery.outputs.id
-    containerImage: '${acrSever}/shipping/delivery:0.1.0'
+    containerRegistryResourceId: containerRegistryResourceId
+    containerImage: 'shipping/delivery:0.1.0'
     containerPort: 8080
     isExternalIngress: false
-    containerRegistry: acrSever
-    containerRegistryUsername: containerRegistryUser
-    containerRegistryPassword: containerRegistryPassword
+    revisionMode: 'multiple'
     secrets: [
         {
           name: 'applicationinsights-instrumentationkey'
           value: applicationInsightsInstrumentationKey
-        }
-        {
-          name: 'containerregistry-password'
-          value: containerRegistryPassword
         }
     ]
     env: [
@@ -113,6 +172,10 @@ module ca_delivery 'container-http.bicep' = {
         name: 'AZURE_CLIENT_ID'
         value: miDelivery.properties.clientId
       }
+      {
+        name: 'AzureServicesAuthConnectionString'
+        value: 'RunAs=App;AppId=${miDelivery.properties.clientId}'
+      }
     ]
   }
 }
@@ -121,24 +184,19 @@ module ca_delivery 'container-http.bicep' = {
 module ca_dronescheduler 'container-http.bicep' = {
   name: 'ca-dronescheduler'
   params: {
-    location: resourceGroup().location
+    location: location
     containerAppName: 'dronescheduler-app'
     containerAppUserAssignedResourceId: miDroneScheduler.id
     environmentId: env_shipping_dronedelivery.outputs.id
-    containerImage: '${acrSever}/shipping/dronescheduler:0.1.0'
+    containerRegistryResourceId: containerRegistryResourceId
+    containerImage: 'shipping/dronescheduler:0.1.0'
     containerPort: 8080
     isExternalIngress: false
-    containerRegistry: acrSever
-    containerRegistryUsername: containerRegistryUser
-    containerRegistryPassword: containerRegistryPassword
+    revisionMode: 'multiple'
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
-      }
-      {
-        name: 'containerregistry-password'
-        value: containerRegistryPassword
       }
     ]
     env: [
@@ -194,6 +252,10 @@ module ca_dronescheduler 'container-http.bicep' = {
         name: 'AZURE_CLIENT_ID'
         value: miDroneScheduler.properties.clientId
       }
+      {
+        name: 'AzureServicesAuthConnectionString'
+        value: 'RunAs=App;AppId=${miDroneScheduler.properties.clientId}'
+      }
     ]
   }
 }
@@ -202,23 +264,18 @@ module ca_dronescheduler 'container-http.bicep' = {
 module ca_workflow 'container-http.bicep' = {
   name: 'ca-workflow'
   params: {
-    location: resourceGroup().location
+    location: location
     containerAppName: 'workflow-app'
     containerAppUserAssignedResourceId: miWorkflow.id
     environmentId: env_shipping_dronedelivery.outputs.id
-    containerImage: '${acrSever}/shipping/workflow:0.1.0'
+    containerRegistryResourceId: containerRegistryResourceId
+    containerImage: 'shipping/workflow:0.1.0'
     revisionMode: 'single'
-    containerRegistry: acrSever
-    containerRegistryUsername: containerRegistryUser
-    containerRegistryPassword: containerRegistryPassword
+    isExternalIngress: false
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
-      }
-      {
-        name: 'containerregistry-password'
-        value: containerRegistryPassword
       }
       {
         name: 'namespace-sas-key'
@@ -294,6 +351,10 @@ module ca_workflow 'container-http.bicep' = {
         name: 'SERVICEREQUEST__MAXBULKHEADQUEUESIZE'
         value: '25'
       }
+      {
+        name: 'AzureServicesAuthConnectionString'
+        value: 'RunAs=App;AppId=${miWorkflow.properties.clientId}'
+      }
     ]
   }
 }
@@ -302,24 +363,19 @@ module ca_workflow 'container-http.bicep' = {
 module ca_package 'container-http.bicep' = {
   name: 'ca-package'
   params: {
-    location: resourceGroup().location
+    location: location
     containerAppName: 'package-app'
     containerAppUserAssignedResourceId: miPackage.id
     environmentId: env_shipping_dronedelivery.outputs.id
-    containerImage: '${acrSever}/shipping/package:0.1.0'
+    containerRegistryResourceId: containerRegistryResourceId
+    containerImage: 'shipping/package:0.1.0'
     containerPort: 80
     isExternalIngress: false
-    containerRegistry: acrSever
-    containerRegistryUsername: containerRegistryUser
-    containerRegistryPassword: containerRegistryPassword
+    revisionMode: 'multiple'
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
-      }
-      {
-        name: 'containerregistry-password'
-        value: containerRegistryPassword
       }
       {
         name: 'mongodb-connectrionstring'
@@ -355,26 +411,21 @@ module ca_package 'container-http.bicep' = {
 module ca_ingestion 'container-http.bicep' = {
   name: 'ca-ingestion'
   params: {
-    location: resourceGroup().location
+    location: location
     containerAppName: 'ingestion-app'
     containerAppUserAssignedResourceId: miIngestion.id
     environmentId: env_shipping_dronedelivery.outputs.id
-    containerImage: '${acrSever}/shipping/ingestion:0.1.0'
+    containerRegistryResourceId: containerRegistryResourceId
+    containerImage: 'shipping/ingestion:0.1.0'
     containerPort: 80
     cpu: '1'
     memory: '2.0Gi'
     isExternalIngress: true
-    containerRegistry: acrSever
-    containerRegistryUsername: containerRegistryUser
-    containerRegistryPassword: containerRegistryPassword
+    revisionMode: 'multiple'
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
-      }
-      {
-        name: 'containerregistry-password'
-        value: containerRegistryPassword
       }
       {
         name: 'namespace-sas-key'
