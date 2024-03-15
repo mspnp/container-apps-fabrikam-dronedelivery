@@ -64,7 +64,7 @@ Following the steps below will result in the creation of the following Azure res
    - `Microsoft.ServiceBus`
 ### Steps
 
-1- Set environment variables.
+1. Set environment variables.
 
    ```bash
    export LOCATION=eastus2
