@@ -90,27 +90,27 @@ param location string = resourceGroup().location
 
 @description('The existing managed identity for the Delivery service.')
 resource miDelivery 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
-  name: 'mi-delivery'
+  name: 'uid-delivery'
 }
 
 @description('The existing managed identity for the Scheduler service.')
 resource miDroneScheduler 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
-  name: 'mi-dronescheduler'
+  name: 'uid-dronescheduler'
 }
 
 @description('The existing managed identity for the Workflow service.')
 resource miWorkflow 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
-  name: 'mi-workflow'
+  name: 'uid-workflow'
 }
 
 @description('The existing managed identity for the Package service.')
 resource miPackage 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
-  name: 'mi-package'
+  name: 'uid-package'
 }
 
 @description('The existing managed identity for the Ingestion service.')
 resource miIngestion 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
-  name: 'mi-ingestion'
+  name: 'uid-ingestion'
 }
 
 /*** RESOURCES ***/
