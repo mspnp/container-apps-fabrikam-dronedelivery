@@ -125,7 +125,7 @@ Following the steps below will result in the creation of the following Azure res
    ```
 
 1. Deleting Kubernetes Enricher dependency (Optional)
-   It is not needed a Kubernetes Enricher on C# implementations when it is deployed on Container App, because it is cluster abstracting solution. It will work anyway if we keep it.
+   The Kubernetes Enricher is not needed on C# implementations when it is deployed on Container Apps, because it is a cluster abstracting solution. It will work anyway if we keep it.
 
    ```bash
    sed -i '/"KubernetesEnricher": "true",/d' ./workload/src/shipping/delivery/Fabrikam.DroneDelivery.DeliveryService/appsettings.json
