@@ -93,8 +93,27 @@ Following the steps below will result in the creation of the following Azure res
 1. Create a resource group for your deployment.
 
    ```bash
-   az group create -n rg-shipping-dronedelivery-${LOCATION} -l ${LOCATION}
+   export PREREQS_DEPLOYMENT_NAME=workload-stamp-prereqs
+
+   az deployment sub create --name $PREREQS_DEPLOYMENT_NAME --location ${LOCATION} --template-file ./workload/workload-stamp-prereqs.bicep --parameters resourceGroupLocation=${LOCATION}
    ```
+
+1. Get the user identities.
+
+   ```bash
+   export DELIVERY_PRINCIPAL_ID=$(az identity show -g rg-far2-capp-shipping-dronedelivery-${LOCATION} -n uid-delivery --query principalId -o tsv) && \
+   export DRONESCHEDULER_PRINCIPAL_ID=$(az identity show -g rg-far2-capp-shipping-dronedelivery-${LOCATION} -n uid-dronescheduler --query principalId -o tsv) && \
+   export WORKFLOW_PRINCIPAL_ID=$(az identity show -g rg-far2-capp-shipping-dronedelivery-${LOCATION} -n uid-workflow --query principalId -o tsv) && \
+   export PACKAGE_ID_PRINCIPAL_ID=$(az identity show -g rg-far2-capp-shipping-dronedelivery-${LOCATION} -n uid-package --query principalId -o tsv) && \
+   export INGESTION_ID_PRINCIPAL_ID=$(az identity show -g rg-far2-capp-shipping-dronedelivery-${LOCATION} -n uid-ingestion --query principalId -o tsv)
+
+   # Wait for Microsoft Entra ID propagation
+   until az ad sp show --id $DELIVERY_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
+   until az ad sp show --id $DRONESCHEDULER_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
+   until az ad sp show --id $WORKFLOW_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
+   until az ad sp show --id $PACKAGE_ID_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
+   until az ad sp show --id $INGESTION_ID_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
+   ``
 
 1. Deploy all the dependencies of the various microservices that comprise the workload.
 
@@ -102,7 +121,16 @@ Following the steps below will result in the creation of the following Azure res
 
    ```bash
    # [This takes about 18 minutes.]
-   az deployment group create -n workload-stamp -g rg-shipping-dronedelivery-${LOCATION} -f ./workload/workload-stamp.bicep
+   az deployment group create -n workload-stamp -g rg-shipping-dronedelivery-${LOCATION} -f ./workload/workload-stamp.bicep -p droneSchedulerPrincipalId=$DRONESCHEDULER_PRINCIPAL_ID -p workflowPrincipalId=$WORKFLOW_PRINCIPAL_ID -p deliveryPrincipalId=$DELIVERY_PRINCIPAL_ID -p ingestionPrincipalId=$INGESTION_ID_PRINCIPAL_ID -p packagePrincipalId=$PACKAGE_ID_PRINCIPAL_ID
+   ```
+
+1. Deleting Kubernetes Enricher dependency (Optional)
+   The Kubernetes Enricher is not needed on C# implementations when it is deployed on Container Apps, because it is a cluster abstracting solution. It will work anyway if we keep it.
+
+   ```bash
+   sed -i '/"KubernetesEnricher": "true",/d' ./workload/src/shipping/delivery/Fabrikam.DroneDelivery.DeliveryService/appsettings.json
+   sed -i '/"KubernetesEnricher": "true",/d' ./workload/src/shipping/workflow/Fabrikam.Workflow.Service/appsettings.json
+   sed -i '/"KubernetesEnricher": "true",/d' ./workload/src/shipping/dronescheduler/Fabrikam.DroneDelivery.DroneSchedulerService/appsettings.json
    ```
 
 1. Build, tag, and host the five microservice container images in ACR.
