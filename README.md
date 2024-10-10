@@ -246,7 +246,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
 
 1. Create a delivery request using your microservices hosted on ACA.
 
-   > This calls the only Internet-exposed service.  This kick offs the five microservices to perform the request.
+   > This calls the only Internet-exposed service.  This kicks off the five microservices to perform the request.
 
    ```bash
    curl -X POST "https://${INGESTION_FQDN}/api/deliveryrequests" --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{
