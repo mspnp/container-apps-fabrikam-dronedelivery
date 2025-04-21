@@ -3,7 +3,7 @@ targetScope = 'resourceGroup'
 /*** PARAMETERS ***/
 
 @description('The name of the Azure Container Registry to perform the role assignment on.')
-@minLength(1)
+@minLength(5)
 param containerRegistryName string
 
 @description('The existing user managed identity pricipal id to grant the ACR pull role to. This is a GUID.')

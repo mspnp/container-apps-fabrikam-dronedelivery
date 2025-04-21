@@ -152,6 +152,7 @@ Following the steps below will result in the creation of the following Azure res
    ```bash
    AI_NAME=$(az deployment group show -g rg-shipping-dronedelivery-${LOCATION} -n workload-stamp --query properties.outputs.appInsightsName.value -o tsv)
    AI_KEY=$(az monitor app-insights component show -g rg-shipping-dronedelivery-${LOCATION} -a $AI_NAME --query instrumentationKey -o tsv)
+   APPINSIGHTS_CONNECTION_STRING=$(az monitor app-insights component show -g rg-shipping-dronedelivery-${LOCATION} -a $AI_NAME --query connectionString --output tsv)
    AI_ID=$(az monitor app-insights component show -g rg-shipping-dronedelivery-${LOCATION} -a $AI_NAME --query appId -o tsv)
    ACR_ID=$(az deployment group show -g rg-shipping-dronedelivery-${LOCATION} -n workload-stamp --query properties.outputs.acrId.value -o tsv)
    LA_WORKSPACE_ID=$(az deployment group show -g rg-shipping-dronedelivery-${LOCATION} -n workload-stamp --query properties.outputs.laWorkspace.value -o tsv)
@@ -211,6 +212,7 @@ Following the steps below will result in the creation of the following Azure res
    az deployment group create -f main.bicep -g rg-shipping-dronedelivery-${LOCATION} -p \
       logAnalyticsResourceId=$LA_WORKSPACE_ID \
       applicationInsightsInstrumentationKey=$AI_KEY \
+      applicationInsightsConnectionString=$APPINSIGHTS_CONNECTION_STRING \
       containerRegistryResourceId=$ACR_ID \
       deliveryCosmosdbDatabaseName=$DELIVERY_DATABASE_NAME \
       deliveryCosmosdbCollectionName=$DELIVERY_COLLECTION_NAME \
