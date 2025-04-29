@@ -10,6 +10,10 @@ param logAnalyticsResourceId string
 @minLength(20)
 param applicationInsightsInstrumentationKey string
 
+@description('The Application Insights connection string used for all of the logging done by the microservices.')
+@minLength(20)
+param applicationInsightsConnectionString string
+
 @description('The resource ID of the existing Azure Container Registry that contains all the microservices.')
 @minLength(40)
 param containerRegistryResourceId string
@@ -374,8 +378,8 @@ module ca_package 'container-http.bicep' = {
     revisionMode: 'multiple'
     secrets: [
       {
-        name: 'applicationinsights-instrumentationkey'
-        value: applicationInsightsInstrumentationKey
+        name: 'applicationinsights-connectionstring'
+        value: applicationInsightsConnectionString
       }
       {
         name: 'mongodb-connectrionstring'
@@ -384,8 +388,8 @@ module ca_package 'container-http.bicep' = {
     ]
     env: [
       {
-        name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-        secretref: 'applicationinsights-instrumentationkey'
+        name: 'APPINSIGHTS_CONNECTION_STRING'
+        secretref: 'applicationinsights-connectionstring'
       }
       {
         name: 'CONNECTION_STRING'
