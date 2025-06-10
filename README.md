@@ -315,6 +315,7 @@ az containerapp revision restart -g rg-shipping-dronedelivery --app <containerap
 
    ```bash
    az group delete -n rg-shipping-dronedelivery-${LOCATION} -y
+   az group delete -n rg-shipping-dronedelivery-${LOCATION}-acr -y
    ```
 
 1. Purge deleted Key Vaults related to this deployment.
