@@ -1,0 +1,51 @@
+{
+  "name": "fabrikam-drone-delivery-package-service",
+  "version": "0.1.0",
+  "type": "module",
+  "description": "Fabrikam Drone Delivery Package Service",
+  "scripts": {
+    "start": "gulp serve",
+    "build": "gulp build",
+    "clean": "gulp clean",
+    "test": "jest",
+    "api": "gulp create-api-classes",
+    "int-test": "gulp int-test",
+    "ncu": "ncu",
+    "ncu:update": "ncu -u"
+  },
+  "repository": {
+    "type": "git",
+    "url": ""
+  },
+  "keywords": [
+    "Drone",
+    "Delivery",
+    "Package"
+  ],
+  "author": "Microsoft Patterns and Practices",
+  "license": "MIT",
+  "dependencies": {
+    "@koa/router": "^13.0.1",
+    "applicationinsights": "^2.9.0",
+    "koa": "^2.15.4",
+    "koa-bodyparser": "^4.4.1",
+    "koa-compress": "^5.1.1",
+    "mongodb": "^6.12.0",
+    "winston": "^3.17.0",
+    "swagger-jsdoc": "^6.2.8"
+  },
+  "devDependencies": {
+    "@types/applicationinsights": "^0.20.0",
+    "@types/koa": "^2.15.0",
+    "@types/koa__router": "^12.0.4",
+    "@types/koa-bodyparser": "^4.3.12",
+    "@types/koa-compress": "^4.0.6",
+    "@types/node": "^22.10.10",
+    "@types/swagger-jsdoc": "^6.0.4",
+    "del": "^8.0.0",
+    "gulp": "^5.0.0",
+    "gulp-mocha": "^10.0.1",
+    "gulp-nodemon": "^2.5.0",
+    "gulp-typescript": "^6.0.0-alpha.1"
+  }
+}
