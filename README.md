@@ -93,7 +93,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Create a resource group for your deployment.
 
    ```bash
-   export PREREQS_DEPLOYMENT_NAME=workload-stamp-prereqs
+   export PREREQS_DEPLOYMENT_NAME=workload-stamp-prereqs-${LOCATION}
 
    az deployment sub create --name $PREREQS_DEPLOYMENT_NAME --location ${LOCATION} --template-file ./workload/workload-stamp-prereqs.bicep --parameters resourceGroupLocation=${LOCATION}
    ```
@@ -293,11 +293,11 @@ Now that you have deployed your Container Apps Environment, you can validate its
    PUT DroneDeliveries/Put [id] (1)
    PUT Deliveries/Put [id] (1)
    PUT /api/packages/mypackage (1)
-   POST IngestionController/scheduleDeliveryAsync (1)
+   POST /api/deliveryrequests (1)
    GET /api/packages/mypackage (1)
    ```
 
-   :book: Above result demonstrates that the HTTP request, initiated from the client, has been ingested by `IngestionController/scheduleDeliveryAsync` to be later consumed by the Workflow background service to be sent to `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
+   :book: Above result demonstrates that the HTTP request, initiated from the client, has been ingested by `/api/deliveryrequests` to be later consumed by the Workflow background service to be sent to `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
 
 ## Troubleshooting
 
