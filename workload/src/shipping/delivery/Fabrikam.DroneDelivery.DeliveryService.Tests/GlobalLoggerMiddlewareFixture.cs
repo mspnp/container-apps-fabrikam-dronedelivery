@@ -173,7 +173,6 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
         }
 
         [TestMethod]
-        [ExpectedException(typeof(Exception))]
         public async Task IfUnhandledExceptionWhileResponding_ItLogsErrorPlusWarningAndRethrowException()
         {
             // Arrange
@@ -209,30 +208,33 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var exMessage = "I'm just exceptional";
             var logRequestMiddleware = new GlobalLoggerMiddleware(next: (innerHttpContext) => throw new Exception(exMessage), loggerFactory: loggerFactory.Object, diagnosticSource: diagnoticSourceMock.Object);
 
-            // Act
-            try
-            {
-                await logRequestMiddleware.Invoke(contextMock.Object);
-            }
-            // Assert
-            catch (Exception)
-            {
-                loggerMock.Verify(l => l.Log(
-                                        LogLevel.Error,
-                                        It.IsAny<EventId>(),
-                                        It.Is<It.IsAnyType>((object fV, Type _) => fV.ToString().Equals(($"An exception was thrown attempting to execute the global internal server error handler: {exMessage}"))),
-                                        It.IsAny<Exception>(),
-                                        (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
 
-                loggerMock.Verify(l => l.Log(
-                        LogLevel.Warning,
-                        It.IsAny<EventId>(),
-                        It.Is<It.IsAnyType>((object fV, Type _) => fV.ToString().Equals(("The response has already started, the error handler will not be executed."))),
-                        null,
-                        (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
-                // re-throw the actual re-throw 
-                throw;
-            }
+            var ex = Assert.Throws<Exception>(async () => {
+                // Act
+                try
+                {
+                    await logRequestMiddleware.Invoke(contextMock.Object);
+                }
+                // Assert
+                catch (Exception)
+                {
+                    loggerMock.Verify(l => l.Log(
+                                            LogLevel.Error,
+                                            It.IsAny<EventId>(),
+                                            It.Is<It.IsAnyType>((object fV, Type _) => fV.ToString().Equals(($"An exception was thrown attempting to execute the global internal server error handler: {exMessage}"))),
+                                            It.IsAny<Exception>(),
+                                            (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
+
+                    loggerMock.Verify(l => l.Log(
+                            LogLevel.Warning,
+                            It.IsAny<EventId>(),
+                            It.Is<It.IsAnyType>((object fV, Type _) => fV.ToString().Equals(("The response has already started, the error handler will not be executed."))),
+                            null,
+                            (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
+                    // re-throw the actual re-throw 
+                    throw;
+                }
+            });
         }
     }
 }
