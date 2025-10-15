@@ -51,7 +51,7 @@ Following the steps below will result in the creation of the following Azure res
 
 ### Prerequisites
 
-- An Azure subscription in which you have at least Contributor access to. You can [open an account for free](https://azure.microsoft.com/free).
+- An Azure subscription in which you have at least Contributor access to. You can [open an account for free](https://azure.microsoft.com/pricing/purchase-options/azure-account?cid=msft_learn).
 - Latest version of [Azure CLI installed](https://learn.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) or you can perform this from Azure Cloud Shell by clicking below.
 
   [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)   
