@@ -4,7 +4,7 @@ This repo contains the implementation that backs the [Deploy microservices with 
 
 ## Introduction
 
-Fabrikam inc has created a new operations team, and under its organization is a brownfield application called [Drone Delivery](https://github.com/mspnp/fabrikam-dronedelivery-workload/tree/beb2c60f9450ce04038fb95aa0110ab4143fc76a). This application been running for a while in Azure Kubernetes Service (AKS), and while they are obtaining the benefits of containers to run microservices and Kubernetes to host them, it has been discovered that they are not making use of any of the advance features of AKS like custom service mesh or autoscaling among others.
+Fabrikam inc has created a new operations team, and under its organization is a brownfield application called Drone Delivery. This application been running for a while in Azure Kubernetes Service (AKS), and while they are obtaining the benefits of containers to run microservices and Kubernetes to host them, it has been discovered that they are not making use of any of the advance features of AKS like custom service mesh or autoscaling among others.
 
 The team has detected an opportunity to simplify and be more efficient at the DevOps level, and this is why they are now looking into Azure Container Apps to evaluate hosting Fabrikam Drone Delivery. This will allow them to publish and run containerized microservices at scale, faster than before, reducing the complexity, saving resources by using scale-to-zero, built-in autoscaling capability, and without losing all the container advantages they love.
 
@@ -73,7 +73,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Clone this repository.
 
    ```bash
-   git clone --recurse-submodules https://github.com/mspnp/container-apps-fabrikam-dronedelivery.git
+   git clone https://github.com/mspnp/container-apps-fabrikam-dronedelivery.git
    ```
 
    :bulb: The steps shown here and elsewhere in the reference implementation use Bash shell commands. On Windows, you can [install Windows Subsystem for Linux](https://learn.microsoft.com/windows/wsl/install#install).
@@ -93,7 +93,7 @@ Following the steps below will result in the creation of the following Azure res
 1. Create a resource group for your deployment.
 
    ```bash
-   export PREREQS_DEPLOYMENT_NAME=workload-stamp-prereqs
+   export PREREQS_DEPLOYMENT_NAME=workload-stamp-prereqs-${LOCATION}
 
    az deployment sub create --name $PREREQS_DEPLOYMENT_NAME --location ${LOCATION} --template-file ./workload/workload-stamp-prereqs.bicep --parameters resourceGroupLocation=${LOCATION}
    ```
@@ -122,15 +122,6 @@ Following the steps below will result in the creation of the following Azure res
    ```bash
    # [This takes about 18 minutes.]
    az deployment group create -n workload-stamp -g rg-shipping-dronedelivery-${LOCATION} -f ./workload/workload-stamp.bicep -p droneSchedulerPrincipalId=$DRONESCHEDULER_PRINCIPAL_ID -p workflowPrincipalId=$WORKFLOW_PRINCIPAL_ID -p deliveryPrincipalId=$DELIVERY_PRINCIPAL_ID -p ingestionPrincipalId=$INGESTION_ID_PRINCIPAL_ID -p packagePrincipalId=$PACKAGE_ID_PRINCIPAL_ID
-   ```
-
-1. Deleting Kubernetes Enricher dependency (Optional)
-   The Kubernetes Enricher is not needed on C# implementations when it is deployed on Container Apps, because it is a cluster abstracting solution. It will work anyway if we keep it.
-
-   ```bash
-   sed -i '/"KubernetesEnricher": "true",/d' ./workload/src/shipping/delivery/Fabrikam.DroneDelivery.DeliveryService/appsettings.json
-   sed -i '/"KubernetesEnricher": "true",/d' ./workload/src/shipping/workflow/Fabrikam.Workflow.Service/appsettings.json
-   sed -i '/"KubernetesEnricher": "true",/d' ./workload/src/shipping/dronescheduler/Fabrikam.DroneDelivery.DroneSchedulerService/appsettings.json
    ```
 
 1. Build, tag, and host the five microservice container images in ACR.
@@ -293,11 +284,11 @@ Now that you have deployed your Container Apps Environment, you can validate its
    PUT DroneDeliveries/Put [id] (1)
    PUT Deliveries/Put [id] (1)
    PUT /api/packages/mypackage (1)
-   POST IngestionController/scheduleDeliveryAsync (1)
+   POST /api/deliveryrequests (1)
    GET /api/packages/mypackage (1)
    ```
 
-   :book: Above result demonstrates that the HTTP request, initiated from the client, has been ingested by `IngestionController/scheduleDeliveryAsync` to be later consumed by the Workflow background service to be sent to `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
+   :book: Above result demonstrates that the HTTP request, initiated from the client, has been ingested by `/api/deliveryrequests` to be later consumed by the Workflow background service to be sent to `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
 
 ## Troubleshooting
 
