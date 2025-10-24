@@ -27,7 +27,7 @@
   "dependencies": {
     "@koa/router": "^13.0.1",
     "applicationinsights": "^2.9.0",
-    "koa": "^3.0.1",
+    "koa": "^3.0.3",
     "koa-bodyparser": "^4.4.1",
     "koa-compress": "^5.1.1",
     "mongodb": "^6.12.0",
