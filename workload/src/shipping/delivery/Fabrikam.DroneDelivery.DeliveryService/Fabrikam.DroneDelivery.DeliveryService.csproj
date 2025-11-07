@@ -13,15 +13,14 @@
 		<PackageReference Include="Azure.Identity" Version="1.17.0" />
 		<PackageReference Include="Azure.Messaging.EventHubs" Version="5.12.2" />
 		<PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.23.0" />
-		<PackageReference Include="Microsoft.Azure.Cosmos" Version="3.54.0" />
+		<PackageReference Include="Microsoft.Azure.Cosmos" Version="3.54.1" />
 		<PackageReference Include="Microsoft.Extensions.Logging.ApplicationInsights" Version="2.23.0" />
-		<PackageReference Include="Microsoft.ApplicationInsights.Kubernetes" Version="7.0.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
 		<PackageReference Include="Serilog.AspNetCore" Version="9.0.0" />
 		<PackageReference Include="Serilog.Extensions.Logging.File" Version="3.0.0" />
 		<PackageReference Include="Serilog.Settings.Configuration" Version="9.0.0" />
-		<PackageReference Include="Serilog.Sinks.Console" Version="6.0.0" />
-		<PackageReference Include="StackExchange.Redis" Version="2.9.25" />
+		<PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
+		<PackageReference Include="StackExchange.Redis" Version="2.9.32" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="9.0.6" />
 	</ItemGroup>
 	<ItemGroup>
