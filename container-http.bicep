@@ -64,25 +64,25 @@ var hasIngress = (containerPort == -1) ? false : true
 /*** EXISTING RESOURCE ***/
 
 @description('Resource group of the existing container registry')
-resource containerRegistryResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' existing = {
+resource containerRegistryResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   scope: subscription()
   name: split(containerRegistryResourceId, '/')[4]
 }
 
 @description('Existing container registry')
-resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2023-01-01-preview' existing = {
+resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2025-05-01-preview' existing = {
   scope: containerRegistryResourceGroup
   name: split(containerRegistryResourceId, '/')[8]
 }
 
 @description('Resource group of the existing managed identity')
-resource managedIdentityResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' existing = {
+resource managedIdentityResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   scope: subscription()
   name: split(containerAppUserAssignedResourceId, '/')[4]
 }
 
 @description('Existing managed identity for this service')
-resource existingManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2023-01-31' existing = {
+resource existingManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
   scope: managedIdentityResourceGroup
   name: split(containerAppUserAssignedResourceId, '/')[8]
 }
@@ -100,7 +100,7 @@ module acrPull './acrpull-roleassignment.bicep' = {
   }
 }
 
-resource containerApp 'Microsoft.App/containerApps@2022-11-01-preview' = {
+resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
   name: containerAppName
   location: location
   dependsOn: [

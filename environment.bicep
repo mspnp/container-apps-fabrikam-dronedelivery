@@ -13,12 +13,12 @@ param logAnalyticsResourceId string
 /*** EXISTING RESOURCES ***/
 
 @description('Resource group of the provided log analytics workspace.')
-resource laResourceGroup 'Microsoft.Resources/resourceGroups@2022-09-01' existing = {
+resource laResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existing = {
   name: split(logAnalyticsResourceId, '/')[4]
   scope: subscription(split(logAnalyticsResourceId, '/')[2])
 }
 
-resource la 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
+resource la 'Microsoft.OperationalInsights/workspaces@2025-02-01' existing = {
   name: split(logAnalyticsResourceId, '/')[8]
   scope: laResourceGroup
 }
@@ -26,7 +26,7 @@ resource la 'Microsoft.OperationalInsights/workspaces@2022-10-01' existing = {
 /*** RESOURCES ***/
 
 @description('The Azure Container Apps Environment')
-resource cae 'Microsoft.App/managedEnvironments@2022-11-01-preview' = {
+resource cae 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
   name: 'cae-shipping-dronedelivery'
   location: location
   properties: {

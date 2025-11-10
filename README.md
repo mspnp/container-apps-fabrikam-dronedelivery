@@ -101,7 +101,7 @@ Following the steps below will result in the creation of the following Azure res
    > None of these resources are for the application platform hosting the workload, but instead are tied directly to the drone delivery workload. For example, the per-microservice Key Vault, the per-microservice data stores, the message queue, logging sinks, etc. These same resources would exist no matter if the application platform was Azure Container Apps, Kubernetes, or App Service.
 
    ```bash
-   # [This takes about 18 minutes.]
+   # [This takes about 22 minutes.]
    az deployment group create -n workload-stamp -g rg-shipping-dronedelivery-${LOCATION} -f ./workload/workload-stamp.bicep
    ```
 
