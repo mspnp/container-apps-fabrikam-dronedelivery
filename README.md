@@ -4,7 +4,7 @@ This repo contains the implementation that backs the [Deploy microservices with 
 
 ## Introduction
 
-Fabrikam inc has created a new operations team, and under its organization is a brownfield application called Drone Delivery. This application been running for a while in Azure Kubernetes Service (AKS), and while they are obtaining the benefits of containers to run microservices and Kubernetes to host them, it has been discovered that they are not making use of any of the advance features of AKS like custom service mesh or autoscaling among others.
+Fabrikam inc has created a new operations team, and under its organization is a brownfield application called Drone Delivery. This application has been running for a while in Azure Kubernetes Service (AKS), and while they are obtaining the benefits of containers to run microservices and Kubernetes to host them, it has been discovered that they are not making use of any of the advanced features of AKS like custom service mesh or autoscaling among others.
 
 The team has detected an opportunity to simplify and be more efficient at the DevOps level, and this is why they are now looking into Azure Container Apps to evaluate hosting Fabrikam Drone Delivery. This will allow them to publish and run containerized microservices at scale, faster than before, reducing the complexity, saving resources by using scale-to-zero, built-in autoscaling capability, and without losing all the container advantages they love.
 
@@ -21,7 +21,7 @@ This repository guides you through the process of running a single workload comp
 
 For more information on how the Container Apps features are being used in this reference implementation, please take a look below:
 
-- [HTTPS ingress, this allows to expose the Ingestion service to internet.](https://learn.microsoft.com/azure/container-apps/ingress-overview)
+- [HTTPS ingress, this allows to expose the Ingestion service to the internet.](https://learn.microsoft.com/azure/container-apps/ingress-overview)
 - [Internal service discovery, Delivery, DroneScheduler and Package services must be internally reachable by Workflow service](https://learn.microsoft.com/azure/container-apps/connect-apps)
 - [Use user-assigned identities when authenticating into Azure KeyVault from Delivery and DroneScheduler services](https://learn.microsoft.com/azure/container-apps/managed-identity#add-a-user-assigned-identity)
 - [Securely manage secrets for Package, Ingestion and Workflow services](https://learn.microsoft.com/azure/container-apps/manage-secrets)
@@ -37,7 +37,7 @@ Following the steps below will result in the creation of the following Azure res
 | Object                                 | Purpose                                                 |
 | :------------------------------------- | :------------------------------------------------------ |
 | An Azure Container App Environment     | This is the managed Container App environment where Container Apps are deployed |
-| Five Azure Container Apps              | These are the Azure resources that represents the five Fabrikam microservices in the Azure Container App environment |
+| Five Azure Container Apps              | These are the Azure resources that represent the five Fabrikam microservices in the Azure Container App environment |
 | An Azure Container Registry            | This is the private container registry where all Fabrikam workload images are uploaded and later pulled from the different Azure Container Apps |
 | An Azure Log Analytics Workspace       | This is where all the Container Apps logs are sent, along with Azure Diagnostics on all services |
 | An Azure Application Insights instance | All services are sending trace information to a shared Azure Application Insights instance |
@@ -93,9 +93,16 @@ Following the steps below will result in the creation of the following Azure res
 1. Create a resource group for your deployment.
 
    ```bash
-   export PREREQS_DEPLOYMENT_NAME=workload-stamp-prereqs-${LOCATION}
+   az group create -n rg-shipping-dronedelivery-${LOCATION} -l ${LOCATION}
+   ```
 
-   az deployment sub create --name $PREREQS_DEPLOYMENT_NAME --location ${LOCATION} --template-file ./workload/workload-stamp-prereqs.bicep --parameters resourceGroupLocation=${LOCATION}
+1. Deploy all the dependencies of the various microservices that comprise the workload.
+
+   > None of these resources are for the application platform hosting the workload, but instead are tied directly to the drone delivery workload. For example, the per-microservice Key Vault, the per-microservice data stores, the message queue, logging sinks, etc. These same resources would exist no matter if the application platform was Azure Container Apps, Kubernetes, or App Service.
+
+   ```bash
+   # [This takes about 22 minutes.]
+   az deployment group create -n workload-stamp -g rg-shipping-dronedelivery-${LOCATION} -f ./workload/workload-stamp.bicep
    ```
 
 1. Get the user identities.
@@ -113,15 +120,6 @@ Following the steps below will result in the creation of the following Azure res
    until az ad sp show --id $WORKFLOW_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
    until az ad sp show --id $PACKAGE_ID_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
    until az ad sp show --id $INGESTION_ID_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
-   ``
-
-1. Deploy all the dependencies of the various microservices that comprise the workload.
-
-   > None of these resources are for the application platform hosting the workload, but instead are tied directly to the drone delivery workload. For example, the per-microservice Key Vault, the per-microservice data stores, the message queue, logging sinks, etc. These same resources would exist no matter if the application platform was Azure Container Apps, Kubernetes, or App Service.
-
-   ```bash
-   # [This takes about 18 minutes.]
-   az deployment group create -n workload-stamp -g rg-shipping-dronedelivery-${LOCATION} -f ./workload/workload-stamp.bicep -p droneSchedulerPrincipalId=$DRONESCHEDULER_PRINCIPAL_ID -p workflowPrincipalId=$WORKFLOW_PRINCIPAL_ID -p deliveryPrincipalId=$DELIVERY_PRINCIPAL_ID -p ingestionPrincipalId=$INGESTION_ID_PRINCIPAL_ID -p packagePrincipalId=$PACKAGE_ID_PRINCIPAL_ID
    ```
 
 1. Build, tag, and host the five microservice container images in ACR.
@@ -179,9 +177,9 @@ Following the steps below will result in the creation of the following Azure res
 
    # Package
    PACKAGE_MONGODB_NAME=$(az deployment group show -g rg-shipping-dronedelivery-${LOCATION} -n workload-stamp --query properties.outputs.packageMongoDbName.value -o tsv)
-   PACKAGE_MONGODB_CONNNECTIONSTRING=$(az cosmosdb keys list --type connection-strings -g rg-shipping-dronedelivery-${LOCATION} --name $PACKAGE_MONGODB_NAME --query "connectionStrings[0].connectionString" -o tsv | sed 's/==/%3D%3D/g')
+   PACKAGE_MONGODB_CONNECTIONSTRING=$(az cosmosdb keys list --type connection-strings -g rg-shipping-dronedelivery-${LOCATION} --name $PACKAGE_MONGODB_NAME --query "connectionStrings[0].connectionString" -o tsv | sed 's/==/%3D%3D/g')
 
-   echo -e "\nPackage Config:\nPACKAGE_MONGODB_NAME=${PACKAGE_MONGODB_NAME}\nPACKAGE_MONGODB_CONNNECTIONSTRING=${PACKAGE_MONGODB_CONNNECTIONSTRING}\n"
+   echo -e "\nPackage Config:\nPACKAGE_MONGODB_NAME=${PACKAGE_MONGODB_NAME}\nPACKAGE_MONGODB_CONNECTIONSTRING=${PACKAGE_MONGODB_CONNECTIONSTRING}\n"
 
    # Ingestion
    INGESTION_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery-${LOCATION} -n workload-stamp --query properties.outputs.ingestionQueueNamespace.value -o tsv)
@@ -192,7 +190,7 @@ Following the steps below will result in the creation of the following Azure res
    echo -e "\nIngestion Config:\nINGESTION_NAMESPACE_NAME=${INGESTION_NAMESPACE_NAME}\nINGESTION_NAMESPACE_SAS_NAME=${INGESTION_NAMESPACE_SAS_NAME}\nINGESTION_NAMESPACE_SAS_KEY=${INGESTION_NAMESPACE_SAS_KEY}\nINGESTION_QUEUE_NAME=${INGESTION_QUEUE_NAME}"
    ```
 
-   If any of the config values were empty above, please stop and troubleshoot before proceeding.
+   If any of the configuration values above are empty, stop and troubleshoot before proceeding.
 
 1. Deploy the Container Apps ARM template.
 
@@ -212,11 +210,11 @@ Following the steps below will result in the creation of the following Azure res
       deliveryKeyVaultUri=$DELIVERY_KEYVAULT_URI \
       droneSchedulerCosmosdbEndpoint=$DRONESCHEDULER_COSMOSDB_ENDPOINT \
       droneSchedulerKeyVaultUri=$DRONESCHEDULER_KEYVAULT_URI \
-      wokflowNamespaceEndpoint=$WORKFLOW_NAMESPACE_ENDPOINT \
+      workflowNamespaceEndpoint=$WORKFLOW_NAMESPACE_ENDPOINT \
       workflowNamespaceSASName=$WORKFLOW_NAMESPACE_SAS_NAME \
       workflowNamespaceSASKey=$WORKFLOW_NAMESPACE_SAS_KEY \
       workflowQueueName=$WORKFLOW_QUEUE_NAME \
-      packageMongodbConnectionString=$PACKAGE_MONGODB_CONNNECTIONSTRING \
+      packageMongodbConnectionString=$PACKAGE_MONGODB_CONNECTIONSTRING \
       ingestionNamespaceName=$INGESTION_NAMESPACE_NAME \
       ingestionNamespaceSASName=$INGESTION_NAMESPACE_SAS_NAME \
       ingestionNamespaceSASKey=$INGESTION_NAMESPACE_SAS_KEY \
@@ -306,7 +304,6 @@ az containerapp revision restart -g rg-shipping-dronedelivery --app <containerap
 
    ```bash
    az group delete -n rg-shipping-dronedelivery-${LOCATION} -y
-   az group delete -n rg-shipping-dronedelivery-${LOCATION}-acr -y
    ```
 
 1. Purge deleted Key Vaults related to this deployment.

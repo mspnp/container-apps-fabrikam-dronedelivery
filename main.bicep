@@ -50,7 +50,7 @@ param droneSchedulerKeyVaultUri string
 
 @description('The Service Bus HTTP endpoint used by the Workflow service. Should be in the form of https://namespaceName.servicebus.windows.net:443/')
 @minLength(24)
-param wokflowNamespaceEndpoint string
+param workflowNamespaceEndpointstring
 
 @description('The Service Bus Queue Access Policy Name for the Workflow service.')
 @minLength(1)
@@ -297,7 +297,7 @@ module ca_workflow 'container-http.bicep' = {
       }
       {
         name: 'QueueEndpoint'
-        value: wokflowNamespaceEndpoint
+        value: workflowNamespaceEndpoint
       }
       {
         name: 'QueueAccessPolicyName'
@@ -382,7 +382,7 @@ module ca_package 'container-http.bicep' = {
         value: applicationInsightsConnectionString
       }
       {
-        name: 'mongodb-connectrionstring'
+        name: 'mongodb-connectionstring'
         value: packageMongodbConnectionString
       }
     ]
@@ -393,7 +393,7 @@ module ca_package 'container-http.bicep' = {
       }
       {
         name: 'CONNECTION_STRING'
-        secretref: 'mongodb-connectrionstring'
+        secretref: 'mongodb-connectionstring'
       }
       {
         name: 'COLLECTION_NAME'

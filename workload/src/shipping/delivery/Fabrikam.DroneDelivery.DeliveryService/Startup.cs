@@ -51,11 +51,6 @@ namespace Fabrikam.DroneDelivery.DeliveryService
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
 
             // Configure AppInsights
-            var kubernetesEnricher = Configuration["KubernetesEnricher"];
-            if (kubernetesEnricher != null && "true".Equals(kubernetesEnricher))
-            {
-                services.AddApplicationInsightsKubernetesEnricher();
-            }
             services.AddApplicationInsightsTelemetry(Configuration);
 
             // Add health check

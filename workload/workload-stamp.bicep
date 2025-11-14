@@ -26,17 +26,13 @@ param location string = resourceGroup().location
   'southeastasia'
 ])
 param geoRedundancyLocation string = 'centralus'
-param droneSchedulerPrincipalId string
-param workflowPrincipalId string
-param deliveryPrincipalId string
-param ingestionPrincipalId string
-param packagePrincipalId string
+
 
 var prefix = substring(uniqueString(subscription().subscriptionId, resourceGroup().id), 0, 10)
 var acrName = 'acr${prefix}'
 var appInsightsName = 'ai-${prefix}'
 var logAnalyticsWorkspaceName = 'law-${prefix}'
-var nestedACRDeploymentName = '${resourceGroup().name}-acr-deployment'
+var nestedACRDeploymentName = '${resourceGroup().name}-deployment'
 var deliveryRedisCacheSKU = 'Basic'
 var deliveryRedisCacheFamily = 'C'
 var deliveryRedisCacheCapacity = 0
@@ -58,14 +54,68 @@ var workflowServiceAccessKeyName = 'WorkflowServiceAccessKey'
 var keyVaultSecretsUserRole = subscriptionResourceId('Microsoft.Authorization/roleDefinitions', '4633458b-17de-408a-b874-0445c86b69e6')
 
 @description('Built-in Role: Reader - https://learn.microsoft.com/en-us/azure/role-based-access-control/built-in-roles#reader')
-resource builtInReaderRole 'Microsoft.Authorization/roleDefinitions@2022-04-01' existing = {
+resource builtInReaderRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-preview' existing = {
   name: 'acdd72a7-3385-48ef-bd42-f606fba81ae7'
   scope: subscription()
 }
 
+resource workflowManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+  name: 'uid-workflow'
+  location: location
+  tags: {
+    displayName: 'workflow managed identity'
+    what: 'rbac'
+    reason: 'aad-workload-identity'
+    app: 'fabrikam-workflow'
+  }
+}
+
+resource deliveryManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+  name: 'uid-delivery'
+  location: location
+  tags: {
+    displayName: 'delivery managed identity'
+    what: 'rbac'
+    reason: 'aad-workload-identity'
+    app: 'fabrikam-delivery'
+  }
+}
+
+resource droneSchedulerManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+  name: 'uid-dronescheduler'
+  location: location
+  tags: {
+    displayName: 'dronescheduler managed identity'
+    what: 'rbac'
+    reason: 'aad-workload-identity'
+    app: 'fabrikam-dronescheduler'
+  }
+}
+
+resource ingestionManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+  name: 'uid-ingestion'
+  location: location
+  tags: {
+    displayName: 'ingestion managed identity'
+    what: 'rbac'
+    reason: 'aad-workload-identity'
+    app: 'fabrikam-ingestion'
+  }
+}
+
+resource packageManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+  name: 'uid-package'
+  location: location
+  tags: {
+    displayName: 'package managed identity'
+    what: 'rbac'
+    reason: 'aad-workload-identity'
+    app: 'fabrikam-package'
+  }
+}
+
 module containerRegistry './nested_workload-stamp.bicep' = {
   name: nestedACRDeploymentName
-  scope: resourceGroup('rg-shipping-dronedelivery-${location}-acr')
   params: {
     location: location
     acrName: acrName
@@ -92,7 +142,7 @@ resource deliveryRedis 'Microsoft.Cache/Redis@2020-06-01' = {
   dependsOn: []
 }
 
-resource deliveryCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
+resource deliveryCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-preview' = {
   name: deliveryCosmosDbName
   location: location
   tags: {
@@ -113,7 +163,7 @@ resource deliveryCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
   dependsOn: []
 }
 
-resource packageMongoDb 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
+resource packageMongoDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-preview' = {
   name: packageMongoDbName
   kind: 'MongoDB'
   location: location
@@ -138,7 +188,7 @@ resource packageMongoDb 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
   dependsOn: []
 }
 
-resource packageKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
+resource packageKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
   name: packageKeyVaultName
   location: location
   tags: {
@@ -182,15 +232,15 @@ resource packageKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
 
 resource packagePrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: packageKeyVault
-  name: guid(packagePrincipalId, packageKeyVault.name, keyVaultSecretsUserRole)
+  name: guid(packageManagedIdentity.id, packageKeyVault.name, keyVaultSecretsUserRole)
   properties: {
     roleDefinitionId: keyVaultSecretsUserRole
-    principalId: packagePrincipalId
+    principalId: packageManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-resource droneSchedulerCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2023-04-15' = {
+resource droneSchedulerCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-preview' = {
   name: droneSchedulerCosmosDbName
   location: location
   tags: {
@@ -211,7 +261,7 @@ resource droneSchedulerCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2023-04-1
   dependsOn: []
 }
 
-resource ingestionSBNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-preview' = {
+resource ingestionSBNamespace 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
   name: ingestionSBNamespaceName
   location: location
   sku: {
@@ -226,7 +276,7 @@ resource ingestionSBNamespace 'Microsoft.ServiceBus/namespaces@2022-10-01-previe
   }
 }
 
-resource ingestionSBNamespaceIngestionSB 'Microsoft.ServiceBus/namespaces/queues@2022-10-01-preview' = {
+resource ingestionSBNamespaceIngestionSB 'Microsoft.ServiceBus/namespaces/queues@2025-05-01-preview' = {
   parent: ingestionSBNamespace
   name: ingestionSBName
   properties: {
@@ -235,7 +285,7 @@ resource ingestionSBNamespaceIngestionSB 'Microsoft.ServiceBus/namespaces/queues
   }
 }
 
-resource ingestionSBNamespaceIngestionServiceAccessKey 'Microsoft.ServiceBus/namespaces/AuthorizationRules@2022-10-01-preview' = {
+resource ingestionSBNamespaceIngestionServiceAccessKey 'Microsoft.ServiceBus/namespaces/AuthorizationRules@2025-05-01-preview' = {
   parent: ingestionSBNamespace
   name: ingestionServiceAccessKeyName
   properties: {
@@ -245,7 +295,7 @@ resource ingestionSBNamespaceIngestionServiceAccessKey 'Microsoft.ServiceBus/nam
   }
 }
 
-resource ingestionSBNamespaceWorkflowServiceAccessKey 'Microsoft.ServiceBus/namespaces/AuthorizationRules@2022-10-01-preview' = {
+resource ingestionSBNamespaceWorkflowServiceAccessKey 'Microsoft.ServiceBus/namespaces/AuthorizationRules@2025-05-01-preview' = {
   parent: ingestionSBNamespace
   name: workflowServiceAccessKeyName
   properties: {
@@ -255,7 +305,7 @@ resource ingestionSBNamespaceWorkflowServiceAccessKey 'Microsoft.ServiceBus/name
   }
 }
 
-resource deliveryKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
+resource deliveryKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
   name: deliveryKeyVaultName
   location: location
   tags: {
@@ -314,10 +364,10 @@ resource deliveryKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
 
 resource deliveryPrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: deliveryKeyVault
-  name: guid(deliveryPrincipalId, deliveryKeyVault.name, keyVaultSecretsUserRole)
+  name: guid(deliveryManagedIdentity.id, deliveryKeyVault.name, keyVaultSecretsUserRole)
   properties: {
     roleDefinitionId: keyVaultSecretsUserRole
-    principalId: deliveryPrincipalId
+    principalId: deliveryManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -360,15 +410,15 @@ resource ingestionKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
 
 resource ingestionPrincipalVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: ingestionKeyVault
-  name: guid(ingestionPrincipalId, ingestionKeyVault.name, keyVaultSecretsUserRole)
+  name: guid(ingestionManagedIdentity.id, ingestionKeyVault.name, keyVaultSecretsUserRole)
   properties: {
     roleDefinitionId: keyVaultSecretsUserRole
-    principalId: ingestionPrincipalId
+    principalId: ingestionManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-resource droneSchedulerKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
+resource droneSchedulerKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
   name: droneSchedulerKeyVaultName
   location: location
   tags: {
@@ -393,7 +443,7 @@ resource droneSchedulerKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   resource secretApplicationInsights 'secrets' = {
     name: 'ApplicationInsights--InstrumentationKey'
     properties: {
-      value: reference(appInsights.id, '2015-05-01').InstrumentationKey
+      value: appInsights.properties.InstrumentationKey
     }
   }
     
@@ -407,15 +457,15 @@ resource droneSchedulerKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
 
 resource droneSchedulerPrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: droneSchedulerKeyVault
-  name: guid(droneSchedulerPrincipalId, droneSchedulerKeyVault.name, keyVaultSecretsUserRole)
+  name: guid(droneSchedulerManagedIdentity.id, droneSchedulerKeyVault.name, keyVaultSecretsUserRole)
   properties: {
     roleDefinitionId: keyVaultSecretsUserRole
-    principalId: droneSchedulerPrincipalId
+    principalId: droneSchedulerManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-resource workflowKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
+resource workflowKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
   name: workflowKeyVaultName
   location: location
   tags: {
@@ -440,29 +490,29 @@ resource workflowKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
   resource secretQueueAccessPolicyKey 'secrets' = {
     name: 'QueueAccessPolicyKey'
     properties: {
-      value: listkeys(ingestionSBNamespaceWorkflowServiceAccessKey.id, '2017-04-01').primaryKey
+      value: ingestionSBNamespaceWorkflowServiceAccessKey.listKeys().primaryKey
     }
   }
 
   resource secretApplicationInsights 'secrets' = {
     name: 'ApplicationInsights--InstrumentationKey'
     properties: {
-      value: reference(appInsights.id, '2015-05-01').InstrumentationKey
+      value: appInsights.properties.InstrumentationKey
     }
   }
 }
 
 resource workflowPrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: workflowKeyVault
-  name: guid(workflowPrincipalId, workflowKeyVault.name, keyVaultSecretsUserRole)
+  name: guid(workflowManagedIdentity.id, workflowKeyVault.name, keyVaultSecretsUserRole)
   properties: {
     roleDefinitionId: keyVaultSecretsUserRole
-    principalId: workflowPrincipalId
+    principalId: workflowManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2022-10-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02-01' = {
   name: logAnalyticsWorkspaceName
   location: location
   properties: {
@@ -495,7 +545,7 @@ resource deliveryKeyVaultMicrosoftAuthorizationDeliveryIdNameIdReaderRole 'Micro
   scope: deliveryKeyVault
   properties: {
     roleDefinitionId: builtInReaderRole.id
-    principalId: deliveryPrincipalId
+    principalId: deliveryManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -505,7 +555,7 @@ resource workflowKeyVaultNameMicrosoftAuthorizationWorkflowIdNameIdReaderRole 'M
   scope: workflowKeyVault
   properties: {
     roleDefinitionId: builtInReaderRole.id
-    principalId: workflowPrincipalId
+    principalId: workflowManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -515,7 +565,7 @@ resource droneSchedulerKeyVaultNameMicrosoftAuthorizationDroneSchedulerIdNameIdR
   scope: droneSchedulerKeyVault
   properties: {
     roleDefinitionId: builtInReaderRole.id
-    principalId: droneSchedulerPrincipalId
+    principalId: droneSchedulerManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -525,7 +575,7 @@ resource ingestionKeyVaultNameMicrosoftAuthorizationIngestionIdNameIdReaderRole 
   scope: ingestionKeyVault
   properties: {
     roleDefinitionId: builtInReaderRole.id
-    principalId: ingestionPrincipalId
+    principalId: ingestionManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
@@ -535,7 +585,7 @@ resource packageKeyVaultNameMicrosoftAuthorizationPackageIdNameIdReaderRole 'Mic
   scope: packageKeyVault
   properties: {
     roleDefinitionId: builtInReaderRole.id
-    principalId: packagePrincipalId
+    principalId: packageManagedIdentity.properties.principalId
     principalType: 'ServicePrincipal'
   }
 }
