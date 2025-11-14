@@ -177,9 +177,9 @@ Following the steps below will result in the creation of the following Azure res
 
    # Package
    PACKAGE_MONGODB_NAME=$(az deployment group show -g rg-shipping-dronedelivery-${LOCATION} -n workload-stamp --query properties.outputs.packageMongoDbName.value -o tsv)
-   PACKAGE_MONGODB_CONNNECTIONSTRING=$(az cosmosdb keys list --type connection-strings -g rg-shipping-dronedelivery-${LOCATION} --name $PACKAGE_MONGODB_NAME --query "connectionStrings[0].connectionString" -o tsv | sed 's/==/%3D%3D/g')
+   PACKAGE_MONGODB_CONNECTIONSTRING=$(az cosmosdb keys list --type connection-strings -g rg-shipping-dronedelivery-${LOCATION} --name $PACKAGE_MONGODB_NAME --query "connectionStrings[0].connectionString" -o tsv | sed 's/==/%3D%3D/g')
 
-   echo -e "\nPackage Config:\nPACKAGE_MONGODB_NAME=${PACKAGE_MONGODB_NAME}\nPACKAGE_MONGODB_CONNNECTIONSTRING=${PACKAGE_MONGODB_CONNNECTIONSTRING}\n"
+   echo -e "\nPackage Config:\nPACKAGE_MONGODB_NAME=${PACKAGE_MONGODB_NAME}\nPACKAGE_MONGODB_CONNECTIONSTRING=${PACKAGE_MONGODB_CONNECTIONSTRING}\n"
 
    # Ingestion
    INGESTION_NAMESPACE_NAME=$(az deployment group show -g rg-shipping-dronedelivery-${LOCATION} -n workload-stamp --query properties.outputs.ingestionQueueNamespace.value -o tsv)
@@ -210,11 +210,11 @@ Following the steps below will result in the creation of the following Azure res
       deliveryKeyVaultUri=$DELIVERY_KEYVAULT_URI \
       droneSchedulerCosmosdbEndpoint=$DRONESCHEDULER_COSMOSDB_ENDPOINT \
       droneSchedulerKeyVaultUri=$DRONESCHEDULER_KEYVAULT_URI \
-      wokflowNamespaceEndpoint=$WORKFLOW_NAMESPACE_ENDPOINT \
+      workflowNamespaceEndpoint=$WORKFLOW_NAMESPACE_ENDPOINT \
       workflowNamespaceSASName=$WORKFLOW_NAMESPACE_SAS_NAME \
       workflowNamespaceSASKey=$WORKFLOW_NAMESPACE_SAS_KEY \
       workflowQueueName=$WORKFLOW_QUEUE_NAME \
-      packageMongodbConnectionString=$PACKAGE_MONGODB_CONNNECTIONSTRING \
+      packageMongodbConnectionString=$PACKAGE_MONGODB_CONNECTIONSTRING \
       ingestionNamespaceName=$INGESTION_NAMESPACE_NAME \
       ingestionNamespaceSASName=$INGESTION_NAMESPACE_SAS_NAME \
       ingestionNamespaceSASKey=$INGESTION_NAMESPACE_SAS_KEY \
