@@ -268,6 +268,9 @@ resource ingestionSBNamespace 'Microsoft.ServiceBus/namespaces@2025-05-01-previe
     name: ingestionSBNamespaceSKU
     tier: ingestionSBNamespaceTier
   }
+  properties: {
+    zoneRedundant: true
+  }
   tags: {
     displayName: 'Ingestion and Workflow Service Bus'
     app: 'fabrikam-ingestion and fabrikam-workflow'

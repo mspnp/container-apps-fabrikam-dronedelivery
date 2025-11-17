@@ -12,14 +12,17 @@ This document identifies differences between the updated Microsoft Learn article
 
 **Changes Made:**
 - ✅ Updated `environment.bicep` to set `zoneRedundant: true`
+- ✅ Updated `workload-stamp.bicep` Service Bus namespace to set `zoneRedundant: true`
 - ✅ Updated README quota section to specify "zone-redundant environment"
 - ✅ Added note in README about region availability zone requirements
 
 **Note:** Minimum replica count updates are tracked separately in item #3
 
+**Redis Limitation:** Azure Managed Redis Basic C0 tier does not support zone redundancy. Zone redundancy requires Premium tier. The current Basic tier is appropriate for this brownfield migration example focused on minimal infrastructure changes. Upgrading to Premium would be a post-migration optimization.
+
 ---
 
-## 2. Container Apps Environment - Custom Virtual Network
+## 2. Container Apps Environment - Custom Virtual Network ✅ DOCUMENTED
 
 **Current State:**
 - `environment.bicep` sets `vnetConfiguration: null` (using Microsoft-managed vnet)
@@ -27,11 +30,15 @@ This document identifies differences between the updated Microsoft Learn article
 **Article Requirement:**
 - Article explicitly states: "The example uses an automatically generated virtual network, which should be improved by using a custom virtual network. It gives you more security control such as Network Security Groups and UDR-based routing through Azure Firewall"
 
-**Recommended Change:**
-- Add custom VNet deployment to `environment.bicep` or `workload-stamp.bicep`
-- Configure `vnetConfiguration` with custom subnet
-- Add Network Security Group (NSG) resources
-- Document this as a recommended improvement in README
+**Changes Made:**
+- ✅ Added `Production readiness change:` comment in `environment.bicep` documenting that custom VNet should be used for production
+- ✅ Added "Production readiness changes" section to README before Contributions section
+- ✅ Comment includes link to custom VNet documentation
+
+**Rationale:**
+- Using Microsoft-managed VNet simplifies initial deployment for brownfield migration testing
+- Custom VNet with NSG and Azure Firewall is appropriate for production but adds complexity and cost
+- Documented as production readiness change so evaluators understand the trade-off
 
 ---
 
