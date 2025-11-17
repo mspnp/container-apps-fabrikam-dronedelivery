@@ -124,8 +124,9 @@ Following the steps below will result in the creation of the following Azure res
 
    > None of these resources are for the application platform hosting the workload, but instead are tied directly to the drone delivery workload. For example, the per-microservice Key Vault, the per-microservice data stores, the message queue, logging sinks, etc. These same resources would exist no matter if the application platform was Azure Container Apps, Kubernetes, or App Service.
 
+   :clock7: *This might take about 25 minutes.*
+
    ```bash
-   # [This takes about 22 minutes.]
    az deployment group create -n workload-dependencies -g $RESOURCE_GROUP -f ./workload/workload-stamp.bicep
    ```
 
@@ -148,11 +149,14 @@ Following the steps below will result in the creation of the following Azure res
 
 1. Build, tag, and host the five microservice container images in Azure Container Registry (ACR).
 
+   You'll be using your container registry to build and then host the containers.
+
+   :clock8: *This might take about 15 minutes.*
+
    ```bash
    ACR_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-dependencies --query properties.outputs.acrName.value -o tsv)
    ACR_SERVER=$(az acr show -n $ACR_NAME --query loginServer -o tsv)
 
-   # [This takes about 10 minutes.]
    az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/delivery:0.1.0 ./workload/src/shipping/delivery/.
    az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/ingestion:0.1.0 ./workload/src/shipping/ingestion/.
    az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/workflow:0.1.0 ./workload/src/shipping/workflow/.
@@ -218,29 +222,30 @@ Following the steps below will result in the creation of the following Azure res
 
 1. Deploy the Azure Container Apps environment and each microservice.
 
+   :clock9: *This might take about four minutes.*
+
    ```bash
-   # [This takes about four minutes.]
    az deployment group create -f main.bicep -g $RESOURCE_GROUP -p \
-      logAnalyticsResourceId=$LA_WORKSPACE_ID \
-      applicationInsightsInstrumentationKey=$AI_KEY \
-      applicationInsightsConnectionString=$APPINSIGHTS_CONNECTION_STRING \
-      containerRegistryResourceId=$ACR_ID \
-      deliveryCosmosdbDatabaseName=$DELIVERY_DATABASE_NAME \
-      deliveryCosmosdbCollectionName=$DELIVERY_COLLECTION_NAME \
-      deliveryCosmosdbEndpoint=$DELIVERY_COSMOSDB_ENDPOINT \
-      deliveryRedisEndpoint=$DELIVERY_REDIS_ENDPOINT \
-      deliveryKeyVaultUri=$DELIVERY_KEYVAULT_URI \
-      droneSchedulerCosmosdbEndpoint=$DRONESCHEDULER_COSMOSDB_ENDPOINT \
-      droneSchedulerKeyVaultUri=$DRONESCHEDULER_KEYVAULT_URI \
-      workflowNamespaceEndpoint=$WORKFLOW_NAMESPACE_ENDPOINT \
-      workflowNamespaceSASName=$WORKFLOW_NAMESPACE_SAS_NAME \
-      workflowNamespaceSASKey=$WORKFLOW_NAMESPACE_SAS_KEY \
-      workflowQueueName=$WORKFLOW_QUEUE_NAME \
-      packageMongodbConnectionString=$PACKAGE_MONGODB_CONNECTIONSTRING \
-      ingestionNamespaceName=$INGESTION_NAMESPACE_NAME \
-      ingestionNamespaceSASName=$INGESTION_NAMESPACE_SAS_NAME \
-      ingestionNamespaceSASKey=$INGESTION_NAMESPACE_SAS_KEY \
-      ingestionQueueName=$INGESTION_QUEUE_NAME
+      logAnalyticsResourceId="$LA_WORKSPACE_ID" \
+      applicationInsightsInstrumentationKey="$AI_KEY" \
+      applicationInsightsConnectionString="$APPINSIGHTS_CONNECTION_STRING" \
+      containerRegistryResourceId="$ACR_ID" \
+      deliveryCosmosdbDatabaseName="$DELIVERY_DATABASE_NAME" \
+      deliveryCosmosdbCollectionName="$DELIVERY_COLLECTION_NAME" \
+      deliveryCosmosdbEndpoint="$DELIVERY_COSMOSDB_ENDPOINT" \
+      deliveryRedisEndpoint="$DELIVERY_REDIS_ENDPOINT" \
+      deliveryKeyVaultUri="$DELIVERY_KEYVAULT_URI" \
+      droneSchedulerCosmosdbEndpoint="$DRONESCHEDULER_COSMOSDB_ENDPOINT" \
+      droneSchedulerKeyVaultUri="$DRONESCHEDULER_KEYVAULT_URI" \
+      workflowNamespaceEndpoint="$WORKFLOW_NAMESPACE_ENDPOINT" \
+      workflowNamespaceSASName="$WORKFLOW_NAMESPACE_SAS_NAME" \
+      workflowNamespaceSASKey="$WORKFLOW_NAMESPACE_SAS_KEY" \
+      workflowQueueName="$WORKFLOW_QUEUE_NAME" \
+      packageMongodbConnectionString="$PACKAGE_MONGODB_CONNECTIONSTRING" \
+      ingestionNamespaceName="$INGESTION_NAMESPACE_NAME" \
+      ingestionNamespaceSASName="$INGESTION_NAMESPACE_SAS_NAME" \
+      ingestionNamespaceSASKey="$INGESTION_NAMESPACE_SAS_KEY" \
+      ingestionQueueName="$INGESTION_QUEUE_NAME"
    ```
 
 ## Try it out
@@ -255,6 +260,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
 
    ```bash
    INGESTION_FQDN=$(az deployment group show -g $RESOURCE_GROUP -n main --query properties.outputs.ingestionFqdn.value -o tsv)
+   echo $INGESTION_FQDN
    ```
 
 1. Create a delivery request using your microservices hosted on ACA.
@@ -282,12 +288,12 @@ Now that you have deployed your Container Apps Environment, you can validate its
    The response to the request printed in your terminal should look similar to the one shown below:
 
    ```output
-   {"deliveryId":"5453d09a-a826-436f-8e7d-4ff706367b04","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2023-05-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
+   {"deliveryId":"00001111-aaaa-2222-bbbb-3333cccc4444","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2026-05-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
    ```
 
 1. Query Application Insights to ensure your request has been ingested by the underlying services.
 
-   :stopwatch: It might take ten minutes for the full query results to be available.
+   :stopwatch: *It might take ten minutes for the full query results to be available.*
 
    ```bash
    az monitor app-insights query --app $AI_ID --analytics-query 'requests
@@ -308,7 +314,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
    GET /api/packages/mypackage (1)
    ```
 
-   :book: Above result demonstrates that the HTTP request, initiated from the client, has been ingested by `/api/deliveryrequests` to be later consumed by the Workflow background service to be sent to `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within Azure Container Apps.
+   :book: Above result demonstrates that the HTTP request, initiated from the client, has been ingested by `/api/deliveryrequests` to be later consumed by the Workflow background service to be sent to `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within your Azure Container Apps environment.
 
 ## Troubleshooting
 
@@ -322,7 +328,12 @@ az containerapp revision restart -g $RESOURCE_GROUP --app <containerapp-name> -n
 
 ## :broom: Clean up
 
-1. Delete the resource group that contains all the resources
+1. Delete the resource group that contains all the resources.
+
+   | :warning: | This will completely delete all resources in this resource group.
+   | :-------: | :------------------------- |
+
+   :clock8: *This might take about 10 minutes.*
 
    ```bash
    az group delete -n $RESOURCE_GROUP -y
@@ -337,12 +348,12 @@ az containerapp revision restart -g $RESOURCE_GROUP --app <containerapp-name> -n
    az keyvault purge -n <name>
    ```
 
-## Next Steps
+## Next steps
 
 The team has been able to migrate and run Fabrikam Drone Delivery on top of Azure Container Apps. They are now laying out a new migration and modernization plan that will include:
 
-1. [Start using DAPR](https://learn.microsoft.com/azure/container-apps/microservices#dapr-integration)
-1. [Bring your own virtual network](https://learn.microsoft.com/azure/container-apps/vnet-custom)
+- [Start using DAPR](https://learn.microsoft.com/azure/container-apps/microservices#dapr-integration)
+- [Bring your own virtual network](https://learn.microsoft.com/azure/container-apps/vnet-custom)
 
 ## Contributions
 

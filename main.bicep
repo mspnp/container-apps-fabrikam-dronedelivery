@@ -50,7 +50,7 @@ param droneSchedulerKeyVaultUri string
 
 @description('The Service Bus HTTP endpoint used by the Workflow service. Should be in the form of https://namespaceName.servicebus.windows.net:443/')
 @minLength(24)
-param workflowNamespaceEndpointstring
+param workflowNamespaceEndpoint string
 
 @description('The Service Bus Queue Access Policy Name for the Workflow service.')
 @minLength(1)
