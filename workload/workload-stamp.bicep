@@ -146,7 +146,7 @@ resource deliveryCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-prev
   name: deliveryCosmosDbName
   location: location
   tags: {
-    displayName: 'Delivery Cosmos Db'
+    displayName: 'Delivery Azure Cosmos DB for NoSQL'
     app: 'fabrikam-delivery'
   }
   properties: {
@@ -168,7 +168,7 @@ resource packageMongoDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-previe
   kind: 'MongoDB'
   location: location
   tags: {
-    displayName: 'Package Cosmos Db'
+    displayName: 'Package Azure Cosmos DB for MongoDB'
     app: 'fabrikam-package'
   }
   properties: {
@@ -206,6 +206,7 @@ resource packageKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
       defaultAction: 'Allow'
       virtualNetworkRules: []
     }
+    publicNetworkAccess: 'Enabled' // Production readiness change: Disable public network access and use private endpoints to secure Key Vault access. See https://learn.microsoft.com/azure/key-vault/general/private-link-service
     enableRbacAuthorization: true
     accessPolicies: []
   }
@@ -244,7 +245,7 @@ resource droneSchedulerCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-0
   name: droneSchedulerCosmosDbName
   location: location
   tags: {
-    displayName: 'Drone Scheduler Cosmos Db'
+    displayName: 'Drone Scheduler Azure Cosmos DB for NoSQL'
     app: 'fabrikam-dronescheduler'
   }
   properties: {
@@ -326,6 +327,7 @@ resource deliveryKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
       defaultAction: 'Allow'
       virtualNetworkRules: []
     }
+    publicNetworkAccess: 'Enabled' // Production readiness change: Disable public network access and use private endpoints to secure Key Vault access. See https://learn.microsoft.com/azure/key-vault/general/private-link-service
     enableRbacAuthorization: true
     accessPolicies: []
   }
@@ -375,7 +377,7 @@ resource deliveryPrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleA
   }
 }
 
-resource ingestionKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
+resource ingestionKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
   name: ingestionKeyVaultName
   location: location
   tags: {
@@ -393,6 +395,7 @@ resource ingestionKeyVault 'Microsoft.KeyVault/vaults@2022-07-01' = {
       defaultAction: 'Allow'
       virtualNetworkRules: []
     }
+    publicNetworkAccess: 'Enabled' // Production readiness change: Disable public network access and use private endpoints to secure Key Vault access. See https://learn.microsoft.com/azure/key-vault/general/private-link-service
     enableRbacAuthorization: true
     accessPolicies: []
   }
@@ -439,6 +442,7 @@ resource droneSchedulerKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
       defaultAction: 'Allow'
       virtualNetworkRules: []
     }
+    publicNetworkAccess: 'Enabled' // Production readiness change: Disable public network access and use private endpoints to secure Key Vault access. See https://learn.microsoft.com/azure/key-vault/general/private-link-service
     enableRbacAuthorization: true
     accessPolicies: []
   }
@@ -486,6 +490,7 @@ resource workflowKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
       defaultAction: 'Allow'
       virtualNetworkRules: []
     }
+    publicNetworkAccess: 'Enabled' // Production readiness change: Disable public network access and use private endpoints to secure Key Vault access. See https://learn.microsoft.com/azure/key-vault/general/private-link-service
     enableRbacAuthorization: true
     accessPolicies: []
   }

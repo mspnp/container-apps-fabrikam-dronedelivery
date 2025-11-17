@@ -69,9 +69,9 @@ Following the steps below will result in the creation of the following Azure res
   - The subscription must have the following quota and SKU availability in the region you choose.
 
     - Azure Application Insights: 1 instance
-    - Azure Container Apps: 1 zone-redundant environment, 5 container apps
+    - Azure Container Apps: 1 zone-redundant environment, 5 container apps (3 replicas each)
     - Azure Container Registry: 1 Premium tier instance with geo-replication
-    - Azure Cosmos DB: 3 accounts (2 SQL API, 1 MongoDB API)
+    - Azure Cosmos DB: 3 accounts (2 Azure Cosmos DB for NoSQL, 1 Azure Cosmos DB for MongoDB)
     - Azure Key Vault: 5 Standard tier instances
     - Azure Log Analytics: 1 workspace
     - Azure Redis Cache: 1 Basic C0 instance
@@ -250,6 +250,13 @@ Following the steps below will result in the creation of the following Azure res
       ingestionQueueName="$INGESTION_QUEUE_NAME"
    ```
 
+   > :book: Deployment approach: Bicep vs. imperative control in CD pipelines
+   >
+   > In this reference implementation, the deployment of the applications to the environment is performed using Bicep modules for simplicity and reproducibility. In production environments, it is recommended to deploy application containers as part of your continuous delivery (CD) pipeline using the appropriate automation tools. This enables easier incremental roll outs, such as traffic shifting over time.
+   >
+   > - For GitHub Workflows, see: [Deploy to Azure Container Apps with GitHub Actions](https://learn.microsoft.com/azure/container-apps/github-actions)
+   > - For Azure Pipelines, see: [Deploy to Azure Container Apps from Azure Pipelines](https://learn.microsoft.com/azure/container-apps/azure-pipelines)
+
 ## Try it out
 
 Now that you have deployed your Container Apps Environment, you can validate its functionality. This section will help you to validate the workload is exposed through a Container Apps HTTP ingress flow and responding to HTTP requests correctly.
@@ -314,6 +321,8 @@ Now that you have deployed your Container Apps Environment, you can validate its
    PUT /api/packages/mypackage (1)
    POST /api/deliveryrequests (1)
    GET /api/packages/mypackage (1)
+   GET /healthz (22)
+   GET /api/probe (23)
    ```
 
    :book: The above result demonstrates that the HTTP request, initiated from the client, was ingested by `/api/deliveryrequests`, then consumed by the Workflow background service and dispatched to the `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. They are all microservices running within your Azure Container Apps environment.
