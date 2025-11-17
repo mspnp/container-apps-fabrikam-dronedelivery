@@ -304,7 +304,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
 
    The following output demonstrates the type of response to expect from the Application Insights query.
 
-   ```output
+   ```text
    Result
    --------------------------------------------------
    PUT DroneDeliveries/Put [id] (1)
