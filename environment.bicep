@@ -38,6 +38,17 @@ resource cae 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     workloadProfiles: null
     publicNetworkAccess: 'Enabled' // Production readiness change: Front your service with a WAF and only expose this environment to your private network.
     vnetConfiguration: null // Production readiness change: Use a custom virtual network with Network Security Groups and UDR-based routing through Azure Firewall for enhanced security control. See https://learn.microsoft.com/azure/container-apps/vnet-custom
+    customDomainConfiguration: null
+    peerAuthentication: {
+      mtls: {
+        enabled: false
+      }
+    }
+    peerTrafficConfiguration: {
+      encryption: {
+        enabled: false
+      }
+    }
     infrastructureResourceGroup: null
   }
 }
