@@ -4,7 +4,7 @@ This repo contains the implementation that backs the [Deploy microservices with 
 
 ## Introduction
 
-Fabrikam Inc has existing (brownfield) application called Drone Delivery. This application has been running for a while in Azure Kubernetes Service (AKS), and while they are obtaining the benefits of containers to run microservices and Kubernetes to host them, it has been discovered that they are not making use of any of the advanced features of AKS.
+Fabrikam Inc has an existing (brownfield) application called Drone Delivery. This application has been running for a while in Azure Kubernetes Service (AKS), and while they are obtaining the benefits of containers to run microservices and Kubernetes to host them, it has been discovered that they are not making use of any of the advanced features of AKS.
 
 The team has detected an opportunity to simplify and be more efficient at the DevOps level, and this is why they are now looking into Azure Container Apps to evaluate hosting Fabrikam Drone Delivery. This will allow them to publish and run containerized microservices at scale, faster than before, reducing the complexity, saving resources by using scale-to-zero, built-in autoscaling capability, and without losing all the container advantages they love.
 
@@ -20,7 +20,7 @@ This repository guides you through the process of running a single workload comp
 
 For more information on how the Container Apps features are being used in this reference implementation, please take a look below:
 
-- [HTTPS ingress, this allows to expose the Ingestion service to the internet.](https://learn.microsoft.com/azure/container-apps/ingress-overview)
+- [HTTPS ingress, exposing the Ingestion service to the internet.](https://learn.microsoft.com/azure/container-apps/ingress-overview)
 - [Internal service discovery, Delivery, DroneScheduler and Package services must be internally reachable by Workflow service](https://learn.microsoft.com/azure/container-apps/connect-apps)
 - [Use user-assigned identities when authenticating into Azure KeyVault from Delivery and DroneScheduler services](https://learn.microsoft.com/azure/container-apps/managed-identity#add-a-user-assigned-identity)
 - [Securely manage secrets for Package, Ingestion and Workflow services](https://learn.microsoft.com/azure/container-apps/manage-secrets)
@@ -40,11 +40,11 @@ Following the steps below will result in the creation of the following Azure res
 | An Azure Container Registry            | This is the private container registry where all Fabrikam workload images are uploaded and later pulled from the different Azure Container Apps |
 | An Azure Log Analytics Workspace       | This is where all the Container Apps logs are sent, along with Azure Diagnostics on all services |
 | An Azure Application Insights instance | All services are sending trace information to a shared Azure Application Insights instance |
-| Two Azure Cosmos DB instances          | Delivery and Package services have dependencies on Azure Cosmos DB |
+| Three Azure Cosmos DB instances        | Delivery, Drone Scheduler, and Package services each have a Cosmos DB account |
 | An Azure Redis Cache instance          | Delivery service uses Azure Redis cache to keep track of inflight deliveries |
 | An Azure Service Bus                   | Ingestion and Workflow services communicate using Azure Service Bus queues |
-| Five Azure User Managed Identities     | These are going to give `Read` and `List` secrets permissions over Azure Key Vault to the microservices. |
-| Five Azure Key Vault instances         | Secrets are saved into Azure Key Vault instances. :warning: Currently only two out of five instances are being used as part of this reference implementation |
+| Five Azure User Managed Identities     | These are going to give `Read` and `List` secrets permissions over Azure Key Vault to the microservices |
+| Five Azure Key Vault instances         | Each microservice (Delivery, Drone Scheduler, Workflow, Ingestion, Package) has its own Key Vault for secrets |
 
 ## Deployment guide
 
@@ -314,7 +314,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
    GET /api/packages/mypackage (1)
    ```
 
-   :book: Above result demonstrates that the HTTP request, initiated from the client, has been ingested by `/api/deliveryrequests` to be later consumed by the Workflow background service to be sent to `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. Them all are microservices running within your Azure Container Apps environment.
+   :book: The above result demonstrates that the HTTP request, initiated from the client, was ingested by `/api/deliveryrequests`, then consumed by the Workflow background service and dispatched to the `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. They are all microservices running within your Azure Container Apps environment.
 
 ## Troubleshooting
 
