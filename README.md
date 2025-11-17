@@ -43,7 +43,7 @@ Following the steps below will result in the creation of the following Azure res
 | Three Azure Cosmos DB instances        | Delivery, Drone Scheduler, and Package services each have a Cosmos DB account |
 | An Azure Redis Cache instance          | Delivery service uses Azure Redis cache to keep track of inflight deliveries |
 | An Azure Service Bus                   | Ingestion and Workflow services communicate using Azure Service Bus queues |
-| Five Azure User Managed Identities     | These are going to give `Read` and `List` secrets permissions over Azure Key Vault to the microservices |
+| Five Azure User Managed Identities     | These are going to give `Read` and `List` secrets permissions over Azure Key Vault to the microservices. |
 | Five Azure Key Vault instances         | Each microservice (Delivery, Drone Scheduler, Workflow, Ingestion, Package) has its own Key Vault for secrets |
 
 ## Deployment guide
