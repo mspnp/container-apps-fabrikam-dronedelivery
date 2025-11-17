@@ -320,7 +320,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
 
 ### Restart a revision
 
-If you need a restart a revision with Provision Status `Failed` or for another reason you can use the Azure CLI.
+If you need to restart a revision with Provision Status `Failed` or for another reason, you can use the Azure CLI.
 
 ```bash
 az containerapp revision restart -g $RESOURCE_GROUP --app <containerapp-name> -n <containerapp-revision-name>
