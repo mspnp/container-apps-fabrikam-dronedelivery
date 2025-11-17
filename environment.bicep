@@ -36,7 +36,7 @@ resource cae 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     }
     zoneRedundant: true
     workloadProfiles: null
-    vnetConfiguration: null
+    vnetConfiguration: null // Production readiness change: Use a custom virtual network with Network Security Groups and UDR-based routing through Azure Firewall for enhanced security control. See https://learn.microsoft.com/azure/container-apps/vnet-custom
     infrastructureResourceGroup: null
   }
 }

@@ -114,7 +114,7 @@ Following the steps below will result in the creation of the following Azure res
    RESOURCE_GROUP=rg-shipping-dronedelivery
    ```
 
-   > :bulb: The region must support availability zones for Container Apps. See [Azure regions with availability zones](https://learn.microsoft.com/azure/reliability/availability-zones-service-support#azure-regions-with-availability-zone-support).
+   :bulb: The region must support availability zones. See [Azure regions with availability zones](https://learn.microsoft.com/azure/reliability/availability-zones-service-support#azure-regions-with-availability-zone-support).
 
 1. Create a resource group for your deployment.
 
@@ -356,6 +356,10 @@ The team has been able to migrate and run Fabrikam Drone Delivery on top of Azur
 
 - [Start using DAPR](https://learn.microsoft.com/azure/container-apps/microservices#dapr-integration)
 - [Bring your own virtual network](https://learn.microsoft.com/azure/container-apps/vnet-custom)
+
+## Production readiness changes
+
+The infrastructure as code included in this repository has a few configurations that are made only to enable a smoother and less expensive deployment experience when you are first trying this implementation out. These settings are not recommended for production deployments, and you should evaluate each of the settings before deploying to production. Those settings all have a comment next to them that starts with `Production readiness change:`.
 
 ## Contributions
 
