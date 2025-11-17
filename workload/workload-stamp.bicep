@@ -27,7 +27,6 @@ param location string = resourceGroup().location
 ])
 param geoRedundancyLocation string = 'centralus'
 
-
 var prefix = substring(uniqueString(subscription().subscriptionId, resourceGroup().id), 0, 10)
 var acrName = 'acr${prefix}'
 var appInsightsName = 'ai-${prefix}'
@@ -181,7 +180,7 @@ resource packageMongoDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-previe
     databaseAccountOfferType: 'Standard'
     isVirtualNetworkFilterEnabled: false
     apiProperties: {
-       serverVersion: '7.0'
+      serverVersion: '7.0'
     }
     virtualNetworkRules: []
   }
@@ -228,7 +227,6 @@ resource packageKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
       value: packageMongoDb.listConnectionStrings().connectionStrings[0].connectionString
     }
   }
-
 }
 
 resource packagePrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
@@ -399,7 +397,8 @@ resource ingestionKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
     enableRbacAuthorization: true
     accessPolicies: []
   }
-   resource secretQueueKey 'secrets' = {
+
+  resource secretQueueKey 'secrets' = {
     name: 'Queue--Key'
     properties: {
       value: ingestionSBNamespaceIngestionServiceAccessKey.listKeys().primaryKey
@@ -453,7 +452,7 @@ resource droneSchedulerKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
       value: appInsights.properties.InstrumentationKey
     }
   }
-    
+
   resource secretCosmosDBKey 'secrets' = {
     name: 'CosmosDBKey'
     properties: {
@@ -527,8 +526,8 @@ resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02
     sku: {
       name: 'pergb2018'
     }
-    publicNetworkAccessForIngestion:'Enabled'
-    publicNetworkAccessForQuery:'Enabled'
+    publicNetworkAccessForIngestion: 'Enabled'
+    publicNetworkAccessForQuery: 'Enabled'
   }
 }
 
@@ -542,14 +541,14 @@ resource appInsights 'Microsoft.Insights/components@2020-02-02' = {
   properties: {
     Application_Type: 'other'
     WorkspaceResourceId: logAnalyticsWorkspace.id
-    IngestionMode:'LogAnalytics'
-    publicNetworkAccessForIngestion:'Enabled'
-    publicNetworkAccessForQuery:'Enabled'
+    IngestionMode: 'LogAnalytics'
+    publicNetworkAccessForIngestion: 'Enabled'
+    publicNetworkAccessForQuery: 'Enabled'
   }
 }
 
 resource deliveryKeyVaultMicrosoftAuthorizationDeliveryIdNameIdReaderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
-  name:  guid('${deliveryKeyVaultName}${resourceGroup().id}', builtInReaderRole.id)
+  name: guid('${deliveryKeyVaultName}${resourceGroup().id}', builtInReaderRole.id)
   scope: deliveryKeyVault
   properties: {
     roleDefinitionId: builtInReaderRole.id
@@ -558,7 +557,7 @@ resource deliveryKeyVaultMicrosoftAuthorizationDeliveryIdNameIdReaderRole 'Micro
   }
 }
 
-resource workflowKeyVaultNameMicrosoftAuthorizationWorkflowIdNameIdReaderRole 'Microsoft.Authorization/roleAssignments@2022-04-01'= {
+resource workflowKeyVaultNameMicrosoftAuthorizationWorkflowIdNameIdReaderRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   name: guid('${workflowKeyVaultName}${resourceGroup().id}', builtInReaderRole.id)
   scope: workflowKeyVault
   properties: {

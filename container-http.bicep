@@ -132,6 +132,9 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
   properties: {
     environmentId: environmentId
     workloadProfileName: null
+    patchingConfiguration: {
+      patchingMode: 'Automatic'
+    }
     configuration: {
       activeRevisionsMode: revisionMode
       secrets: secrets
@@ -141,28 +144,32 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
           identity: existingManagedIdentity.id
         }
       ]
-      ingress: hasIngress ? {
-        external: isExternalIngress
-        targetPort: containerPort
-        exposedPort: 0
-        transport: 'auto'
-        traffic: [
-          {
-            weight: 100
-            latestRevision: true
+      ingress: hasIngress
+        ? {
+            external: isExternalIngress
+            targetPort: containerPort
+            targetPortHttpScheme: 'http'
+            exposedPort: 0
+            additionalPortMappings: []
+            transport: 'auto'
+            traffic: [
+              {
+                weight: 100
+                latestRevision: true
+              }
+            ]
+            customDomains: null
+            allowInsecure: false
+            ipSecurityRestrictions: null
+            corsPolicy: null
+            clientCertificateMode: 'ignore'
+            stickySessions: {
+              affinity: 'none'
+            }
+            // Production readiness change: For internet-facing workloads, disable built-in public ingress and front the app with Azure Front Door or Application Gateway with WAF & DDoS protection. This provides centralized routing, TLS, WAF rules, and advanced threat mitigation. Trade-off: gateway health probes keep at least one replica warm, reducing scale-to-zero benefits. See https://learn.microsoft.com/azure/container-apps/ingress-overview and https://learn.microsoft.com/azure/web-application-firewall/overview
+            // Production readiness change: Enable built-in authentication (Easy Auth) to offload identity & auth concerns from application code. Configure auth providers rather than custom middleware in code. See https://learn.microsoft.com/azure/container-apps/authentication for guidance.
           }
-        ]
-        customDomains: null
-        allowInsecure: false
-        ipSecurityRestrictions: null
-        corsPolicy: null
-        clientCertificateMode: 'ignore'
-        stickySessions: {
-          affinity: 'none'
-        }
-        // Production readiness change: For internet-facing workloads, disable built-in public ingress and front the app with Azure Front Door or Application Gateway with WAF & DDoS protection. This provides centralized routing, TLS, WAF rules, and advanced threat mitigation. Trade-off: gateway health probes keep at least one replica warm, reducing scale-to-zero benefits. See https://learn.microsoft.com/azure/container-apps/ingress-overview and https://learn.microsoft.com/azure/web-application-firewall/overview
-        // Production readiness change: Enable built-in authentication (Easy Auth) to offload identity & auth concerns from application code. Configure platform auth (e.g., Azure AD, GitHub, Microsoft Accounts) via Container Apps authentication settings rather than custom middleware in code. See https://learn.microsoft.com/azure/container-apps/authentication for configuration guidance.
-      } : null
+        : null
       dapr: {
         enabled: false
       }
@@ -179,43 +186,55 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
             memory: memory
           }
           probes: union(
-            livenessPath != '' ? [{
-              type: 'Liveness'
-              httpGet: {
-                path: livenessPath
-                port: containerPort
-                scheme: 'HTTP'
-              }
-              initialDelaySeconds: 10
-              periodSeconds: 10
-              timeoutSeconds: 5
-              failureThreshold: 3
-            }] : [],
-            readinessPath != '' ? [{
-              type: 'Readiness'
-              httpGet: {
-                path: readinessPath
-                port: containerPort
-                scheme: 'HTTP'
-              }
-              initialDelaySeconds: 5
-              periodSeconds: 10
-              timeoutSeconds: 3
-              failureThreshold: 3
-              successThreshold: 1
-            }] : [],
-            startupPath != '' ? [{
-              type: 'Startup'
-              httpGet: {
-                path: startupPath
-                port: containerPort
-                scheme: 'HTTP'
-              }
-              initialDelaySeconds: 0
-              periodSeconds: 10
-              timeoutSeconds: 3
-              failureThreshold: 3
-            }] : []
+            livenessPath != ''
+              ? [
+                  {
+                    type: 'Liveness'
+                    httpGet: {
+                      path: livenessPath
+                      port: containerPort
+                      scheme: 'HTTP'
+                    }
+                    initialDelaySeconds: 10
+                    periodSeconds: 10
+                    timeoutSeconds: 5
+                    failureThreshold: 3
+                  }
+                ]
+              : [],
+            readinessPath != ''
+              ? [
+                  {
+                    type: 'Readiness'
+                    httpGet: {
+                      path: readinessPath
+                      port: containerPort
+                      scheme: 'HTTP'
+                    }
+                    initialDelaySeconds: 5
+                    periodSeconds: 10
+                    timeoutSeconds: 3
+                    failureThreshold: 3
+                    successThreshold: 1
+                  }
+                ]
+              : [],
+            startupPath != ''
+              ? [
+                  {
+                    type: 'Startup'
+                    httpGet: {
+                      path: startupPath
+                      port: containerPort
+                      scheme: 'HTTP'
+                    }
+                    initialDelaySeconds: 0
+                    periodSeconds: 10
+                    timeoutSeconds: 3
+                    failureThreshold: 3
+                  }
+                ]
+              : []
           )
         }
       ]
@@ -227,6 +246,8 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
         rules: [] // Production readiness change: Add HTTP-based autoscaling rules for services with variable load (e.g., ingestion service). See https://learn.microsoft.com/azure/container-apps/scale-app
       }
       volumes: []
+      serviceBinds: []
+      terminationGracePeriodSeconds: 30
     }
   }
 }
