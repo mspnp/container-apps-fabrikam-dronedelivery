@@ -69,7 +69,7 @@ Following the steps below will result in the creation of the following Azure res
   - The subscription must have the following quota and SKU availability in the region you choose.
 
     - Azure Application Insights: 1 instance
-    - Azure Container Apps: 1 environment, 5 container apps
+    - Azure Container Apps: 1 zone-redundant environment, 5 container apps
     - Azure Container Registry: 1 Premium tier instance with geo-replication
     - Azure Cosmos DB: 3 accounts (2 SQL API, 1 MongoDB API)
     - Azure Key Vault: 5 Standard tier instances
@@ -113,6 +113,8 @@ Following the steps below will result in the creation of the following Azure res
    LOCATION=eastus2
    RESOURCE_GROUP=rg-shipping-dronedelivery
    ```
+
+   > :bulb: The region must support availability zones for Container Apps. See [Azure regions with availability zones](https://learn.microsoft.com/azure/reliability/availability-zones-service-support#azure-regions-with-availability-zone-support).
 
 1. Create a resource group for your deployment.
 

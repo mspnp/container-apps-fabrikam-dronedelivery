@@ -34,7 +34,7 @@ resource cae 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
       destination: 'azure-monitor' // Uses diagnostics settings below
       logAnalyticsConfiguration: null
     }
-    zoneRedundant: false
+    zoneRedundant: true
     workloadProfiles: null
     vnetConfiguration: null
     infrastructureResourceGroup: null
