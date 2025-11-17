@@ -50,18 +50,40 @@ Following the steps below will result in the creation of the following Azure res
 
 ### Prerequisites
 
-- An Azure subscription in which you have at least Contributor access to. You can [open an account for free](https://azure.microsoft.com/pricing/purchase-options/azure-account?cid=msft_learn).
+- An Azure subscription.
+
+  You can [open an account for free](https://azure.microsoft.com/pricing/purchase-options/azure-account?cid=msft_learn).
+
+  - The subscription must have all of the resource providers used in this deployment [registered](https://learn.microsoft.com/azure/azure-resource-manager/management/resource-providers-and-types#azure-cli).
+
+    - `Microsoft.App`
+    - `Microsoft.Cache`
+    - `Microsoft.ContainerRegistry`
+    - `Microsoft.DocumentDB`
+    - `Microsoft.Insights`
+    - `Microsoft.KeyVault`
+    - `Microsoft.ManagedIdentity`
+    - `Microsoft.OperationalInsights`
+    - `Microsoft.ServiceBus`
+
+  - The subscription must have the following quota and SKU availability in the region you choose.
+
+    - Azure Application Insights: 1 instance
+    - Azure Container Apps: 1 environment, 5 container apps
+    - Azure Container Registry: 1 Premium tier instance with geo-replication
+    - Azure Cosmos DB: 3 accounts (2 SQL API, 1 MongoDB API)
+    - Azure Key Vault: 5 Standard tier instances
+    - Azure Log Analytics: 1 workspace
+    - Azure Redis Cache: 1 Basic C0 instance
+    - Azure Service Bus: 1 Premium namespace
+
+- Your deployment user must have the ability to assign Azure roles on newly created resource groups and resources. (E.g. `User Access Administrator` or `Owner`)
+
 - Latest version of [Azure CLI installed](https://learn.microsoft.com/cli/azure/install-azure-cli?view=azure-cli-latest) or you can perform this from Azure Cloud Shell by clicking below.
 
   [![Launch Azure Cloud Shell](https://learn.microsoft.com/azure/includes/media/cloud-shell-try-it/launchcloudshell.png)](https://shell.azure.com)
 
-- The required [resource providers registered](https://learn.microsoft.com/azure/azure-resource-manager/management/resource-providers-and-types#azure-cli).
-
-  - `Microsoft.App`
-  - `Microsoft.Cache`
-  - `Microsoft.DocumentDB`
-  - `Microsoft.KeyVault`
-  - `Microsoft.ServiceBus`
+  > :bulb: If you're executing this from Windows Subsystem for Linux (WSL), be sure the Azure CLI is installed in WSL and is not using the version installed in Windows. `which az` must show `/usr/bin/az`.
 
 ### Steps
 
