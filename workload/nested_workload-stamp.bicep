@@ -1,6 +1,10 @@
 @description('ACR region.')
 param location string = resourceGroup().location
 
+@description('The resource ID of log analytics sink used by all the resources in the microservices. Will also be used for the app platform resources.')
+@minLength(40)
+param logAnalyticsResourceId string
+
 @description('For Azure resources that support native geo-redundancy, provide the location the redundant service will have its secondary. Should be different than the location parameter and ideally should be a paired region - https://docs.microsoft.com/en-us/azure/best-practices-availability-paired-regions. This region does not need to support availability zones.')
 @allowed([
   'australiasoutheast'
@@ -66,6 +70,25 @@ resource acrGeoRedundancyLocation 'Microsoft.ContainerRegistry/registries/replic
   name: geoRedundancyLocation
   location: geoRedundancyLocation
   properties: {}
+}
+
+@description('Azure diagnostics for Container Registry')
+resource diagnosticsSettings 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: acr
+  properties: {
+    workspaceId: logAnalyticsResourceId
+    logs: [
+      {
+        category: 'ContainerRegistryRepositoryEvents'
+        enabled: true
+      }
+      {
+        category: 'ContainerRegistryLoginEvents'
+        enabled: true
+      }
+    ]
+  }
 }
 
 output acrId string = acr.id

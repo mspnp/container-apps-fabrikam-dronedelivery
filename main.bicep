@@ -65,7 +65,7 @@ param workflowNamespaceSASKey string
 @minLength(1)
 param workflowQueueName string
 
-@description('The Mongo DB connection string for the Package service. Should be in the form of mongodb://user:secret@instanceName.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@appName@')
+@description('The Azure Cosmos DB for MongoDB connection string for the Package service. Should be in the form of mongodb://user:secret@instanceName.mongo.cosmos.azure.com:10255/?ssl=true&replicaSet=globaldb&retrywrites=false&maxIdleTimeMS=120000&appName=@appName@')
 @secure()
 @minLength(60)
 param packageMongodbConnectionString string
@@ -141,6 +141,9 @@ module ca_delivery 'container-http.bicep' = {
     containerPort: 8080
     isExternalIngress: false
     revisionMode: 'multiple'
+    livenessPath: '/healthz'
+    startupPath: '/healthz'
+    // Production readiness change: Implement a readiness probe endpoint (e.g., /health/ready) that validates Cosmos DB and Redis connectivity before accepting traffic. Current /healthz endpoint only returns "OK" without dependency checks.
     secrets: [
         {
           name: 'applicationinsights-instrumentationkey'
@@ -184,6 +187,38 @@ module ca_delivery 'container-http.bicep' = {
   }
 }
 
+// Resiliency policy for Delivery service (called by Workflow)
+resource deliveryResiliencyPolicy 'Microsoft.App/containerApps/resiliencyPolicies@2025-02-02-preview' = {
+  name: 'delivery-app/resiliency'
+  dependsOn: [
+    ca_delivery
+  ]
+  properties: {
+    timeoutPolicy: {
+      responseTimeoutInSeconds: 60
+      connectionTimeoutInSeconds: 5
+    }
+    httpRetryPolicy: {
+      maxRetries: 3
+      retryBackOff: {
+        initialDelayInMilliseconds: 1000
+        maxIntervalInMilliseconds: 10000
+      }
+      matches: {
+        errors: [
+          '5xx'
+          'reset'
+        ]
+      }
+    }
+    circuitBreakerPolicy: {
+      consecutiveErrors: 5
+      intervalInSeconds: 10
+      maxEjectionPercent: 50
+    }
+  }
+}
+
 // DroneScheduler App
 module ca_dronescheduler 'container-http.bicep' = {
   name: 'ca-dronescheduler'
@@ -197,6 +232,9 @@ module ca_dronescheduler 'container-http.bicep' = {
     containerPort: 8080
     isExternalIngress: false
     revisionMode: 'multiple'
+    livenessPath: '/healthz'
+    startupPath: '/healthz'
+    // Production readiness change: Implement a readiness probe endpoint (e.g., /health/ready) that validates Cosmos DB connectivity before accepting traffic. Current /healthz endpoint only returns "OK" without dependency checks.
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'
@@ -264,6 +302,38 @@ module ca_dronescheduler 'container-http.bicep' = {
   }
 }
 
+// Resiliency policy for DroneScheduler service (called by Workflow)
+resource droneSchedulerResiliencyPolicy 'Microsoft.App/containerApps/resiliencyPolicies@2025-02-02-preview' = {
+  name: 'dronescheduler-app/resiliency'
+  dependsOn: [
+    ca_dronescheduler
+  ]
+  properties: {
+    timeoutPolicy: {
+      responseTimeoutInSeconds: 60
+      connectionTimeoutInSeconds: 5
+    }
+    httpRetryPolicy: {
+      maxRetries: 3
+      retryBackOff: {
+        initialDelayInMilliseconds: 1000
+        maxIntervalInMilliseconds: 10000
+      }
+      matches: {
+        errors: [
+          '5xx'
+          'reset'
+        ]
+      }
+    }
+    circuitBreakerPolicy: {
+      consecutiveErrors: 5
+      intervalInSeconds: 10
+      maxEjectionPercent: 50
+    }
+  }
+}
+
 // Workflow App
 module ca_workflow 'container-http.bicep' = {
   name: 'ca-workflow'
@@ -276,6 +346,9 @@ module ca_workflow 'container-http.bicep' = {
     containerImage: 'shipping/workflow:0.1.0'
     revisionMode: 'single'
     isExternalIngress: false
+    minReplicas: 1
+    maxReplicas: 1
+    // Production readiness change: Workflow service is a background worker without HTTP endpoints. Consider implementing health probe endpoints for better observability and lifecycle management. See https://learn.microsoft.com/azure/container-apps/health-probes
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'
@@ -376,6 +449,9 @@ module ca_package 'container-http.bicep' = {
     containerPort: 80
     isExternalIngress: false
     revisionMode: 'multiple'
+    livenessPath: '/healthz'
+    startupPath: '/healthz'
+    // Production readiness change: Implement a readiness probe endpoint (e.g., /health/ready) that validates Azure Cosmos DB for MongoDB connectivity before accepting traffic. Current /healthz endpoint should be enhanced with dependency checks.
     secrets: [
       {
         name: 'applicationinsights-connectionstring'
@@ -411,6 +487,38 @@ module ca_package 'container-http.bicep' = {
   }
 }
 
+// Resiliency policy for Package service (called by Workflow)
+resource packageResiliencyPolicy 'Microsoft.App/containerApps/resiliencyPolicies@2025-02-02-preview' = {
+  name: 'package-app/resiliency'
+  dependsOn: [
+    ca_package
+  ]
+  properties: {
+    timeoutPolicy: {
+      responseTimeoutInSeconds: 60
+      connectionTimeoutInSeconds: 5
+    }
+    httpRetryPolicy: {
+      maxRetries: 3
+      retryBackOff: {
+        initialDelayInMilliseconds: 1000
+        maxIntervalInMilliseconds: 10000
+      }
+      matches: {
+        errors: [
+          '5xx'
+          'reset'
+        ]
+      }
+    }
+    circuitBreakerPolicy: {
+      consecutiveErrors: 5
+      intervalInSeconds: 10
+      maxEjectionPercent: 50
+    }
+  }
+}
+
 // Ingestion App
 module ca_ingestion 'container-http.bicep' = {
   name: 'ca-ingestion'
@@ -424,8 +532,12 @@ module ca_ingestion 'container-http.bicep' = {
     containerPort: 80
     cpu: '1'
     memory: '2.0Gi'
-    isExternalIngress: true
+    isExternalIngress: true // Production readiness change: Replace built-in external ingress with Azure Front Door or Application Gateway (WAF enabled) for enhanced security (WAF rules, DDoS mitigation, centralized TLS). Disable `isExternalIngress` and route traffic via the gateway. Note that gateway health probes will keep the service from scaling to zero.
     revisionMode: 'multiple'
+    livenessPath: '/api/probe'
+    startupPath: '/api/probe'
+    // Production readiness change: Implement a readiness probe endpoint (e.g., /api/ready) that validates Service Bus connectivity before accepting traffic. Current /api/probe endpoint should be enhanced with dependency checks.
+    // Production readiness change: Offload authentication/authorization to Container Apps built-in authentication (Easy Auth) instead of custom code in the ingestion service. Configure identity providers (Azure AD, etc.) in platform settings and remove app-level credential handling.
     secrets: [
       {
         name: 'applicationinsights-instrumentationkey'

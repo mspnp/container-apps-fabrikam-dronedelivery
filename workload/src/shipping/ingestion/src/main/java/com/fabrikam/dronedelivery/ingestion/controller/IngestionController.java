@@ -34,6 +34,11 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 
 @RestController
 public class IngestionController {
+	// Production readiness change: Authentication & authorization are handled inline in application code.
+	// For production, offload identity management to Azure Container Apps built-in authentication ("Easy Auth")
+	// to remove custom credential handling, standardize provider integration (Azure AD, GitHub, Microsoft Accounts),
+	// and reduce attack surface. See https://learn.microsoft.com/azure/container-apps/authentication.
+	// After enabling platform auth, strip any custom auth headers logic and rely on injected claims/principals.
 
 	private final static Logger log = LoggerFactory.getLogger(IngestionController.class);
 	

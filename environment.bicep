@@ -34,9 +34,31 @@ resource cae 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
       destination: 'azure-monitor' // Uses diagnostics settings below
       logAnalyticsConfiguration: null
     }
-    zoneRedundant: false
-    workloadProfiles: null
-    vnetConfiguration: null
+    zoneRedundant: false // Production readiness change: Enable zone redundancy for higher availability. See https://learn.microsoft.com/azure/container-apps/zone-redundant. This requires a virtual network based deployment.
+    workloadProfiles: [
+      {
+        name: 'Consumption'
+        workloadProfileType: 'Consumption'
+      }
+    ]
+    publicNetworkAccess: 'Enabled' // Production readiness change: Front your service with a WAF and only expose this environment to your private network.
+    vnetConfiguration: null // Production readiness change: Use a custom virtual network with Network Security Groups and UDR-based routing through Azure Firewall for enhanced security control. See https://learn.microsoft.com/azure/container-apps/vnet-custom
+    ingressConfiguration: null
+    appInsightsConfiguration: null
+    daprAIConnectionString: null
+    diskEncryptionConfiguration: null
+    openTelemetryConfiguration: null
+    customDomainConfiguration: null
+    peerAuthentication: {
+      mtls: {
+        enabled: false
+      }
+    }
+    peerTrafficConfiguration: {
+      encryption: {
+        enabled: false
+      }
+    }
     infrastructureResourceGroup: null
   }
 }
