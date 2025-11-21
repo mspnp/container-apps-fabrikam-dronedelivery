@@ -132,23 +132,6 @@ Following the steps below will result in the creation of the following Azure res
    az deployment group create -n workload-dependencies -g $RESOURCE_GROUP -f ./workload/workload-stamp.bicep
    ```
 
-1. Get the user identities.
-
-   ```bash
-   DELIVERY_PRINCIPAL_ID=$(az identity show -g $RESOURCE_GROUP -n uid-delivery --query principalId -o tsv) && \
-   DRONESCHEDULER_PRINCIPAL_ID=$(az identity show -g $RESOURCE_GROUP -n uid-dronescheduler --query principalId -o tsv) && \
-   WORKFLOW_PRINCIPAL_ID=$(az identity show -g $RESOURCE_GROUP -n uid-workflow --query principalId -o tsv) && \
-   PACKAGE_ID_PRINCIPAL_ID=$(az identity show -g $RESOURCE_GROUP -n uid-package --query principalId -o tsv) && \
-   INGESTION_ID_PRINCIPAL_ID=$(az identity show -g $RESOURCE_GROUP -n uid-ingestion --query principalId -o tsv)
-
-   # Wait for Microsoft Entra ID propagation
-   until az ad sp show --id $DELIVERY_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
-   until az ad sp show --id $DRONESCHEDULER_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
-   until az ad sp show --id $WORKFLOW_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
-   until az ad sp show --id $PACKAGE_ID_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
-   until az ad sp show --id $INGESTION_ID_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
-   ```
-
 1. Build, tag, and host the five microservice container images in Azure Container Registry (ACR).
 
    You'll be using your container registry to build and then host the containers.
