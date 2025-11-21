@@ -43,12 +43,7 @@ resource cae 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
     ]
     publicNetworkAccess: 'Enabled' // Production readiness change: Front your service with a WAF and only expose this environment to your private network.
     vnetConfiguration: null // Production readiness change: Use a custom virtual network with Network Security Groups and UDR-based routing through Azure Firewall for enhanced security control. See https://learn.microsoft.com/azure/container-apps/vnet-custom
-    ingressConfiguration: {
-      headerCountLimit: 30
-      terminationGracePeriodSeconds: 480
-      requestIdleTimeout: 4
-      workloadProfileName: 'Consumption'  // Note: Health checks from your gateway will keep this alive, do not expect to scale to zero.
-    }
+    ingressConfiguration: null
     appInsightsConfiguration: null
     daprAIConnectionString: null
     diskEncryptionConfiguration: null
