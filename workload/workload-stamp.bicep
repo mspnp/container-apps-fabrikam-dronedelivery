@@ -27,16 +27,14 @@ param location string = resourceGroup().location
 ])
 param geoRedundancyLocation string = 'centralus'
 
+/*** VARIABLES ***/
+
 var prefix = substring(uniqueString(subscription().subscriptionId, resourceGroup().id), 0, 10)
 var acrName = 'acr${prefix}'
 var appInsightsName = 'ai-${prefix}'
 var logAnalyticsWorkspaceName = 'law-${prefix}'
 var nestedACRDeploymentName = '${resourceGroup().name}-deployment'
-var deliveryRedisCacheSKU = 'Basic'
-var deliveryRedisCacheFamily = 'C'
-var deliveryRedisCacheCapacity = 0
 var deliveryCosmosDbName = 'cosmos-delivery-${prefix}'
-var deliveryRedisName = 'redis-delivery-${prefix}'
 var deliveryKeyVaultName = 'kv-delivery-${prefix}'
 var droneSchedulerCosmosDbName = 'cosmos-scheduler-${prefix}'
 var droneSchedulerKeyVaultName = 'kv-schedule-${prefix}'
@@ -119,12 +117,12 @@ module containerRegistry './nested_workload-stamp.bicep' = {
     location: location
     acrName: acrName
     geoRedundancyLocation: geoRedundancyLocation
+    logAnalyticsResourceId: logAnalyticsWorkspace.id
   }
-  dependsOn: []
 }
 
 resource deliveryRedis 'Microsoft.Cache/Redis@2020-06-01' = {
-  name: deliveryRedisName
+  name: 'redis-delivery-${prefix}'
   location: location
   tags: {
     displayName: 'Redis Cache for inflight deliveries'
@@ -133,12 +131,11 @@ resource deliveryRedis 'Microsoft.Cache/Redis@2020-06-01' = {
   }
   properties: {
     sku: {
-      capacity: deliveryRedisCacheCapacity
-      family: deliveryRedisCacheFamily
-      name: deliveryRedisCacheSKU
+      capacity: 0
+      family: 'C'
+      name: 'Basic'
     }
   }
-  dependsOn: []
 }
 
 resource deliveryCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-preview' = {
@@ -159,7 +156,37 @@ resource deliveryCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-prev
       }
     ]
   }
-  dependsOn: []
+}
+
+@description('Azure diagnostics for Delivery Cosmos DB')
+resource diagnosticsSettingsDeliveryCosmosDb 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: deliveryCosmosDb
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'DataPlaneRequests'
+        enabled: true
+      }
+      {
+        category: 'ControlPlaneRequests'
+        enabled: true
+      }
+      {
+        category: 'QueryRuntimeStatistics'
+        enabled: true
+      }
+      {
+        category: 'PartitionKeyStatistics'
+        enabled: true
+      }
+      {
+        category: 'PartitionKeyRUConsumption'
+        enabled: true
+      }
+    ]
+  }
 }
 
 resource packageMongoDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-preview' = {
@@ -184,7 +211,41 @@ resource packageMongoDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-previe
     }
     virtualNetworkRules: []
   }
-  dependsOn: []
+}
+
+@description('Azure diagnostics for Delivery MongoDB')
+resource diagnosticsSettingsPackageMongoDb 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: packageMongoDb
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'DataPlaneRequests'
+        enabled: true
+      }
+      {
+        category: 'MongoRequests'
+        enabled: true
+      }
+      {
+        category: 'ControlPlaneRequests'
+        enabled: true
+      }
+      {
+        category: 'QueryRuntimeStatistics'
+        enabled: true
+      }
+      {
+        category: 'PartitionKeyStatistics'
+        enabled: true
+      }
+      {
+        category: 'PartitionKeyRUConsumption'
+        enabled: true
+      }
+    ]
+  }
 }
 
 resource packageKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
@@ -229,6 +290,25 @@ resource packageKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
   }
 }
 
+@description('Azure diagnostics for Package Key Vault')
+resource diagnosticsSettingsPackageKeyVault 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: packageKeyVault
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'AuditEvent'
+        enabled: true
+      }
+      {
+        category: 'AzurePolicyEvaluationDetails'
+        enabled: true
+      }
+    ]
+  }
+}
+
 resource packagePrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: packageKeyVault
   name: guid(packageManagedIdentity.id, packageKeyVault.name, keyVaultSecretsUserRole)
@@ -257,7 +337,37 @@ resource droneSchedulerCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-0
       }
     ]
   }
-  dependsOn: []
+}
+
+@description('Azure diagnostics for Scheduler Cosmos DB')
+resource diagnosticsSettingsSchedulerCosmosDb 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: droneSchedulerCosmosDb
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'DataPlaneRequests'
+        enabled: true
+      }
+      {
+        category: 'ControlPlaneRequests'
+        enabled: true
+      }
+      {
+        category: 'QueryRuntimeStatistics'
+        enabled: true
+      }
+      {
+        category: 'PartitionKeyStatistics'
+        enabled: true
+      }
+      {
+        category: 'PartitionKeyRUConsumption'
+        enabled: true
+      }
+    ]
+  }
 }
 
 resource ingestionSBNamespace 'Microsoft.ServiceBus/namespaces@2025-05-01-preview' = {
@@ -275,6 +385,41 @@ resource ingestionSBNamespace 'Microsoft.ServiceBus/namespaces@2025-05-01-previe
     app: 'fabrikam-ingestion and fabrikam-workflow'
     'app-producer': 'fabrikam-ingestion'
     'app-consumer': 'fabrikam-workflow'
+  }
+}
+
+@description('Azure diagnostics for Service Bus')
+resource diagnosticsSettingsServiceBus 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: ingestionSBNamespace
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'DiagnosticErrorLogs'
+        enabled: true
+      }
+      {
+        category: 'OperationalLogs'
+        enabled: true
+      }
+      {
+        category: 'VNetAndIPFilteringLogs'
+        enabled: true
+      }
+      {
+        category: 'RuntimeAuditLogs'
+        enabled: true
+      }
+      {
+        category: 'ApplicationMetricsLogs'
+        enabled: true
+      }
+      {
+        category: 'DataDRLogs'
+        enabled: true
+      }
+    ]
   }
 }
 
@@ -365,6 +510,25 @@ resource deliveryKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
   }
 }
 
+@description('Azure diagnostics for Delivery Key Vault')
+resource diagnosticsSettingsDeliveryKeyVault 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: deliveryKeyVault
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'AuditEvent'
+        enabled: true
+      }
+      {
+        category: 'AzurePolicyEvaluationDetails'
+        enabled: true
+      }
+    ]
+  }
+}
+
 resource deliveryPrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: deliveryKeyVault
   name: guid(deliveryManagedIdentity.id, deliveryKeyVault.name, keyVaultSecretsUserRole)
@@ -410,6 +574,25 @@ resource ingestionKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
     properties: {
       value: appInsights.properties.InstrumentationKey
     }
+  }
+}
+
+@description('Azure diagnostics for Ingestion Key Vault')
+resource diagnosticsSettingsIngestionKeyVault 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: ingestionKeyVault
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'AuditEvent'
+        enabled: true
+      }
+      {
+        category: 'AzurePolicyEvaluationDetails'
+        enabled: true
+      }
+    ]
   }
 }
 
@@ -461,6 +644,25 @@ resource droneSchedulerKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
   }
 }
 
+@description('Azure diagnostics for Scheduler Key Vault')
+resource diagnosticsSettingsSchedulerKeyVault 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: droneSchedulerKeyVault
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'AuditEvent'
+        enabled: true
+      }
+      {
+        category: 'AzurePolicyEvaluationDetails'
+        enabled: true
+      }
+    ]
+  }
+}
+
 resource droneSchedulerPrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleAssignments@2022-04-01' = {
   scope: droneSchedulerKeyVault
   name: guid(droneSchedulerManagedIdentity.id, droneSchedulerKeyVault.name, keyVaultSecretsUserRole)
@@ -506,6 +708,25 @@ resource workflowKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
     properties: {
       value: appInsights.properties.InstrumentationKey
     }
+  }
+}
+
+@description('Azure diagnostics for Workflow Key Vault')
+resource diagnosticsSettingsWorkflowKeyVault 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: workflowKeyVault
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'AuditEvent'
+        enabled: true
+      }
+      {
+        category: 'AzurePolicyEvaluationDetails'
+        enabled: true
+      }
+    ]
   }
 }
 
