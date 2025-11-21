@@ -126,7 +126,7 @@ Following the steps below will result in the creation of the following Azure res
 
    > None of these resources are for the application platform hosting the workload, but instead are tied directly to the drone delivery workload. For example, the per-microservice Key Vault, the per-microservice data stores, the message queue, logging sinks, etc. These same resources would exist no matter if the application platform was Azure Container Apps, Kubernetes, or App Service.
 
-   :clock7: *This might take about 25 minutes.*
+   :clock7: *This might take about 30 minutes.*
 
    ```bash
    az deployment group create -n workload-dependencies -g $RESOURCE_GROUP -f ./workload/workload-stamp.bicep
@@ -228,26 +228,26 @@ Following the steps below will result in the creation of the following Azure res
 
    ```bash
    az deployment group create -f main.bicep -g $RESOURCE_GROUP -p \
-      logAnalyticsResourceId="$LA_WORKSPACE_ID" \
-      applicationInsightsInstrumentationKey="$AI_KEY" \
-      applicationInsightsConnectionString="$APPINSIGHTS_CONNECTION_STRING" \
-      containerRegistryResourceId="$ACR_ID" \
-      deliveryCosmosdbDatabaseName="$DELIVERY_DATABASE_NAME" \
-      deliveryCosmosdbCollectionName="$DELIVERY_COLLECTION_NAME" \
-      deliveryCosmosdbEndpoint="$DELIVERY_COSMOSDB_ENDPOINT" \
-      deliveryRedisEndpoint="$DELIVERY_REDIS_ENDPOINT" \
-      deliveryKeyVaultUri="$DELIVERY_KEYVAULT_URI" \
-      droneSchedulerCosmosdbEndpoint="$DRONESCHEDULER_COSMOSDB_ENDPOINT" \
-      droneSchedulerKeyVaultUri="$DRONESCHEDULER_KEYVAULT_URI" \
-      workflowNamespaceEndpoint="$WORKFLOW_NAMESPACE_ENDPOINT" \
-      workflowNamespaceSASName="$WORKFLOW_NAMESPACE_SAS_NAME" \
-      workflowNamespaceSASKey="$WORKFLOW_NAMESPACE_SAS_KEY" \
-      workflowQueueName="$WORKFLOW_QUEUE_NAME" \
-      packageMongodbConnectionString="$PACKAGE_MONGODB_CONNECTIONSTRING" \
-      ingestionNamespaceName="$INGESTION_NAMESPACE_NAME" \
-      ingestionNamespaceSASName="$INGESTION_NAMESPACE_SAS_NAME" \
-      ingestionNamespaceSASKey="$INGESTION_NAMESPACE_SAS_KEY" \
-      ingestionQueueName="$INGESTION_QUEUE_NAME"
+      logAnalyticsResourceId="${LA_WORKSPACE_ID}" \
+      applicationInsightsInstrumentationKey="{$AI_KEY}" \
+      applicationInsightsConnectionString="${APPINSIGHTS_CONNECTION_STRING}" \
+      containerRegistryResourceId="${ACR_ID}" \
+      deliveryCosmosdbDatabaseName="${DELIVERY_DATABASE_NAME}" \
+      deliveryCosmosdbCollectionName="${DELIVERY_COLLECTION_NAME}" \
+      deliveryCosmosdbEndpoint="{$DELIVERY_COSMOSDB_ENDPOINT}" \
+      deliveryRedisEndpoint="${DELIVERY_REDIS_ENDPOINT}" \
+      deliveryKeyVaultUri="${DELIVERY_KEYVAULT_URI}" \
+      droneSchedulerCosmosdbEndpoint="${DRONESCHEDULER_COSMOSDB_ENDPOINT}" \
+      droneSchedulerKeyVaultUri="${DRONESCHEDULER_KEYVAULT_URI}" \
+      workflowNamespaceEndpoint="${WORKFLOW_NAMESPACE_ENDPOINT}" \
+      workflowNamespaceSASName="${WORKFLOW_NAMESPACE_SAS_NAME}" \
+      workflowNamespaceSASKey="${WORKFLOW_NAMESPACE_SAS_KEY}" \
+      workflowQueueName="${WORKFLOW_QUEUE_NAME}" \
+      packageMongodbConnectionString="${PACKAGE_MONGODB_CONNECTIONSTRING}" \
+      ingestionNamespaceName="${INGESTION_NAMESPACE_NAME}" \
+      ingestionNamespaceSASName="${INGESTION_NAMESPACE_SAS_NAME}" \
+      ingestionNamespaceSASKey="${INGESTION_NAMESPACE_SAS_KEY}" \
+      ingestionQueueName="${INGESTION_QUEUE_NAME}"
    ```
 
    > :book: Deployment approach: Bicep vs. imperative control in CD pipelines
