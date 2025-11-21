@@ -244,8 +244,6 @@ Following the steps below will result in the creation of the following Azure res
 
 Now that you have deployed your Container Apps Environment and the five microservices to it, you can validate its functionality. This section will help you to validate the workload is exposed through a Container Apps HTTP ingress flow and responding to HTTP requests correctly.
 
-### Steps
-
 1. Get the Ingestion service's FQDN
 
     > :book: The app team conducts a final acceptance test to ensure that traffic is flowing end-to-end as expected. To do so, an HTTP request is submitted against the ingestion external ingress.
@@ -274,13 +272,28 @@ Now that you have deployed your Container Apps Environment and the five microser
       },
       "pickupLocation": "mypickup",
       "pickupTime": "'$(date -u +%FT%TZ)'"
-    }'
+    }' | json_pp
    ```
 
    The response in your terminal should look similar to the one shown below:
 
-   ```output
-   {"deliveryId":"00001111-aaaa-2222-bbbb-3333cccc4444","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2026-05-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
+   ```json
+   {
+      "confirmationRequired" : "None",
+      "deadline" : "",
+      "deliveryId" : "00001111-aaaa-2222-bbbb-3333cccc4444",
+      "dropOffLocation" : "drop off",
+      "expedited" : true,
+      "ownerId" : "myowner",
+      "packageInfo" : {
+         "packageId" : "mypackage",
+         "size" : "Small",
+         "tag" : "mytag",
+         "weight" : 10
+      },
+      "pickupLocation" : "mypickup",
+      "pickupTime" : "2026-05-14T20:10:00.000+0000"
+   }
    ```
 
 1. Query Application Insights to ensure your request has been ingested by the underlying services.
@@ -304,8 +317,8 @@ Now that you have deployed your Container Apps Environment and the five microser
    PUT /api/packages/mypackage (1)
    POST /api/deliveryrequests (1)
    GET /api/packages/mypackage (1)
-   GET /healthz (22)
-   GET /api/probe (23)
+   GET /healthz (120)
+   GET /api/probe (44)
    ```
 
    :book: The above result demonstrates that the HTTP request, initiated from the client, was ingested by `/api/deliveryrequests`, then consumed by the Workflow background service and dispatched to the `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively.
@@ -314,7 +327,7 @@ Now that you have deployed your Container Apps Environment and the five microser
 
 1. Delete the resource group that contains all the resources.
 
-   | :warning: | This will completely delete all resources in this resource group.
+   | :warning: | This will completely delete all resources in this resource group. |
    | :-------: | :------------------------- |
 
    :clock6: *This might take about 10 minutes.*
