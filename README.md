@@ -242,7 +242,7 @@ Following the steps below will result in the creation of the following Azure res
 
 ## Try it out
 
-Now that you have deployed your Container Apps Environment, you can validate its functionality. This section will help you to validate the workload is exposed through a Container Apps HTTP ingress flow and responding to HTTP requests correctly.
+Now that you have deployed your Container Apps Environment and the five microservices to it, you can validate its functionality. This section will help you to validate the workload is exposed through a Container Apps HTTP ingress flow and responding to HTTP requests correctly.
 
 ### Steps
 
@@ -257,7 +257,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
 
 1. Create a delivery request using your microservices hosted on ACA.
 
-   > This calls the only Internet-exposed service. This kicks off the five microservices to perform the request.
+   > This calls the only Internet-exposed service in the cluster. This kicks off the five microservices to handle the request.
 
    ```bash
    curl -X POST "https://${INGESTION_FQDN}/api/deliveryrequests" --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{
@@ -277,7 +277,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
     }'
    ```
 
-   The response to the request printed in your terminal should look similar to the one shown below:
+   The response in your terminal should look similar to the one shown below:
 
    ```output
    {"deliveryId":"00001111-aaaa-2222-bbbb-3333cccc4444","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2026-05-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
@@ -308,17 +308,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
    GET /api/probe (23)
    ```
 
-   :book: The above result demonstrates that the HTTP request, initiated from the client, was ingested by `/api/deliveryrequests`, then consumed by the Workflow background service and dispatched to the `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. They are all microservices running within your Azure Container Apps environment.
-
-## Troubleshooting
-
-### Restart a revision
-
-If you need to restart a revision with Provision Status `Failed` or for another reason, you can use the Azure CLI.
-
-```bash
-az containerapp revision restart -g $RESOURCE_GROUP --app <containerapp-name> -n <containerapp-revision-name>
-```
+   :book: The above result demonstrates that the HTTP request, initiated from the client, was ingested by `/api/deliveryrequests`, then consumed by the Workflow background service and dispatched to the `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively.
 
 ## :broom: Clean up
 
@@ -327,7 +317,7 @@ az containerapp revision restart -g $RESOURCE_GROUP --app <containerapp-name> -n
    | :warning: | This will completely delete all resources in this resource group.
    | :-------: | :------------------------- |
 
-   :clock8: *This might take about 10 minutes.*
+   :clock6: *This might take about 10 minutes.*
 
    ```bash
    az group delete -n $RESOURCE_GROUP -y
@@ -344,10 +334,11 @@ az containerapp revision restart -g $RESOURCE_GROUP --app <containerapp-name> -n
 
 ## Next steps
 
-The team has been able to migrate and run Fabrikam Drone Delivery on top of Azure Container Apps. They are now laying out a new migration and modernization plan that will include:
+The team has been able to migrate and run Fabrikam Drone Delivery in Azure Container Apps. They are now laying out a new modernization plan that will include:
 
 - [Start using DAPR](https://learn.microsoft.com/azure/container-apps/microservices#dapr-integration)
 - [Bring your own virtual network](https://learn.microsoft.com/azure/container-apps/vnet-custom)
+- Addressing [production readiness changes](#production-readiness-changes)
 
 ## Production readiness changes
 
