@@ -144,32 +144,30 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
           identity: existingManagedIdentity.id
         }
       ]
-      ingress: hasIngress
-        ? {
-            external: isExternalIngress
-            targetPort: containerPort
-            targetPortHttpScheme: 'http'
-            exposedPort: 0
-            additionalPortMappings: []
-            transport: 'auto'
-            traffic: [
-              {
-                weight: 100
-                latestRevision: true
-              }
-            ]
-            customDomains: null
-            allowInsecure: false
-            ipSecurityRestrictions: null
-            corsPolicy: null
-            clientCertificateMode: 'ignore'
-            stickySessions: {
-              affinity: 'none'
-            }
-            // Production readiness change: For internet-facing workloads, disable built-in public ingress and front the app with Azure Front Door or Application Gateway with WAF & DDoS protection. This provides centralized routing, TLS, WAF rules, and advanced threat mitigation. Trade-off: gateway health probes keep at least one replica warm, reducing scale-to-zero benefits. See https://learn.microsoft.com/azure/container-apps/ingress-overview and https://learn.microsoft.com/azure/web-application-firewall/overview
-            // Production readiness change: Enable built-in authentication (Easy Auth) to offload identity & auth concerns from application code. Configure auth providers rather than custom middleware in code. See https://learn.microsoft.com/azure/container-apps/authentication for guidance.
+      ingress: hasIngress ? {
+        external: isExternalIngress
+        targetPort: containerPort
+        targetPortHttpScheme: 'http'
+        exposedPort: 0
+        additionalPortMappings: []
+        transport: 'auto'
+        traffic: [
+          {
+            weight: 100
+            latestRevision: true
           }
-        : null
+        ]
+        customDomains: null
+        allowInsecure: false
+        ipSecurityRestrictions: null
+        corsPolicy: null
+        clientCertificateMode: 'ignore'
+        stickySessions: {
+          affinity: 'none'
+        }
+      } : null
+      // Production readiness change: For internet-facing workloads, disable built-in public ingress and front the app with Azure Front Door or Application Gateway with WAF & DDoS protection. This provides centralized routing, TLS, WAF rules, and advanced threat mitigation. Trade-off: gateway health probes keep at least one replica warm, reducing scale-to-zero benefits. See https://learn.microsoft.com/azure/container-apps/ingress-overview and https://learn.microsoft.com/azure/web-application-firewall/overview
+      // Production readiness change: Enable built-in authentication (Easy Auth) to offload identity & auth concerns from application code. Configure auth providers rather than custom middleware in code. See https://learn.microsoft.com/azure/container-apps/authentication for guidance.
       dapr: {
         enabled: false
       }
