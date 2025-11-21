@@ -132,9 +132,6 @@ resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
   properties: {
     environmentId: environmentId
     workloadProfileName: null
-    patchingConfiguration: {
-      patchingMode: 'Automatic'
-    }
     configuration: {
       activeRevisionsMode: revisionMode
       secrets: secrets
