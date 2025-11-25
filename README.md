@@ -69,9 +69,9 @@ Following the steps below will result in the creation of the following Azure res
   - The subscription must have the following quota and SKU availability in the region you choose.
 
     - Azure Application Insights: 1 instance
-    - Azure Container Apps: 1 environment, 5 container apps
+    - Azure Container Apps: 1 zone-redundant environment, 5 container apps (3 replicas each)
     - Azure Container Registry: 1 Premium tier instance with geo-replication
-    - Azure Cosmos DB: 3 accounts (2 SQL API, 1 MongoDB API)
+    - Azure Cosmos DB: 3 accounts (2 Azure Cosmos DB for NoSQL, 1 Azure Cosmos DB for MongoDB)
     - Azure Key Vault: 5 Standard tier instances
     - Azure Log Analytics: 1 workspace
     - Azure Redis Cache: 1 Basic C0 instance
@@ -107,12 +107,22 @@ Following the steps below will result in the creation of the following Azure res
    az login
    ```
 
+1. Ensure required Azure CLI extensions are installed.
+
+   The only extension used by this deployment guide is the Application Insights extension.
+
+   ```bash
+   az extension add --name application-insights
+   ```
+
 1. Set environment variables.
 
    ```bash
    LOCATION=eastus2
    RESOURCE_GROUP=rg-shipping-dronedelivery
    ```
+
+   :bulb: The region must support availability zones. See [Azure regions with availability zones](https://learn.microsoft.com/azure/reliability/availability-zones-service-support#azure-regions-with-availability-zone-support).
 
 1. Create a resource group for your deployment.
 
@@ -124,27 +134,10 @@ Following the steps below will result in the creation of the following Azure res
 
    > None of these resources are for the application platform hosting the workload, but instead are tied directly to the drone delivery workload. For example, the per-microservice Key Vault, the per-microservice data stores, the message queue, logging sinks, etc. These same resources would exist no matter if the application platform was Azure Container Apps, Kubernetes, or App Service.
 
-   :clock7: *This might take about 25 minutes.*
+   :clock7: *This might take about 30 minutes.*
 
    ```bash
    az deployment group create -n workload-dependencies -g $RESOURCE_GROUP -f ./workload/workload-stamp.bicep
-   ```
-
-1. Get the user identities.
-
-   ```bash
-   DELIVERY_PRINCIPAL_ID=$(az identity show -g $RESOURCE_GROUP -n uid-delivery --query principalId -o tsv) && \
-   DRONESCHEDULER_PRINCIPAL_ID=$(az identity show -g $RESOURCE_GROUP -n uid-dronescheduler --query principalId -o tsv) && \
-   WORKFLOW_PRINCIPAL_ID=$(az identity show -g $RESOURCE_GROUP -n uid-workflow --query principalId -o tsv) && \
-   PACKAGE_ID_PRINCIPAL_ID=$(az identity show -g $RESOURCE_GROUP -n uid-package --query principalId -o tsv) && \
-   INGESTION_ID_PRINCIPAL_ID=$(az identity show -g $RESOURCE_GROUP -n uid-ingestion --query principalId -o tsv)
-
-   # Wait for Microsoft Entra ID propagation
-   until az ad sp show --id $DELIVERY_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
-   until az ad sp show --id $DRONESCHEDULER_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
-   until az ad sp show --id $WORKFLOW_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
-   until az ad sp show --id $PACKAGE_ID_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
-   until az ad sp show --id $INGESTION_ID_PRINCIPAL_ID &> /dev/null ; do echo "Waiting for Microsoft Entra ID propagation" && sleep 5; done
    ```
 
 1. Build, tag, and host the five microservice container images in Azure Container Registry (ACR).
@@ -226,33 +219,38 @@ Following the steps below will result in the creation of the following Azure res
 
    ```bash
    az deployment group create -f main.bicep -g $RESOURCE_GROUP -p \
-      logAnalyticsResourceId="$LA_WORKSPACE_ID" \
-      applicationInsightsInstrumentationKey="$AI_KEY" \
-      applicationInsightsConnectionString="$APPINSIGHTS_CONNECTION_STRING" \
-      containerRegistryResourceId="$ACR_ID" \
-      deliveryCosmosdbDatabaseName="$DELIVERY_DATABASE_NAME" \
-      deliveryCosmosdbCollectionName="$DELIVERY_COLLECTION_NAME" \
-      deliveryCosmosdbEndpoint="$DELIVERY_COSMOSDB_ENDPOINT" \
-      deliveryRedisEndpoint="$DELIVERY_REDIS_ENDPOINT" \
-      deliveryKeyVaultUri="$DELIVERY_KEYVAULT_URI" \
-      droneSchedulerCosmosdbEndpoint="$DRONESCHEDULER_COSMOSDB_ENDPOINT" \
-      droneSchedulerKeyVaultUri="$DRONESCHEDULER_KEYVAULT_URI" \
-      workflowNamespaceEndpoint="$WORKFLOW_NAMESPACE_ENDPOINT" \
-      workflowNamespaceSASName="$WORKFLOW_NAMESPACE_SAS_NAME" \
-      workflowNamespaceSASKey="$WORKFLOW_NAMESPACE_SAS_KEY" \
-      workflowQueueName="$WORKFLOW_QUEUE_NAME" \
-      packageMongodbConnectionString="$PACKAGE_MONGODB_CONNECTIONSTRING" \
-      ingestionNamespaceName="$INGESTION_NAMESPACE_NAME" \
-      ingestionNamespaceSASName="$INGESTION_NAMESPACE_SAS_NAME" \
-      ingestionNamespaceSASKey="$INGESTION_NAMESPACE_SAS_KEY" \
-      ingestionQueueName="$INGESTION_QUEUE_NAME"
+      logAnalyticsResourceId="${LA_WORKSPACE_ID}" \
+      applicationInsightsInstrumentationKey="${AI_KEY}" \
+      applicationInsightsConnectionString="${APPINSIGHTS_CONNECTION_STRING}" \
+      containerRegistryResourceId="${ACR_ID}" \
+      deliveryCosmosdbDatabaseName="${DELIVERY_DATABASE_NAME}" \
+      deliveryCosmosdbCollectionName="${DELIVERY_COLLECTION_NAME}" \
+      deliveryCosmosdbEndpoint="${DELIVERY_COSMOSDB_ENDPOINT}" \
+      deliveryRedisEndpoint="${DELIVERY_REDIS_ENDPOINT}" \
+      deliveryKeyVaultUri="${DELIVERY_KEYVAULT_URI}" \
+      droneSchedulerCosmosdbEndpoint="${DRONESCHEDULER_COSMOSDB_ENDPOINT}" \
+      droneSchedulerKeyVaultUri="${DRONESCHEDULER_KEYVAULT_URI}" \
+      workflowNamespaceEndpoint="${WORKFLOW_NAMESPACE_ENDPOINT}" \
+      workflowNamespaceSASName="${WORKFLOW_NAMESPACE_SAS_NAME}" \
+      workflowNamespaceSASKey="${WORKFLOW_NAMESPACE_SAS_KEY}" \
+      workflowQueueName="${WORKFLOW_QUEUE_NAME}" \
+      packageMongodbConnectionString="${PACKAGE_MONGODB_CONNECTIONSTRING}" \
+      ingestionNamespaceName="${INGESTION_NAMESPACE_NAME}" \
+      ingestionNamespaceSASName="${INGESTION_NAMESPACE_SAS_NAME}" \
+      ingestionNamespaceSASKey="${INGESTION_NAMESPACE_SAS_KEY}" \
+      ingestionQueueName="${INGESTION_QUEUE_NAME}"
    ```
+
+   > :book: Deployment approach: Bicep vs. imperative control in CD pipelines
+   >
+   > In this reference implementation, the deployment of the applications to the environment is performed using Bicep modules for simplicity and reproducibility. In production environments, it is recommended to deploy application containers as part of your continuous delivery (CD) pipeline using the appropriate automation tools. This enables easier incremental roll outs, such as traffic shifting over time.
+   >
+   > - For GitHub Workflows, see: [Deploy to Azure Container Apps with GitHub Actions](https://learn.microsoft.com/azure/container-apps/github-actions)
+   > - For Azure Pipelines, see: [Deploy to Azure Container Apps from Azure Pipelines](https://learn.microsoft.com/azure/container-apps/azure-pipelines)
 
 ## Try it out
 
-Now that you have deployed your Container Apps Environment, you can validate its functionality. This section will help you to validate the workload is exposed through a Container Apps HTTP ingress flow and responding to HTTP requests correctly.
-
-### Steps
+Now that you have deployed your Container Apps Environment and the five microservices to it, you can validate its functionality. This section will help you to validate the workload is exposed through a Container Apps HTTP ingress flow and responding to HTTP requests correctly.
 
 1. Get the Ingestion service's FQDN
 
@@ -265,7 +263,7 @@ Now that you have deployed your Container Apps Environment, you can validate its
 
 1. Create a delivery request using your microservices hosted on ACA.
 
-   > This calls the only Internet-exposed service. This kicks off the five microservices to perform the request.
+   > This calls the only Internet-exposed service in the cluster. This kicks off the five microservices to handle the request.
 
    ```bash
    curl -X POST "https://${INGESTION_FQDN}/api/deliveryrequests" --header 'Content-Type: application/json' --header 'Accept: application/json' -d '{
@@ -282,13 +280,28 @@ Now that you have deployed your Container Apps Environment, you can validate its
       },
       "pickupLocation": "mypickup",
       "pickupTime": "'$(date -u +%FT%TZ)'"
-    }'
+    }' | json_pp
    ```
 
-   The response to the request printed in your terminal should look similar to the one shown below:
+   The response in your terminal should look similar to the one shown below:
 
-   ```output
-   {"deliveryId":"00001111-aaaa-2222-bbbb-3333cccc4444","ownerId":"myowner","pickupLocation":"mypickup","pickupTime":"2026-05-14T20:00:00.000+0000","deadline":"","expedited":true,"confirmationRequired":"None","packageInfo":{"packageId":"mypackage","size":"Small","weight":10.0,"tag":"mytag"},"dropOffLocation":"drop off"}
+   ```json
+   {
+      "confirmationRequired" : "None",
+      "deadline" : "",
+      "deliveryId" : "00001111-aaaa-2222-bbbb-3333cccc4444",
+      "dropOffLocation" : "drop off",
+      "expedited" : true,
+      "ownerId" : "myowner",
+      "packageInfo" : {
+         "packageId" : "mypackage",
+         "size" : "Small",
+         "tag" : "mytag",
+         "weight" : 10
+      },
+      "pickupLocation" : "mypickup",
+      "pickupTime" : "2026-05-14T20:10:00.000+0000"
+   }
    ```
 
 1. Query Application Insights to ensure your request has been ingested by the underlying services.
@@ -312,28 +325,20 @@ Now that you have deployed your Container Apps Environment, you can validate its
    PUT /api/packages/mypackage (1)
    POST /api/deliveryrequests (1)
    GET /api/packages/mypackage (1)
+   GET /healthz (120)
+   GET /api/probe (44)
    ```
 
-   :book: The above result demonstrates that the HTTP request, initiated from the client, was ingested by `/api/deliveryrequests`, then consumed by the Workflow background service and dispatched to the `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively. They are all microservices running within your Azure Container Apps environment.
-
-## Troubleshooting
-
-### Restart a revision
-
-If you need to restart a revision with Provision Status `Failed` or for another reason, you can use the Azure CLI.
-
-```bash
-az containerapp revision restart -g $RESOURCE_GROUP --app <containerapp-name> -n <containerapp-revision-name>
-```
+   :book: The above result demonstrates that the HTTP request, initiated from the client, was ingested by `/api/deliveryrequests`, then consumed by the Workflow background service and dispatched to the `Deliveries/Put`, `/api/packages/mypackage`, and `DroneDeliveries/Put` endpoints respectively.
 
 ## :broom: Clean up
 
 1. Delete the resource group that contains all the resources.
 
-   | :warning: | This will completely delete all resources in this resource group.
+   | :warning: | This will completely delete all resources in this resource group. |
    | :-------: | :------------------------- |
 
-   :clock8: *This might take about 10 minutes.*
+   :clock6: *This might take about 10 minutes.*
 
    ```bash
    az group delete -n $RESOURCE_GROUP -y
@@ -350,10 +355,15 @@ az containerapp revision restart -g $RESOURCE_GROUP --app <containerapp-name> -n
 
 ## Next steps
 
-The team has been able to migrate and run Fabrikam Drone Delivery on top of Azure Container Apps. They are now laying out a new migration and modernization plan that will include:
+The team has been able to migrate and run Fabrikam Drone Delivery in Azure Container Apps. They are now laying out a new modernization plan that will include:
 
 - [Start using DAPR](https://learn.microsoft.com/azure/container-apps/microservices#dapr-integration)
 - [Bring your own virtual network](https://learn.microsoft.com/azure/container-apps/vnet-custom)
+- Addressing [production readiness changes](#production-readiness-changes)
+
+## Production readiness changes
+
+The infrastructure as code included in this repository has a few configurations that are made only to enable a smoother and less expensive deployment experience when you are first trying this implementation out. These settings are not recommended for production deployments, and you should evaluate each of the settings before deploying to production. Those settings all have a comment next to them that starts with `Production readiness change:`.
 
 ## Contributions
 
