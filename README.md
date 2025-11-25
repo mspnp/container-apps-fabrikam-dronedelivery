@@ -107,6 +107,14 @@ Following the steps below will result in the creation of the following Azure res
    az login
    ```
 
+1. Ensure required Azure CLI extensions are installed.
+
+   The only extension used by this deployment guide is the Application Insights extension.
+
+   ```bash
+   az extension add --name application-insights
+   ```
+
 1. Set environment variables.
 
    ```bash
