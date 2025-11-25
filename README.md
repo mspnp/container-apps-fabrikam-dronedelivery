@@ -220,7 +220,7 @@ Following the steps below will result in the creation of the following Azure res
    ```bash
    az deployment group create -f main.bicep -g $RESOURCE_GROUP -p \
       logAnalyticsResourceId="${LA_WORKSPACE_ID}" \
-      applicationInsightsInstrumentationKey="{$AI_KEY}" \
+      applicationInsightsInstrumentationKey="${AI_KEY}" \
       applicationInsightsConnectionString="${APPINSIGHTS_CONNECTION_STRING}" \
       containerRegistryResourceId="${ACR_ID}" \
       deliveryCosmosdbDatabaseName="${DELIVERY_DATABASE_NAME}" \
