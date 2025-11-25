@@ -225,7 +225,7 @@ Following the steps below will result in the creation of the following Azure res
       containerRegistryResourceId="${ACR_ID}" \
       deliveryCosmosdbDatabaseName="${DELIVERY_DATABASE_NAME}" \
       deliveryCosmosdbCollectionName="${DELIVERY_COLLECTION_NAME}" \
-      deliveryCosmosdbEndpoint="{$DELIVERY_COSMOSDB_ENDPOINT}" \
+      deliveryCosmosdbEndpoint="${DELIVERY_COSMOSDB_ENDPOINT}" \
       deliveryRedisEndpoint="${DELIVERY_REDIS_ENDPOINT}" \
       deliveryKeyVaultUri="${DELIVERY_KEYVAULT_URI}" \
       droneSchedulerCosmosdbEndpoint="${DRONESCHEDULER_COSMOSDB_ENDPOINT}" \
