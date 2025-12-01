@@ -121,20 +121,50 @@ module containerRegistry './nested_workload-stamp.bicep' = {
   }
 }
 
-resource deliveryRedis 'Microsoft.Cache/Redis@2020-06-01' = {
+resource deliveryRedis 'Microsoft.Cache/redisEnterprise@2025-07-01' = {
   name: 'redis-delivery-${prefix}'
   location: location
   tags: {
     displayName: 'Redis Cache for inflight deliveries'
     app: 'fabrikam-delivery'
-    TODO: 'add log analytics resource'
+  }
+  sku: {
+    name: 'Balanced_B0'
   }
   properties: {
-    sku: {
-      capacity: 0
-      family: 'C'
-      name: 'Basic'
+    minimumTlsVersion: '1.2'
+    publicNetworkAccess: 'Enabled'
+    highAvailability: 'Enabled'
+  }
+
+  resource deliveryRedisDb 'databases' = {
+    name: 'default'
+    properties: {
+      clientProtocol: 'Encrypted'
+      clusteringPolicy: 'EnterpriseCluster'
+      evictionPolicy: 'AllKeysLRU'
+      accessKeysAuthentication: 'Enabled' // Production readiness change: Convert to Entra ID-based authentication
+      deferUpgrade: 'Deferred'
+      persistence: {
+        aofEnabled: false
+        rdbEnabled: true
+        rdbFrequency: '1h'
+      }
     }
+  }
+}
+
+resource diagnosticsSettingsDeliveryRedis 'Microsoft.Insights/diagnosticSettings@2021-05-01-preview' = {
+  name: 'default'
+  scope: deliveryRedis::deliveryRedisDb
+  properties: {
+    workspaceId: logAnalyticsWorkspace.id
+    logs: [
+      {
+        category: 'ConnectionEvents'
+        enabled: true
+      }
+    ]
   }
 }
 
@@ -491,14 +521,14 @@ resource deliveryKeyVault 'Microsoft.KeyVault/vaults@2025-05-01' = {
   resource secretRedisEndpoint 'secrets' = {
     name: 'Redis-Endpoint'
     properties: {
-      value: deliveryRedis.properties.hostName
+      value: '${deliveryRedis.properties.hostName}:${deliveryRedis::deliveryRedisDb.properties.port}'
     }
   }
 
   resource secretRedisAccessKey 'secrets' = {
     name: 'Redis-AccessKey'
     properties: {
-      value: deliveryRedis.listKeys().primaryKey
+      value: deliveryRedis::deliveryRedisDb.listKeys().primaryKey
     }
   }
 

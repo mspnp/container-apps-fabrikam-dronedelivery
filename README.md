@@ -41,7 +41,7 @@ Following the steps below will result in the creation of the following Azure res
 | An Azure Log Analytics Workspace       | This is where all the Container Apps logs are sent, along with Azure Diagnostics on all services |
 | An Azure Application Insights instance | All services are sending trace information to a shared Azure Application Insights instance |
 | Three Azure Cosmos DB instances        | Delivery, Drone Scheduler, and Package services each have a Cosmos DB account |
-| An Azure Redis Cache instance          | Delivery service uses Azure Redis cache to keep track of inflight deliveries |
+| An Azure Managed Redis instance        | Delivery service uses Azure Managed Redis to keep track of inflight deliveries |
 | An Azure Service Bus                   | Ingestion and Workflow services communicate using Azure Service Bus queues |
 | Five Azure User Managed Identities     | These are going to give `Read` and `List` secrets permissions over Azure Key Vault to the microservices. |
 | Five Azure Key Vault instances         | Each microservice (Delivery, Drone Scheduler, Workflow, Ingestion, Package) has its own Key Vault for secrets |
@@ -74,7 +74,7 @@ Following the steps below will result in the creation of the following Azure res
     - Azure Cosmos DB: 3 accounts (2 Azure Cosmos DB for NoSQL, 1 Azure Cosmos DB for MongoDB)
     - Azure Key Vault: 5 Standard tier instances
     - Azure Log Analytics: 1 workspace
-    - Azure Redis Cache: 1 Basic C0 instance
+    - Azure Managed Redis: 1 Balanced B0 instance
     - Azure Service Bus: 1 Premium namespace
 
 - Your deployment user must have the ability to assign Azure roles on newly created resource groups and resources. (E.g. `User Access Administrator` or `Owner`)
@@ -112,7 +112,8 @@ Following the steps below will result in the creation of the following Azure res
    The only extension used by this deployment guide is the Application Insights extension.
 
    ```bash
-   az extension add --name application-insights
+   az extension add -n application-insights
+   az extension add -n redisenterprise
    ```
 
 1. Set environment variables.
@@ -175,7 +176,7 @@ Following the steps below will result in the creation of the following Azure res
    DELIVERY_COLLECTION_NAME="${DELIVERY_COSMOSDB_NAME}-col"
    DELIVERY_COSMOSDB_ENDPOINT=$(az cosmosdb show -g $RESOURCE_GROUP -n $DELIVERY_COSMOSDB_NAME --query documentEndpoint -o tsv)
    DELIVERY_REDIS_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-dependencies --query properties.outputs.deliveryRedisName.value -o tsv)
-   DELIVERY_REDIS_ENDPOINT=$(az redis show -g $RESOURCE_GROUP -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
+   DELIVERY_REDIS_ENDPOINT=$(az redisenterprise show -g $RESOURCE_GROUP -n $DELIVERY_REDIS_NAME --query hostName -o tsv)
    DELIVERY_KEYVAULT_URI=$(az deployment group show -g $RESOURCE_GROUP -n workload-dependencies --query properties.outputs.deliveryKeyVaultUri.value -o tsv)
 
    echo -e "\nDelivery Config:\nDELIVERY_COSMOSDB_NAME=${DELIVERY_COSMOSDB_NAME}\nDELIVERY_DATABASE_NAME=${DELIVERY_DATABASE_NAME}\nDELIVERY_COLLECTION_NAME=${DELIVERY_COLLECTION_NAME}\nDELIVERY_COSMOSDB_ENDPOINT=${DELIVERY_COSMOSDB_ENDPOINT}\nDELIVERY_REDIS_NAME=${DELIVERY_REDIS_NAME}\nDELIVERY_REDIS_ENDPOINT=${DELIVERY_REDIS_ENDPOINT}\nDELIVERY_KEYVAULT_URI=${DELIVERY_KEYVAULT_URI}\n"
