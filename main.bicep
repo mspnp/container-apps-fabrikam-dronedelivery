@@ -188,7 +188,7 @@ module ca_delivery 'container-http.bicep' = {
 }
 
 // Resiliency policy for Delivery service (called by Workflow)
-resource deliveryResiliencyPolicy 'Microsoft.App/containerApps/resiliencyPolicies@2025-02-02-preview' = {
+resource deliveryResiliencyPolicy 'Microsoft.App/containerApps/resiliencyPolicies@2025-10-02-preview' = {
   name: 'delivery-app/resiliency'
   dependsOn: [
     ca_delivery
@@ -303,7 +303,7 @@ module ca_dronescheduler 'container-http.bicep' = {
 }
 
 // Resiliency policy for DroneScheduler service (called by Workflow)
-resource droneSchedulerResiliencyPolicy 'Microsoft.App/containerApps/resiliencyPolicies@2025-02-02-preview' = {
+resource droneSchedulerResiliencyPolicy 'Microsoft.App/containerApps/resiliencyPolicies@2025-10-02-preview' = {
   name: 'dronescheduler-app/resiliency'
   dependsOn: [
     ca_dronescheduler
@@ -488,7 +488,7 @@ module ca_package 'container-http.bicep' = {
 }
 
 // Resiliency policy for Package service (called by Workflow)
-resource packageResiliencyPolicy 'Microsoft.App/containerApps/resiliencyPolicies@2025-02-02-preview' = {
+resource packageResiliencyPolicy 'Microsoft.App/containerApps/resiliencyPolicies@2025-10-02-preview' = {
   name: 'package-app/resiliency'
   dependsOn: [
     ca_package

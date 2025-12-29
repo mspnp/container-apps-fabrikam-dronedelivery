@@ -120,7 +120,7 @@ Following the steps below will result in the creation of the following Azure res
 
    ```bash
    LOCATION=eastus2
-   RESOURCE_GROUP=rg-shipping-dronedelivery
+   RESOURCE_GROUP=rg-shipping-dronedelivery-${LOCATION}
    ```
 
    :bulb: The region must support availability zones. See [Azure regions with availability zones](https://learn.microsoft.com/azure/reliability/availability-zones-service-support#azure-regions-with-availability-zone-support).

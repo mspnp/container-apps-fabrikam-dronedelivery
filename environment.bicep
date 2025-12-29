@@ -18,7 +18,7 @@ resource laResourceGroup 'Microsoft.Resources/resourceGroups@2025-04-01' existin
   scope: subscription(split(logAnalyticsResourceId, '/')[2])
 }
 
-resource la 'Microsoft.OperationalInsights/workspaces@2025-02-01' existing = {
+resource la 'Microsoft.OperationalInsights/workspaces@2025-07-01' existing = {
   name: split(logAnalyticsResourceId, '/')[8]
   scope: laResourceGroup
 }
@@ -26,7 +26,7 @@ resource la 'Microsoft.OperationalInsights/workspaces@2025-02-01' existing = {
 /*** RESOURCES ***/
 
 @description('The Azure Container Apps Environment')
-resource cae 'Microsoft.App/managedEnvironments@2025-02-02-preview' = {
+resource cae 'Microsoft.App/managedEnvironments@2025-10-02-preview' = {
   name: 'cae-shipping-dronedelivery'
   location: location
   properties: {

@@ -18,7 +18,7 @@ param containerAppName string
 /*** EXISTING RESOURCE ***/
 
 @description('Existing container registry')
-resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2025-05-01-preview' existing = {
+resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' existing = {
   name: containerRegistryName
 }
 

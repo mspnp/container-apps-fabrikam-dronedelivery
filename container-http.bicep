@@ -87,7 +87,7 @@ resource containerRegistryResourceGroup 'Microsoft.Resources/resourceGroups@2025
 }
 
 @description('Existing container registry')
-resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2025-05-01-preview' existing = {
+resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' existing = {
   scope: containerRegistryResourceGroup
   name: split(containerRegistryResourceId, '/')[8]
 }
@@ -117,7 +117,7 @@ module acrPull './acrpull-roleassignment.bicep' = {
   }
 }
 
-resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
+resource containerApp 'Microsoft.App/containerApps@2025-10-02-preview' = {
   name: containerAppName
   location: location
   dependsOn: [
