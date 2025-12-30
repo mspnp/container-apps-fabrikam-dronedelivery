@@ -2,9 +2,9 @@
 
 As part of the initial creation of this workload, load tests were performed to ensure it met the business requirements for the scenario. This directory contained these load tests. They were however based on the legacy [Visual Studio 2017 Load Testing](https://learn.microsoft.com/visualstudio/test/walkthrough-create-and-run-a-load-test) solution. As such they have been removed, as they can no longer be supported.
 
-However, the narative surounding the tests were captured on Microsoft Docs at [Performance tuning scenario: Multiple backend services](https://learn.microsoft.com/azure/architecture/performance/backend-services).
+However, the narrative surrounding the tests was captured on Microsoft Docs at [Performance tuning scenario: Multiple backend services](https://learn.microsoft.com/azure/architecture/performance/backend-services).
 
-Below are excepts from the findings of that excercize. While the deployments are no longer available, the matrics that were evaluated are still interesting to review as are some of the Azure Monitor queries used to gather the results.
+Below are excerpts from the findings of that exercise. While the deployments are no longer available, the metrics that were evaluated are still interesting to review as are some of the Azure Monitor queries used to gather the results.
 
 ## Scenarios
 
@@ -21,7 +21,7 @@ There were four scenarios tested to show how changes impacted the solution.
 
 ### Throttling scenario
 
-In this scenario, the DroneScheduler service does not specify a partition key in the query. It configures the Cosmos DB client SDK to use [gateway mode](https://learn.microsoft.com/azure/cosmos-db/performance-tips) with `MaxDegreeParallelism = 0`. Cosmos DB resource untis (RUs) are set to `900`.
+In this scenario, the DroneScheduler service does not specify a partition key in the query. It configures the Cosmos DB client SDK to use [gateway mode](https://learn.microsoft.com/azure/cosmos-db/performance-tips) with `MaxDegreeParallelism = 0`. Cosmos DB resource units (RUs) are set to `900`.
 
 ### Serial cross-partition query scenario
 
@@ -54,7 +54,7 @@ In this scenario, the query includes a partition key, resulting in a single-part
 | Average Cosmos DB call per operation    | [11](#1-rus-charge-custom-metric)                             | [9](#2-rus-charge-custom-metric)                               | [10](#3-rus-charge-custom-metric)                 | [1](#4-rus-charge-custom-metric)                            |                                                                      |
 | Cross partition (fan out queries)       | [yes](#1-rus-charge-custom-metric)                            | [yes](#2-rus-charge-custom-metric)                             | [yes](#3-rus-charge-custom-metric)                | [no](#4-rus-charge-custom-metric)                           |                                                                      |
 | Average RUs per operation               | [29](#1-rus-charge-custom-metric)                             | [29](#2-rus-charge-custom-metric)                              | [29](#3-rus-charge-custom-metric)                 | [3.39](#4-rus-charge-custom-metric)                         |                                                                      |
-| Is the system healthy?                  | no and inneficient                                              | yes, but latency still high                                      | yes but inneficient                                 | yes and efficient                                             | Metrics analysis                                                     |
+| Is the system healthy?                  | no and inefficient                                              | yes, but latency still high                                      | yes but inefficient                                 | yes and efficient                                             | Metrics analysis                                                     |
 | Potential bottleneck                    | [RUs](#1-max-consumed-rus-per-partition)                      | [Latencies still too high](#2-metrics-per-service)             | [RUs](#3-max-consumed-rus-per-partition)          | [CPU](#4-overal-cluster-metrics)                            |                                                                      |
 | How to scale?                           | increment resource units up to 2.5K                             | increase parallelization by setting MaxParallelization -1        | specify a frequent partition key                    | scale up or out                                               | Conclusions from bottlenecks                                         |
 |                                         |                                                                 |                                                                  | change to Direct Mode when possible                 |                                                               |                                                                      |
@@ -71,11 +71,11 @@ In this scenario, the query includes a partition key, resulting in a single-part
 | Dronescheduler                           | 3        | 589           | 290.12        | N/A                     | N/A                     | 669      | 104       | 1570      | 3270      |
 
 *sources:
-1. Serve: Visual Studio Load Test Throughout Request/Sec
+1. Serve: Visual Studio Load Test Throughput Request/Sec
 2. Avg/50<sup>th</sup>/95<sup>th</sup>/99<sup>th</sup>: Azure AppInsights Performance operations
 3. CPU/Mem: Azure Monitor for Containers
 
-### [1] Overal cluster metrics
+### [1] Overall cluster metrics
 
   - 3 x Standard D2 v2 (2 vcpus, 7 GiB memory)
   - Max. CPU: 80.22%
@@ -175,12 +175,12 @@ dataset
 | Dronescheduler                           | 3        | 788           | 366.11        | N/A                     | N/A                     | 569      | 95.4      | 1230      | 1840      |
 
 *sources:
-1. Serve: Visual Studio Load Test Throughout Request/Sec
+1. Serve: Visual Studio Load Test Throughput Request/Sec
 2. Avg/50<sup>th</sup>/95<sup>th</sup>/99<sup>th</sup>: Azure AppInsights Performance operations
 3. CPU/Mem: Azure Monitor for Containers
 
 
-### [2] Overal cluster metrics
+### [2] Overall cluster metrics
 
   - 3 x Standard D2 v2 (2 vcpus, 7 GiB memory)
   - Max. CPU: 100.91%
@@ -278,11 +278,11 @@ dataset
 | Dronescheduler                           | 3        | 1107          | 451.46        | N/A                     | N/A                     | 215      | 50.80     | 435       | 764       |
 
 *sources:
-1. Serve: Visual Studio Load Test Throughout Request/Sec
+1. Serve: Visual Studio Load Test Throughput Request/Sec
 2. Avg/50<sup>th</sup>/95<sup>th</sup>/99<sup>th</sup>: Azure AppInsights Performance operations
 3. CPU/Mem: Azure Monitor for Containers
 
-### [3] Overal cluster metrics
+### [3] Overall cluster metrics
 
   - 3 x Standard D2 v2 (2 vcpus, 7 GiB memory)
   - Max. CPU: 98.75%
@@ -380,11 +380,11 @@ dataset
 | Dronescheduler                           | 3        | 891           | 332.24        | N/A                     | N/A                     | 176      | 37.50     | 268       | 685       |
 
 *sources:
-1. Serve: Visual Studio Load Test Throughout Request/Sec
+1. Serve: Visual Studio Load Test Throughput Request/Sec
 2. Avg/50<sup>th</sup>/95<sup>th</sup>/99<sup>th</sup>: Azure AppInsights Performance operations
 3. CPU/Mem: Azure Monitor for Containers
 
-### [4] Overal cluster metrics
+### [4] Overall cluster metrics
 
   - 3 x Standard D2 v2 (2 vcpus, 7 GiB memory)
   - Max. CPU: 98.99 %

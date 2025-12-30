@@ -6,12 +6,12 @@ targetScope = 'resourceGroup'
 @minLength(5)
 param containerRegistryName string
 
-@description('The existing user managed identity pricipal id to grant the ACR pull role to. This is a GUID.')
+@description('The existing user-managed identity principal ID to grant the ACR pull role to. This is a GUID.')
 @minLength(36)
 @maxLength(36)
 param containerAppUserPrincipalId string
 
-@description('Name of the Azure Containers Apps resource.')
+@description('Name of the Azure Container Apps resource.')
 @minLength(1)
 param containerAppName string
 

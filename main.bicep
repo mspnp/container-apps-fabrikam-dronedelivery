@@ -56,7 +56,7 @@ param workflowNamespaceEndpoint string
 @minLength(1)
 param workflowNamespaceSASName string
 
-@description('The Service Bus Queue Access Policy SaS key for the Workflow service.')
+@description('The Service Bus Queue Access Policy SAS key for the Workflow service.')
 @secure()
 @minLength(5)
 param workflowNamespaceSASKey string
@@ -78,7 +78,7 @@ param ingestionNamespaceName string
 @minLength(1)
 param ingestionNamespaceSASName string
 
-@description('The Service Bus Queue Access Policy SaS key for the Ingestion service.')
+@description('The Service Bus Queue Access Policy SAS key for the Ingestion service.')
 @minLength(5)
 param ingestionNamespaceSASKey string
 
