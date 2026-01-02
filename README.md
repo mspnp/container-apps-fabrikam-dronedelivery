@@ -214,7 +214,7 @@ Following the steps below will result in the creation of the following Azure res
 
    If any of the configuration values above are empty, stop and troubleshoot before proceeding.
 
-1. Deploy the Azure Container Apps environment and each microservice.
+1. Deploy the Azure Container Apps Environment and each microservice.
 
    :clock9: *This might take about four minutes.*
 

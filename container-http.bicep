@@ -10,7 +10,7 @@ param containerAppName string
 @minLength(100)
 param containerAppUserAssignedResourceId string
 
-@description('The location of the existing Azure Container Apps environment.')
+@description('The location of the existing Azure Container Apps Environment.')
 @minLength(1)
 param location string
 
