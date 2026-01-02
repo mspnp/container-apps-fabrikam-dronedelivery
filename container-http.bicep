@@ -2,15 +2,15 @@ targetScope = 'resourceGroup'
 
 /*** PARAMETERS ***/
 
-@description('Name of the Azure Containers Apps resource.')
+@description('Name of the Azure Container Apps resource.')
 @minLength(1)
 param containerAppName string
 
-@description('The existing user managed identity resource id to assign this container app.')
+@description('The existing user-managed identity resource ID to assign to this container app.')
 @minLength(100)
 param containerAppUserAssignedResourceId string
 
-@description('The location of the existing Azure Containers Apps environment.')
+@description('The location of the existing Azure Container Apps Environment.')
 @minLength(1)
 param location string
 
@@ -18,11 +18,11 @@ param location string
 @minLength(100)
 param environmentId string
 
-@description('The resource ID of the existing Azure Container Registry that contain this microservice. The provided managed identity will be granted ACR pull rights.')
+@description('The resource ID of the existing Azure Container Registry that contains this microservice. The provided managed identity will be granted ACR pull rights.')
 @minLength(40)
 param containerRegistryResourceId string
 
-@description('The container image in the existing registry, including tag. In the format of \'repository/image:tag\'')
+@description('The container image in the existing registry, including tag. In the format \'repository/image:tag\'. ')
 @minLength(5)
 param containerImage string
 
@@ -31,7 +31,7 @@ param containerImage string
 @maxValue(65535)
 param containerPort int = -1
 
-@description('true if the ingress be exposed to the Internet, otherwise false.')
+@description('True if the ingress should be exposed to the Internet; otherwise false.')
 param isExternalIngress bool
 
 @description('All custom environment variables required for this app.')
@@ -87,7 +87,7 @@ resource containerRegistryResourceGroup 'Microsoft.Resources/resourceGroups@2025
 }
 
 @description('Existing container registry')
-resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2025-05-01-preview' existing = {
+resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' existing = {
   scope: containerRegistryResourceGroup
   name: split(containerRegistryResourceId, '/')[8]
 }
@@ -117,7 +117,7 @@ module acrPull './acrpull-roleassignment.bicep' = {
   }
 }
 
-resource containerApp 'Microsoft.App/containerApps@2025-02-02-preview' = {
+resource containerApp 'Microsoft.App/containerApps@2025-10-02-preview' = {
   name: containerAppName
   location: location
   dependsOn: [
