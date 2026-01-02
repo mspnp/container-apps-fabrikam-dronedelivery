@@ -209,7 +209,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var logRequestMiddleware = new GlobalLoggerMiddleware(next: (innerHttpContext) => throw new Exception(exMessage), loggerFactory: loggerFactory.Object, diagnosticSource: diagnoticSourceMock.Object);
 
 
-            var ex = Assert.Throws<Exception>(async () => {
+            var ex = await Assert.ThrowsAsync<Exception>(async () => {
                 // Act
                 try
                 {
