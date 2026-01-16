@@ -10,7 +10,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Fabrikam.DroneDelivery.DroneSchedulerService.Models;
 using Fabrikam.DroneDelivery.DroneSchedulerService.Services;
 using Serilog;

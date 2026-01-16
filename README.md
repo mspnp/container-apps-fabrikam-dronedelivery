@@ -120,7 +120,7 @@ Following the steps below will result in the creation of the following Azure res
 
    ```bash
    LOCATION=eastus2
-   RESOURCE_GROUP=rg-shipping-dronedelivery
+   RESOURCE_GROUP=rg-shipping-dronedelivery-${LOCATION}
    ```
 
    :bulb: The region must support availability zones. See [Azure regions with availability zones](https://learn.microsoft.com/azure/reliability/availability-zones-service-support#azure-regions-with-availability-zone-support).
@@ -214,7 +214,7 @@ Following the steps below will result in the creation of the following Azure res
 
    If any of the configuration values above are empty, stop and troubleshoot before proceeding.
 
-1. Deploy the Azure Container Apps environment and each microservice.
+1. Deploy the Azure Container Apps Environment and each microservice.
 
    :clock9: *This might take about four minutes.*
 

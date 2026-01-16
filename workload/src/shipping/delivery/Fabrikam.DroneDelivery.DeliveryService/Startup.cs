@@ -14,7 +14,7 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Extensions.Logging;
-using Microsoft.OpenApi.Models;
+using Microsoft.OpenApi;
 using Serilog;
 using Serilog.Formatting.Compact;
 using System;

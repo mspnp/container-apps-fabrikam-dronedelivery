@@ -121,7 +121,7 @@ module containerRegistry './nested_workload-stamp.bicep' = {
   }
 }
 
-resource deliveryRedis 'Microsoft.Cache/redisEnterprise@2025-07-01' = {
+resource deliveryRedis 'Microsoft.Cache/redisEnterprise@2025-08-01-preview' = {
   name: 'redis-delivery-${prefix}'
   location: location
   tags: {
@@ -168,7 +168,7 @@ resource diagnosticsSettingsDeliveryRedis 'Microsoft.Insights/diagnosticSettings
   }
 }
 
-resource deliveryCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-preview' = {
+resource deliveryCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-11-01-preview' = {
   name: deliveryCosmosDbName
   location: location
   tags: {
@@ -219,7 +219,7 @@ resource diagnosticsSettingsDeliveryCosmosDb 'Microsoft.Insights/diagnosticSetti
   }
 }
 
-resource packageMongoDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-preview' = {
+resource packageMongoDb 'Microsoft.DocumentDB/databaseAccounts@2025-11-01-preview' = {
   name: packageMongoDbName
   kind: 'MongoDB'
   location: location
@@ -349,7 +349,7 @@ resource packagePrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleAs
   }
 }
 
-resource droneSchedulerCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-05-01-preview' = {
+resource droneSchedulerCosmosDb 'Microsoft.DocumentDB/databaseAccounts@2025-11-01-preview' = {
   name: droneSchedulerCosmosDbName
   location: location
   tags: {
