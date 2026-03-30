@@ -4,16 +4,12 @@
 // ------------------------------------------------------------
 
 import { MongoErrors } from './util/mongo-err.js'
-import { Settings } from './util/settings.js';
-import appInsights from "applicationinsights";
 import { MongoClient } from "mongodb";
 
 export class PackageServiceInitializer {
-    static async initialize(connection: string, collectionName: string, containerName: string) {
+    static async initialize(connection: string, collectionName: string) {
         try {
-            PackageServiceInitializer.initAppInsights(containerName);
-            await PackageServiceInitializer.initMongoDb(connection,
-                collectionName);
+            await PackageServiceInitializer.initMongoDb(connection, collectionName);
         }
         catch (ex) {
             console.log(ex);
@@ -33,18 +29,6 @@ export class PackageServiceInitializer {
             if (ex.code != MongoErrors.CommandNotFound && ex.code != 9) {
                 console.log(ex);
             }
-        }
-    }
-
-    private static async initAppInsights(cloudRole = "package") {
-        if (Settings.appInsigthsConnectionString()) {
-            appInsights.setup(Settings.appInsigthsConnectionString());
-            appInsights.defaultClient.context.tags[appInsights.defaultClient.context.keys.cloudRole] = cloudRole;
-            process.stdout.write('App insights setup - configuring client\n');
-            appInsights.start();
-            process.stdout.write('Application Insights started');
-        } else {
-            throw new Error('No app insights setup. Connection String must be specified in non-development environments.');
         }
     }
 }

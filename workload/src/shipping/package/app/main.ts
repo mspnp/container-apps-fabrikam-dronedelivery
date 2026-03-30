@@ -7,7 +7,7 @@ import { PackageServiceInitializer } from './initializer.js'
 import { PackageService } from './server.js';
 import { Settings } from './util/settings.js';
 
-PackageServiceInitializer.initialize(Settings.connectionString(), Settings.collectionName(), Settings.containerName())
+PackageServiceInitializer.initialize(Settings.connectionString(), Settings.collectionName())
     .then(_ => {
         PackageService.start();
     });
