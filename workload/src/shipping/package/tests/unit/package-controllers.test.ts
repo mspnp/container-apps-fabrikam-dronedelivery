@@ -4,6 +4,10 @@
 // ------------------------------------------------------------
 
 const supertest = require('supertest');
+// Prevent __filename collision: package-swagger.ts uses import.meta.url which
+// ts-jest (CJS mode) compiles to `const __filename = ...` clashing with Jest's own.
+jest.mock('../../app/spec/package-swagger', () => ({ PackageServiceSwaggerApi: {} }));
+
 
 import * as apiModels from '../../app/models/api-models'
 import { Package } from '../../app/models/package'
@@ -26,19 +30,32 @@ const mockMapPackageDbToApi = jest.fn(pkg => {
   return pkgApi;
 });
 
-const mockMapPackageApiToDb = jest.fn((pkg, id) => new Package(id));
+const mockMapPackageApiToDb = jest.fn((_pkg, id) => new Package(id));
 const mockAddPackage = jest.fn(pkg => {
   switch (pkg._id) {
-    case "42":
+    case '42':
       return 2;
-    case "43":
-      throw new Error("mock error");
+    case '43': {
+      throw new Error('mock error');
+    }
+    case 'shard-err': {
+      const e: any = new Error('Missing shard key');
+      e.code = 61;  // MongoErrors.ShardKeyNotFound
+      throw e;
+    }
+    case 'throttle-err': {
+      const e: any = new Error('Too many requests');
+      e.code = 16500;  // MongoErrors.TooManyRequests
+      throw e;
+    }
     default:
       return 1;
   }
 });
 
-const mockUpdatePackage = jest.fn(pkg => {return;});
+const mockUpdatePackage = jest.fn(pkg => {
+  if (pkg._id === 'update-err') throw new Error('update failed');
+});
 app.context.packageRepository = {
   findPackage: mockFindPackage,
   mapPackageDbToApi: mockMapPackageDbToApi,
@@ -138,16 +155,36 @@ describe('PackageControllers', () => {
 
   describe('PUT /', () => {
     it('<500> should return 500 if something went really wrong', async () => {
-      //Arrange
-      const id = "43";
-
-      // Act
-      const res = await request
-        .put('/api/packages/' + id);
-
-      // Assert
+      const res = await request.put('/api/packages/43');
       expect(res.status).toBe(500);
+    });
 
+    it('<500> response body should contain level, code, and message fields', async () => {
+      const res = await request
+        .put('/api/packages/43')
+        .expect('Content-Type', /json/);
+      expect(res.body).toMatchObject({
+        level:   'error',
+        code:    'INTERNAL_ERROR',
+        message: 'mock error',
+      });
+    });
+
+    it('<400> should return 400 on ShardKeyNotFound error', async () => {
+      const res = await request.put('/api/packages/shard-err');
+      expect(res.status).toBe(400);
+    });
+
+    it('<429> should return 429 on TooManyRequests error', async () => {
+      const res = await request.put('/api/packages/throttle-err');
+      expect(res.status).toBe(429);
+    });
+  });
+
+  describe('PATCH /', () => {
+    it('<400> should return 400 when updatePackage throws', async () => {
+      const res = await request.patch('/api/packages/update-err');
+      expect(res.status).toBe(400);
     });
   });
 

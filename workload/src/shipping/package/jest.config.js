@@ -2,6 +2,9 @@ module.exports = {
   testEnvironment: 'node',
   bail: true,
   verbose: true,
+  setupFiles: [
+    './tests/jest.setup.js'
+  ],
   setupFilesAfterEnv: [
     'jest-extended'
   ],
