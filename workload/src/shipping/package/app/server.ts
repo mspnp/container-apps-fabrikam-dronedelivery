@@ -9,19 +9,19 @@ import { Settings } from './util/settings.js';
 
 export class PackageService {
 
-  static start() {
-
+  static async start() {
     const port = process.env.PORT || 80;
 
-    console.log('Package service starting...')
+    console.log('Package service starting...');
 
     // Initialize repository with connection string
-    Promise.resolve(Repository.initialize(Settings.connectionString()))
-      .catch((ex) => {
-        console.error("failed to initialize repository - make sure a connectiong string has been configured");
-        console.error(ex.message);
-        process.exit(1);  // Crash the container
-      });
+    try {
+      await Repository.initialize(Settings.connectionString());
+    } catch (ex: any) {
+      console.error('failed to initialize repository - ensure connection string is configured');
+      console.error(ex.message);
+      process.exit(1);  // Crash the container
+    }
 
     const app = KoaApp.create(Settings.logLevel());
 
@@ -29,6 +29,6 @@ export class PackageService {
     app.context.packageRepository = new Repository();
 
     app.listen(port);
-    console.log('listening on port %s', port);
+    console.log(`listening on port ${port}`);
   }
 }

@@ -3,9 +3,8 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-import { UpsertStatus } from '../models/repository.js'
 import * as apiModels from '../models/api-models.js'
-import { Package, PackageSize } from '../models/package.js'
+import { UpsertStatus } from '../models/repository.js'
 import { ILogger } from '../util/logging.js'
 import { MongoErrors } from '../util/mongo-err.js'
 
@@ -229,11 +228,11 @@ export class PackageControllers {
    */
   static async getSummary(ctx: any) {
 
-    var logger : ILogger = ctx.state.logger;
-    var ownerId = ctx.params.ownerId;
-    var year = ctx.params.year;
-    var month = ctx.params.month;
-    logger.info('retrieve summary %s %d/%d', ownerId)
+    const logger: ILogger = ctx.state.logger;
+    const ownerId = ctx.params.ownerId;
+    const year = ctx.params.year;
+    const month = ctx.params.month;
+    logger.info(`retrieve summary ${ownerId} ${year}/${month}`);
 
     let utilization = new apiModels.PackageUtilization();
     utilization.totalWeight = 400;

@@ -6,7 +6,6 @@
 import { Package, PackageSize } from './package.js'
 import * as apiModels from './api-models.js'
 import { Settings } from '../util/settings.js';
-import * as Logger from '../util/logging.js';
 import { MongoErrors } from '../util/mongo-err.js';
 
 import { MongoClient } from "mongodb";

@@ -1,6 +1,6 @@
 {
   "$schema": "https://json.schemastore.org/tsconfig",
-  "display": "Node 19",
+  "display": "Node 23",
   "_version": "2.0.0",
   "compilerOptions": {
     "outDir": ".bin",
@@ -8,6 +8,8 @@
     "target": "ES2022",
     "lib": ["ES2022"],
     "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,

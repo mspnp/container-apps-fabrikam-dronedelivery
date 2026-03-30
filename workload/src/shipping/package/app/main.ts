@@ -8,6 +8,10 @@ import { PackageService } from './server.js';
 import { Settings } from './util/settings.js';
 
 PackageServiceInitializer.initialize(Settings.connectionString(), Settings.collectionName())
-    .then(_ => {
+    .then(() => {
         PackageService.start();
+    })
+    .catch((ex) => {
+        console.error('Initialization failed:', ex.message);
+        process.exit(1);
     });
