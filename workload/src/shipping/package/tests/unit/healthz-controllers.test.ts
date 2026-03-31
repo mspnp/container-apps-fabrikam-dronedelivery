@@ -4,6 +4,10 @@
 // ------------------------------------------------------------
 
 const supertest = require('supertest');
+// Prevent __filename collision: package-swagger.ts uses import.meta.url which
+// ts-jest (CJS mode) compiles to `const __filename = ...` clashing with Jest's own.
+jest.mock('../../app/spec/package-swagger', () => ({ PackageServiceSwaggerApi: {} }));
+
 
 import { KoaApp } from '../../app/app';
 

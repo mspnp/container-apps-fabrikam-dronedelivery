@@ -3,7 +3,7 @@
 // Licensed under the MIT License (MIT). See License.txt in the repo root for license information.
 // ------------------------------------------------------------
 
-import Koa from 'koa';
+import Koa, { Context, Next } from 'koa';
 import bodyParser from "koa-bodyparser";
 import compress from 'koa-compress';
 
@@ -22,23 +22,22 @@ export class KoaApp {
     // Configure global exception handling
     // Use: ctx.throw('Error Message', 500);
     //   in the controller methods to set the status code and exception message
-    app.use(async (ctx : any, next : any) => {
+    app.use(async (ctx: Context, next: Next) => {
       try {
         await next();
       } catch (ex: any) {
-
-        var logger : ILogger = ctx.state.logger;
+        const logger: ILogger | undefined = ctx.state.logger;
         if (logger) {
-          logger.error(ex.message);
+          logger.error(`Exception: ${ex.message}`, ex);
         }
 
         ctx.status = ex.status || 500;
         // consider api specific codes and localized messages as opposed to internal codes
         ctx.body = {
           level: "error",
-          code: ex.code,
-          message: ex.message
-        }
+          code: ex.code || 'INTERNAL_ERROR',
+          message: ex.message || 'An unexpected error occurred'
+        };
         ctx.app.emit('error', ex, ctx);
       }
     });

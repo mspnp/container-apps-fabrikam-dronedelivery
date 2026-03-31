@@ -7,7 +7,11 @@ import { PackageServiceInitializer } from './initializer.js'
 import { PackageService } from './server.js';
 import { Settings } from './util/settings.js';
 
-PackageServiceInitializer.initialize(Settings.connectionString(), Settings.collectionName(), Settings.containerName())
-    .then(_ => {
+PackageServiceInitializer.initialize(Settings.connectionString(), Settings.collectionName())
+    .then(() => {
         PackageService.start();
+    })
+    .catch((ex) => {
+        console.error('Initialization failed:', ex.message);
+        process.exit(1);
     });

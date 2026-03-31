@@ -61,6 +61,9 @@ gulp.task('build', gulp.series('clean', function () {
     gulp.src('**/*.json', {'cwd':'app'})
         .pipe(gulp.dest('.bin/app'));
 
+    gulp.src('**/*.cjs', {'cwd':'app'})
+        .pipe(gulp.dest('.bin/app'));
+
     var tsProject = ts.createProject('tsconfig.json');
 
     var tsResult = gulp.src("**/*.ts", {'cwd':'app'})
@@ -72,9 +75,9 @@ gulp.task('build', gulp.series('clean', function () {
 gulp.task('serve', gulp.series('build', 'set-env', function (cb) {
     return nodemon({
         script: '.bin/app/main.js',
-        ext: 'ts json',
+        nodeArgs: ['--require', './.bin/app/telemetry.cjs'],
+        ext: 'ts json cjs',
         watch: 'app',
-        env: { "PORT": 80 },
         tasks: ["build"],
         env: { 'NODE_ENV': 'development' }
     })
