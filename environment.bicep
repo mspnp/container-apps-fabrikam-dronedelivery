@@ -26,7 +26,7 @@ resource la 'Microsoft.OperationalInsights/workspaces@2025-07-01' existing = {
 /*** RESOURCES ***/
 
 @description('The Azure Container Apps Environment')
-resource cae 'Microsoft.App/managedEnvironments@2025-10-02-preview' = {
+resource cae 'Microsoft.App/managedEnvironments@2026-01-01' = {
   name: 'cae-shipping-dronedelivery'
   location: location
   properties: {
@@ -44,10 +44,7 @@ resource cae 'Microsoft.App/managedEnvironments@2025-10-02-preview' = {
     publicNetworkAccess: 'Enabled' // Production readiness change: Front your service with a WAF and only expose this environment to your private network.
     vnetConfiguration: null // Production readiness change: Use a custom virtual network with Network Security Groups and UDR-based routing through Azure Firewall for enhanced security control. See https://learn.microsoft.com/azure/container-apps/vnet-custom
     ingressConfiguration: null
-    appInsightsConfiguration: null
     daprAIConnectionString: null
-    diskEncryptionConfiguration: null
-    openTelemetryConfiguration: null
     customDomainConfiguration: null
     peerAuthentication: {
       mtls: {

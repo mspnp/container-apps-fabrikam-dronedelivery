@@ -10,7 +10,8 @@ namespace Fabrikam.Workflow.Service
     {
         public static IHttpClientBuilder AddResiliencyPolicies(this IHttpClientBuilder builder, IConfiguration configuration)
         {
-            var resiliencyConfiguration = configuration.GetSection("ServiceRequest").Get<ResiliencyConfiguration>();
+            var resiliencyConfiguration = configuration.GetSection("ServiceRequest").Get<ResiliencyConfiguration>()
+                ?? new ResiliencyConfiguration();
 
             builder
                 .AddPolicyHandler(
@@ -29,19 +30,19 @@ namespace Fabrikam.Workflow.Service
 
         private class ResiliencyConfiguration
         {
-            public int MaxRetries { get; set; }
+            public int MaxRetries { get; set; } = 3;
 
-            public double CircuitBreakerThreshold { get; set; }
+            public double CircuitBreakerThreshold { get; set; } = 0.75;
 
-            public int CircuitBreakerSamplingPeriodSeconds { get; set; }
+            public int CircuitBreakerSamplingPeriodSeconds { get; set; } = 5;
 
-            public int CircuitBreakerMinimumThroughput { get; set; }
+            public int CircuitBreakerMinimumThroughput { get; set; } = 2;
 
-            public int CircuitBreakerBreakDurationSeconds { get; set; }
+            public int CircuitBreakerBreakDurationSeconds { get; set; } = 5;
 
-            public int MaxBulkheadSize { get; set; }
+            public int MaxBulkheadSize { get; set; } = 5;
 
-            public int MaxBulkheadQueueSize { get; set; }
+            public int MaxBulkheadQueueSize { get; set; } = 3;
         }
     }
 }

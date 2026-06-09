@@ -109,7 +109,7 @@ Following the steps below will result in the creation of the following Azure res
 
 1. Ensure required Azure CLI extensions are installed.
 
-   The only extension used by this deployment guide is the Application Insights extension.
+   This deployment guide uses the Application Insights and Redis Enterprise extensions.
 
    ```bash
    az extension add -n application-insights
@@ -153,7 +153,7 @@ Following the steps below will result in the creation of the following Azure res
 
    az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/delivery:0.1.0 ./workload/src/shipping/delivery/.
    az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/ingestion:0.1.0 ./workload/src/shipping/ingestion/.
-   az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/workflow:0.1.0 ./workload/src/shipping/workflow/.
+   az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/workflow:0.1.4 ./workload/src/shipping/workflow/.
    az acr build -r $ACR_NAME -f ./workload/src/shipping/dronescheduler/Dockerfile -t $ACR_SERVER/shipping/dronescheduler:0.1.0 ./workload/src/shipping/.
    az acr build -r $ACR_NAME -t $ACR_SERVER/shipping/package:0.1.0 ./workload/src/shipping/package/.
    ```
@@ -168,7 +168,7 @@ Following the steps below will result in the creation of the following Azure res
    ACR_ID=$(az deployment group show -g $RESOURCE_GROUP -n workload-dependencies --query properties.outputs.acrId.value -o tsv)
    LA_WORKSPACE_ID=$(az deployment group show -g $RESOURCE_GROUP -n workload-dependencies --query properties.outputs.laWorkspace.value -o tsv)
 
-   echo -e "\nCommon Config:\nAI_NAME=${AI_NAME}\nAI_KEY=${AI_KEY}\nAI_ID=${AI_ID}\nACR_ID=${ACR_ID}\nLA_WORKSPACE_ID=${LA_WORKSPACE_ID}\n"
+   echo -e "\nCommon Config:\nAI_NAME=${AI_NAME}\nAI_KEY=${AI_KEY}\nAPPINSIGHTS_CONNECTION_STRING=${APPINSIGHTS_CONNECTION_STRING}\nAI_ID=${AI_ID}\nACR_ID=${ACR_ID}\nLA_WORKSPACE_ID=${LA_WORKSPACE_ID}\n"
 
    # Delivery
    DELIVERY_COSMOSDB_NAME=$(az deployment group show -g $RESOURCE_GROUP -n workload-dependencies --query properties.outputs.deliveryCosmosDbName.value -o tsv)

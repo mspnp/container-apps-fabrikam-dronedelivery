@@ -11,16 +11,15 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Fabrikam.DroneDelivery.DeliveryService.Middlewares;
+using Xunit;
 
 namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 {
-    [TestClass]
     public class GlobalLoggerMiddlewareFixture
     {
-        [TestMethod]
+        [Fact]
         public async Task IfHandledInternalServerError_ItLogsError()
         {
             // Arrange
@@ -78,7 +77,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
                                     (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IfHandledClientError_ItLogsError()
         {
             // Arrange
@@ -125,7 +124,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
                                     (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IfTooManyRequestIsHandled_ItLogsError()
         {
             // Arrange
@@ -172,7 +171,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
                                     (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IfUnhandledExceptionWhileResponding_ItLogsErrorPlusWarningAndRethrowException()
         {
             // Arrange
