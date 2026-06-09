@@ -245,11 +245,19 @@ module ca_dronescheduler 'container-http.bicep' = {
     // Production readiness change: Implement a readiness probe endpoint (e.g., /health/ready) that validates Cosmos DB connectivity before accepting traffic. Current /healthz endpoint only returns "OK" without dependency checks.
     secrets: [
       {
+        name: 'applicationinsights-connectionstring'
+        value: applicationInsightsConnectionString
+      }
+      {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
       }
     ]
     env: [
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        secretref: 'applicationinsights-connectionstring'
+      }
       {
         name: 'ApplicationInsights__InstrumentationKey'
         secretref: 'applicationinsights-instrumentationkey'
