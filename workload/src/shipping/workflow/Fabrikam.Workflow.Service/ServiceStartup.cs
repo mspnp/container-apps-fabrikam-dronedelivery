@@ -47,21 +47,21 @@ namespace Fabrikam.Workflow.Service
             services
                 .AddHttpClient<IPackageServiceCaller, PackageServiceCaller>(c =>
                 {
-                    c.BaseAddress = new Uri(context.Configuration["SERVICE_URI_PACKAGE"]);
+                    c.BaseAddress = GetRequiredAbsoluteUri(context.Configuration, "SERVICE_URI_PACKAGE");
                 })
                 .AddResiliencyPolicies(context.Configuration);
 
             services
                 .AddHttpClient<IDroneSchedulerServiceCaller, DroneSchedulerServiceCaller>(c =>
                 {
-                    c.BaseAddress = new Uri(context.Configuration["SERVICE_URI_DRONE"]);
+                    c.BaseAddress = GetRequiredAbsoluteUri(context.Configuration, "SERVICE_URI_DRONE");
                 })
                 .AddResiliencyPolicies(context.Configuration);
 
             services
                 .AddHttpClient<IDeliveryServiceCaller, DeliveryServiceCaller>(c =>
                 {
-                    c.BaseAddress = new Uri(context.Configuration["SERVICE_URI_DELIVERY"]);
+                    c.BaseAddress = GetRequiredAbsoluteUri(context.Configuration, "SERVICE_URI_DELIVERY");
                 })
                 .AddResiliencyPolicies(context.Configuration);
 
@@ -72,6 +72,23 @@ namespace Fabrikam.Workflow.Service
                         .GetType(HealthCheckServiceAssembly)));
 
             services.AddSingleton<IHealthCheckPublisher, ReadinessLivenessPublisher>();
+        }
+
+        private static Uri GetRequiredAbsoluteUri(Microsoft.Extensions.Configuration.IConfiguration configuration, string key)
+        {
+            var configuredValue = configuration[key];
+
+            if (string.IsNullOrWhiteSpace(configuredValue))
+            {
+                throw new InvalidOperationException($"Missing required configuration '{key}'. Configure it as an environment variable or secret for the workflow service.");
+            }
+
+            if (!Uri.TryCreate(configuredValue, UriKind.Absolute, out var parsedUri))
+            {
+                throw new InvalidOperationException($"Configuration '{key}' must be an absolute URI. Current value: '{configuredValue}'.");
+            }
+
+            return parsedUri;
         }
     }
 }

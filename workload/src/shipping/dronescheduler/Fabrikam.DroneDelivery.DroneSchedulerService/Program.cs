@@ -42,7 +42,14 @@ namespace Fabrikam.DroneDelivery.DroneSchedulerService
                         })
                         .ConfigureLogging((hostingContext, loggingBuilder) =>
                         {
-                            loggingBuilder.AddApplicationInsights();
+                            // Keep Application Insights logging in non-test environments.
+                            // Integration tests run with ASPNETCORE_ENVIRONMENT=Test and avoid this provider
+                            // to prevent test host startup failures caused by telemetry package/runtime mismatch.
+                            if (!hostingContext.HostingEnvironment.IsEnvironment("Test"))
+                            {
+                                loggingBuilder.AddApplicationInsights();
+                            }
+
                             loggingBuilder.AddSerilog(dispose: true);
                         })
                         .UseUrls("http://0.0.0.0:8080");

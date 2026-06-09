@@ -137,7 +137,7 @@ module ca_delivery 'container-http.bicep' = {
     containerAppUserAssignedResourceId: miDelivery.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerRegistryResourceId: containerRegistryResourceId
-    containerImage: 'shipping/delivery:0.1.0'
+    containerImage: 'shipping/delivery:0.2.3'
     containerPort: 8080
     isExternalIngress: false
     revisionMode: 'multiple'
@@ -146,11 +146,19 @@ module ca_delivery 'container-http.bicep' = {
     // Production readiness change: Implement a readiness probe endpoint (e.g., /health/ready) that validates Cosmos DB and Redis connectivity before accepting traffic. Current /healthz endpoint only returns "OK" without dependency checks.
     secrets: [
         {
+          name: 'applicationinsights-connectionstring'
+          value: applicationInsightsConnectionString
+        }
+        {
           name: 'applicationinsights-instrumentationkey'
           value: applicationInsightsInstrumentationKey
         }
     ]
     env: [
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        secretref: 'applicationinsights-connectionstring'
+      }
       {
         name: 'ApplicationInsights__InstrumentationKey'
         secretref: 'applicationinsights-instrumentationkey'
@@ -343,13 +351,19 @@ module ca_workflow 'container-http.bicep' = {
     containerAppUserAssignedResourceId: miWorkflow.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerRegistryResourceId: containerRegistryResourceId
-    containerImage: 'shipping/workflow:0.1.0'
+    containerImage: 'shipping/workflow:0.1.4'
     revisionMode: 'single'
     isExternalIngress: false
     minReplicas: 1
     maxReplicas: 1
     // Production readiness change: Workflow service is a background worker without HTTP endpoints. Consider implementing health probe endpoints for better observability and lifecycle management. See https://learn.microsoft.com/azure/container-apps/health-probes
     secrets: [
+      {
+        name: 'applicationinsights-connectionstring'
+        value: applicationInsightsConnectionString
+      }
+      // Per MS recommendation (https://learn.microsoft.com/azure/azure-monitor/app/worker-service), the
+      // connection string (above) is the preferred credential for ApplicationInsights.WorkerService SDK.
       {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
@@ -360,6 +374,10 @@ module ca_workflow 'container-http.bicep' = {
       }
     ]
     env: [
+      {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        secretref: 'applicationinsights-connectionstring'
+      }
       {
         name: 'ApplicationInsights__InstrumentationKey'
         secretref: 'applicationinsights-instrumentationkey'

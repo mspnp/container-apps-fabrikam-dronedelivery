@@ -87,7 +87,7 @@ resource containerRegistryResourceGroup 'Microsoft.Resources/resourceGroups@2025
 }
 
 @description('Existing container registry')
-resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2025-11-01' existing = {
+resource existingContainerRegistry 'Microsoft.ContainerRegistry/registries@2026-01-01-preview' existing = {
   scope: containerRegistryResourceGroup
   name: split(containerRegistryResourceId, '/')[8]
 }
@@ -99,7 +99,7 @@ resource managedIdentityResourceGroup 'Microsoft.Resources/resourceGroups@2025-0
 }
 
 @description('Existing managed identity for this service')
-resource existingManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' existing = {
+resource existingManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-05-31-preview' existing = {
   scope: managedIdentityResourceGroup
   name: split(containerAppUserAssignedResourceId, '/')[8]
 }
@@ -117,7 +117,7 @@ module acrPull './acrpull-roleassignment.bicep' = {
   }
 }
 
-resource containerApp 'Microsoft.App/containerApps@2025-10-02-preview' = {
+resource containerApp 'Microsoft.App/containerApps@2026-01-01' = {
   name: containerAppName
   location: location
   dependsOn: [
@@ -144,7 +144,6 @@ resource containerApp 'Microsoft.App/containerApps@2025-10-02-preview' = {
       ingress: hasIngress ? {
         external: isExternalIngress
         targetPort: containerPort
-        targetPortHttpScheme: 'http'
         exposedPort: 0
         additionalPortMappings: []
         transport: 'auto'

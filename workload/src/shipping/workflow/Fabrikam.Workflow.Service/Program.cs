@@ -5,7 +5,6 @@
 
 using System.IO;
 using System.Threading.Tasks;
-using Microsoft.ApplicationInsights;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -46,7 +45,8 @@ namespace Fabrikam.Workflow.Service
                 .ConfigureLogging((context, builder) =>
                 {
                     builder.AddConfiguration(context.Configuration.GetSection("Logging"));
-                    builder.AddApplicationInsights();
+                    // Application Insights telemetry/logging is registered via DI in ServiceStartup/TracingExtensions.
+                    // Do not add explicit Application Insights logger providers here to avoid duplicate pipelines.
 
                     var serilogBuilder = new LoggerConfiguration()
                         .ReadFrom.Configuration(context.Configuration)
