@@ -137,7 +137,7 @@ module ca_delivery 'container-http.bicep' = {
     containerAppUserAssignedResourceId: miDelivery.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerRegistryResourceId: containerRegistryResourceId
-    containerImage: 'shipping/delivery:0.2.3'
+    containerImage: 'shipping/delivery:0.1.0'
     containerPort: 8080
     isExternalIngress: false
     revisionMode: 'multiple'
@@ -351,7 +351,7 @@ module ca_workflow 'container-http.bicep' = {
     containerAppUserAssignedResourceId: miWorkflow.id
     environmentId: env_shipping_dronedelivery.outputs.id
     containerRegistryResourceId: containerRegistryResourceId
-    containerImage: 'shipping/workflow:0.1.4'
+    containerImage: 'shipping/workflow:0.1.0'
     revisionMode: 'single'
     isExternalIngress: false
     minReplicas: 1
