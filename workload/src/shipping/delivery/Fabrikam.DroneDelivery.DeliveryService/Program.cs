@@ -30,7 +30,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService
                         .UseStartup<Startup>()                
                         .ConfigureLogging((hostingContext, loggingBuilder) =>
                         {
-                            // Reviewer note:
+                            // Note:
                             // loggingBuilder.AddApplicationInsights() was removed. It was the legacy 2.x bridge
                             // (Microsoft.Extensions.Logging.ApplicationInsights) that manually wired ILogger output
                             // into Application Insights. With Microsoft.ApplicationInsights.AspNetCore 3.x, the call
