@@ -23,9 +23,5 @@
     <PackageReference Include="Serilog.Sinks.Console" Version="6.1.1" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.1" />
   </ItemGroup>
-  <ItemGroup>
-      <ProjectReference Include="..\..\delivery\Fabrikam.DroneDelivery.Common\Fabrikam.DroneDelivery.Common.csproj" />
-
-  </ItemGroup>
 
 </Project>
