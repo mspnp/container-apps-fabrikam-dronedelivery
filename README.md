@@ -348,7 +348,7 @@ Now that you have deployed your Container Apps Environment and the five microser
 1. Purge deleted Key Vaults related to this deployment.
 
    ```bash
-   az keyvault list-deleted --query [].name -o tsv
+   az keyvault list-deleted --query '[].name' -o tsv
 
    # Per Key Vault that was related to this deployment (should be five of them)
    az keyvault purge -n <name>
