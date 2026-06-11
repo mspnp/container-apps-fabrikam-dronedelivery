@@ -1,6 +1,6 @@
 # Azure Container Apps example scenario
 
-This repo contains the implementation that backs the [Deploy microservices with Azure Container Apps](https://learn.microsoft.com/azure/architecture/example-scenario/serverless/microservices-with-container-apps) article in the Azure Architecture Center. It's encouraged that you read through that guidance before proceeding here as it gives you an overview of the scenario and architecture; this repo is its deployment guide.
+This repo contains the implementation that backs the [Deploy microservices with Azure Container Apps](https://learn.microsoft.com/azure/architecture/example-scenario/serverless/microservices-with-container-apps) article in the Azure Architecture Center. You should read through that guidance before proceeding here, because it gives you an overview of the scenario and architecture; this repo is its deployment guide.
 
 ## Introduction
 
@@ -123,7 +123,7 @@ Following the steps below will result in the creation of the following Azure res
    RESOURCE_GROUP=rg-shipping-dronedelivery-${LOCATION}
    ```
 
-   :bulb: The region must support availability zones. See [Azure regions with availability zones](https://learn.microsoft.com/azure/reliability/availability-zones-service-support#azure-regions-with-availability-zone-support).
+   :bulb: The region must support availability zones. See [List of Azure regions](https://learn.microsoft.com/azure/reliability/regions-list).
 
 1. Create a resource group for your deployment.
 
@@ -313,7 +313,7 @@ Now that you have deployed your Container Apps Environment and the five microser
    az monitor app-insights query --app $AI_ID --analytics-query 'requests
    | summarize count_=sum(itemCount) by operation_Name
    | order by operation_Name
-   | project strcat(operation_Name," (", count_, ")")' --query tables[0].rows[] -o table
+   | project strcat(operation_Name," (", count_, ")")' --query 'tables[0].rows[]' -o table
    ```
 
    The following output demonstrates the type of response to expect from the Application Insights query.
@@ -358,7 +358,7 @@ Now that you have deployed your Container Apps Environment and the five microser
 
 The team has been able to migrate and run Fabrikam Drone Delivery in Azure Container Apps. They are now laying out a new modernization plan that will include:
 
-- [Start using DAPR](https://learn.microsoft.com/azure/container-apps/microservices#dapr-integration)
+- [Start using Dapr](https://learn.microsoft.com/azure/container-apps/microservices#dapr-integration)
 - [Bring your own virtual network](https://learn.microsoft.com/azure/container-apps/vnet-custom)
 - Addressing [production readiness changes](#production-readiness-changes)
 
