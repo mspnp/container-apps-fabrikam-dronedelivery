@@ -157,11 +157,11 @@ module ca_delivery 'container-http.bicep' = {
     env: [
       {
         name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        secretref: 'applicationinsights-connectionstring'
+        secretRef: 'applicationinsights-connectionstring'
       }
       {
         name: 'ApplicationInsights__InstrumentationKey'
-        secretref: 'applicationinsights-instrumentationkey'
+        secretRef: 'applicationinsights-instrumentationkey'
       }
       {
         name: 'CosmosDB-Endpoint'
@@ -256,11 +256,11 @@ module ca_dronescheduler 'container-http.bicep' = {
     env: [
       {
         name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        secretref: 'applicationinsights-connectionstring'
+        secretRef: 'applicationinsights-connectionstring'
       }
       {
         name: 'ApplicationInsights__InstrumentationKey'
-        secretref: 'applicationinsights-instrumentationkey'
+        secretRef: 'applicationinsights-instrumentationkey'
       }
       {
         name: 'CosmosDBEndpoint'
@@ -384,11 +384,11 @@ module ca_workflow 'container-http.bicep' = {
     env: [
       {
         name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
-        secretref: 'applicationinsights-connectionstring'
+        secretRef: 'applicationinsights-connectionstring'
       }
       {
         name: 'ApplicationInsights__InstrumentationKey'
-        secretref: 'applicationinsights-instrumentationkey'
+        secretRef: 'applicationinsights-instrumentationkey'
       }
       {
         name: 'QueueName'
@@ -404,7 +404,7 @@ module ca_workflow 'container-http.bicep' = {
       }
       {
         name: 'QueueAccessPolicyKey'
-        secretref: 'namespace-sas-key'
+        secretRef: 'namespace-sas-key'
       }
       {
         name: 'HEALTHCHECK_INITIAL_DELAY'
@@ -491,11 +491,11 @@ module ca_package 'container-http.bicep' = {
     env: [
       {
         name: 'APPINSIGHTS_CONNECTION_STRING'
-        secretref: 'applicationinsights-connectionstring'
+        secretRef: 'applicationinsights-connectionstring'
       }
       {
         name: 'CONNECTION_STRING'
-        secretref: 'mongodb-connectionstring'
+        secretRef: 'mongodb-connectionstring'
       }
       {
         name: 'COLLECTION_NAME'
@@ -577,7 +577,7 @@ module ca_ingestion 'container-http.bicep' = {
     env: [
       {
         name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-        secretref: 'applicationinsights-instrumentationkey'
+        secretRef: 'applicationinsights-instrumentationkey'
       }
       {
         name: 'APPINSIGHTS_LOGGERLEVEL'
@@ -601,7 +601,7 @@ module ca_ingestion 'container-http.bicep' = {
       }
       {
         name: 'QUEUE_KEYVALUE'
-        secretref: 'namespace-sas-key'
+        secretRef: 'namespace-sas-key'
       }
     ]
   }
