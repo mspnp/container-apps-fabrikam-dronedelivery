@@ -9,16 +9,15 @@ using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Fabrikam.DroneDelivery.Common;
 using Fabrikam.DroneDelivery.DeliveryService.Controllers;
 using Fabrikam.DroneDelivery.DeliveryService.Models;
 using Fabrikam.DroneDelivery.DeliveryService.Services;
 using Moq;
+using Xunit;
 
 namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 {
-    [TestClass]
     public class DeliveriesControllerFixture
     {
         private static UserAccount userAccount = new UserAccount("userid", "accountid");
@@ -31,7 +30,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
                                         false,
                                         ConfirmationType.FingerPrint,
                                         "droneid");
-        [TestMethod]
+        [Fact]
         public async Task Get_Returns404_IfDeliveryIdNotValid()
         {
             // Arrange
@@ -48,11 +47,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.Get("invaliddeliveryid") as NotFoundResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(404, result.StatusCode);
+            Assert.NotNull(result);
+            Assert.Equal(404, result.StatusCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetOwner_Returns404_IfDeliveryIdNotValid()
         {
             // Arrange
@@ -69,11 +68,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.GetOwner("invaliddeliveryid") as NotFoundResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(404, result.StatusCode);
+            Assert.NotNull(result);
+            Assert.Equal(404, result.StatusCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetOwner_ReturnsOwner()
         {
             // Arrange
@@ -94,11 +93,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.GetOwner("deliveryid") as OkObjectResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(userAccount, result.Value);
+            Assert.NotNull(result);
+            Assert.Equal(userAccount, result.Value);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetStatus_Returns404_IfDeliveryIdNotValid()
         {
             // Arrange
@@ -115,11 +114,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.GetStatus("invaliddeliveryid") as NotFoundResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(404, result.StatusCode);
+            Assert.NotNull(result);
+            Assert.Equal(404, result.StatusCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Put_Returns204_IfDeliveryIdExists()
         {
             // Arrange
@@ -142,11 +141,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var statusCodeResult = (StatusCodeResult)result;
 
             // Assert
-            Assert.IsNotNull(statusCodeResult);
-            Assert.AreEqual(204, statusCodeResult.StatusCode);
+            Assert.NotNull(statusCodeResult);
+            Assert.Equal(204, statusCodeResult.StatusCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Put_AddsToCache()
         {
             // Arrange
@@ -166,12 +165,12 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var createdAtRouteResult = (CreatedAtRouteResult)result;
 
             // Assert
-            Assert.AreEqual(201, createdAtRouteResult.StatusCode);
-            Assert.IsNotNull(createdAtRouteResult.Value);
+            Assert.Equal(201, createdAtRouteResult.StatusCode);
+            Assert.NotNull(createdAtRouteResult.Value);
             deliveryRepository.VerifyAll();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Put_AddscreatedDeliveryEvent()
         {
             // Arrange
@@ -194,14 +193,14 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var createdAtRouteResult = (CreatedAtRouteResult)result;
 
             // Assert
-            Assert.AreEqual(201, createdAtRouteResult.StatusCode);
-            Assert.IsNotNull(createdAtRouteResult.Value);
-            Assert.IsNotNull(createdDelivery);
-            Assert.AreEqual(DeliveryStage.Created, createdDelivery.Stage);
+            Assert.Equal(201, createdAtRouteResult.StatusCode);
+            Assert.NotNull(createdAtRouteResult.Value);
+            Assert.NotNull(createdDelivery);
+            Assert.Equal(DeliveryStage.Created, createdDelivery.Stage);
             deliveryStatusEventRepository.VerifyAll();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Patch_Returns404_IfDeliveryIdNotValid()
         {
             // Arrange
@@ -219,11 +218,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(404, result.StatusCode);
+            Assert.NotNull(result);
+            Assert.Equal(404, result.StatusCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Patch_UpdatesCache()
         {
             // Arrange
@@ -252,18 +251,18 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 
             // Assert
             //unchanged values
-            Assert.AreEqual("deliveryid", updatedDelivery.Id);
-            Assert.AreEqual("userid", updatedDelivery.Owner.UserId);
+            Assert.Equal("deliveryid", updatedDelivery.Id);
+            Assert.Equal("userid", updatedDelivery.Owner.UserId);
 
             //updated values
-            Assert.AreEqual(2, updatedDelivery.Pickup.Altitude);
-            Assert.AreEqual(3, updatedDelivery.Dropoff.Altitude);
-            Assert.AreEqual("newdeadline", updatedDelivery.Deadline);
+            Assert.Equal(2, updatedDelivery.Pickup.Altitude);
+            Assert.Equal(3, updatedDelivery.Dropoff.Altitude);
+            Assert.Equal("newdeadline", updatedDelivery.Deadline);
 
             deliveryRepository.VerifyAll();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Patch_AddsRescheduledDeliveryEvent()
         {
             // Arrange
@@ -294,13 +293,13 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.Patch("deliveryid", rescheduledDelivery) as OkResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(deliveryTrackingEvent);
-            Assert.AreEqual(DeliveryStage.Rescheduled, deliveryTrackingEvent.Stage);
+            Assert.NotNull(result);
+            Assert.NotNull(deliveryTrackingEvent);
+            Assert.Equal(DeliveryStage.Rescheduled, deliveryTrackingEvent.Stage);
             deliveryStatusEventRepository.VerifyAll();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Delete_Returns404_IfDeliveryIdNotValid()
         {
             // Arrange
@@ -317,11 +316,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.Delete("invaliddeliveryid") as NotFoundResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(404, result.StatusCode);
+            Assert.NotNull(result);
+            Assert.Equal(404, result.StatusCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Delete_SendsMessageWithCancelledTrackingEvent()
         {
             // Arrange
@@ -350,13 +349,13 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             await target.Delete("deliveryid");
 
             // Assert
-            Assert.IsNotNull(cancelledDelivery);
-            Assert.AreEqual("deliveryid", cancelledDelivery.DeliveryId);
-            Assert.AreEqual(DeliveryStage.Cancelled, cancelledDelivery.Stage);
+            Assert.NotNull(cancelledDelivery);
+            Assert.Equal("deliveryid", cancelledDelivery.DeliveryId);
+            Assert.Equal(DeliveryStage.Cancelled, cancelledDelivery.Stage);
             deliveryRepository.VerifyAll();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NotifyMe_Returns404_IfDeliveryIdNotValid()
         {
             // Arrange
@@ -373,11 +372,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.NotifyMe("invaliddeliveryid", null) as NotFoundResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(404, result.StatusCode);
+            Assert.NotNull(result);
+            Assert.Equal(404, result.StatusCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task NotifyMe_AddsNotifyMeRequest()
         {
             // Arrange
@@ -406,13 +405,13 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.NotifyMe("deliveryid", notifyMeRequest) as NoContentResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual("deliveryid", savedNotifyMeRequest.DeliveryId);
-            Assert.AreEqual("email@test.com", savedNotifyMeRequest.EmailAddress);
-            Assert.AreEqual("1234567", savedNotifyMeRequest.SMS);
+            Assert.NotNull(result);
+            Assert.Equal("deliveryid", savedNotifyMeRequest.DeliveryId);
+            Assert.Equal("email@test.com", savedNotifyMeRequest.EmailAddress);
+            Assert.Equal("1234567", savedNotifyMeRequest.SMS);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Confirm_Returns404_IfDeliveryIdNotValid()
         {
             // Arrange
@@ -428,11 +427,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.Confirm("invaliddeliveryid", null) as NotFoundResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(404, result.StatusCode);
+            Assert.NotNull(result);
+            Assert.Equal(404, result.StatusCode);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Confirm_SendsNotifications()
         {
             // Arrange
@@ -479,11 +478,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.Confirm("deliveryid", confirmation) as OkResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.AreEqual(2, notificationServiceCalled);
+            Assert.NotNull(result);
+            Assert.Equal(2, notificationServiceCalled);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Confirm_DeletesDeliveryLogically()
         {
             // Arrange
@@ -522,12 +521,12 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.Confirm("deliveryid", confirmation) as OkResult;
 
             // Assert
-            Assert.IsNotNull(result);
+            Assert.NotNull(result);
             deliveryRepository.Verify(r => r.DeleteAsync("deliveryid", confirmedDelivery));
-            Assert.AreEqual(location, confirmedDelivery.Dropoff);
+            Assert.Equal(location, confirmedDelivery.Dropoff);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task Confirm_AddsDeliveryCompletedEvent()
         {
             // Arrange
@@ -562,12 +561,12 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.Confirm("deliveryid", confirmation) as OkResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.IsNotNull(completedDelivery);
-            Assert.AreEqual(DeliveryStage.Completed, completedDelivery.Stage);
+            Assert.NotNull(result);
+            Assert.NotNull(completedDelivery);
+            Assert.Equal(DeliveryStage.Completed, completedDelivery.Stage);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetSummry_ReturnsSummary()
         {
             const int TestDeliveryCount = 5000;
@@ -591,9 +590,9 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             var result = await target.GetSummary("owner", 2019, 01) as OkObjectResult;
 
             // Assert
-            Assert.IsNotNull(result);
-            Assert.IsInstanceOfType(result.Value, typeof(DeliveriesSummary));
-            Assert.AreEqual(TestDeliveryCount, ((DeliveriesSummary)result.Value).Count);
+            Assert.NotNull(result);
+            var summary = Assert.IsType<DeliveriesSummary>(result.Value);
+            Assert.Equal(TestDeliveryCount, summary.Count);
             deliveryRepository.VerifyAll();
         }
     }

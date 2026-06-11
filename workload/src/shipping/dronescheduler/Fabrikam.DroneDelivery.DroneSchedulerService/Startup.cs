@@ -4,10 +4,12 @@
 // ------------------------------------------------------------
 
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.FeatureManagement;
 using Microsoft.OpenApi;
@@ -22,12 +24,14 @@ namespace Fabrikam.DroneDelivery.DroneSchedulerService
     {
         private const string HealCheckName = "ReadinessLiveness";
 
-        public Startup(IConfiguration configuration)
+        public Startup(IConfiguration configuration, IWebHostEnvironment env)
         {
             Configuration = configuration;
+            Env = env;
         }
 
         public IConfiguration Configuration { get; }
+        public IWebHostEnvironment Env { get; }
 
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
@@ -37,7 +41,12 @@ namespace Fabrikam.DroneDelivery.DroneSchedulerService
             services.AddFeatureManagement();
 
             // Configure AppInsights
-            services.AddApplicationInsightsTelemetry(Configuration);
+            // Skip in Test environment: integration tests use WebApplicationFactory without a real
+            // AI connection string, and AspNetCore 3.x requires one at startup.
+            if (!Env.IsEnvironment("Test"))
+            {
+                services.AddApplicationInsightsTelemetry(Configuration);
+            }
 
             // Add framework services.
             services.AddControllers();

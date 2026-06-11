@@ -56,7 +56,7 @@ resource builtInReaderRole 'Microsoft.Authorization/roleDefinitions@2022-05-01-p
   scope: subscription()
 }
 
-resource workflowManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+resource workflowManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-05-31-preview' = {
   name: 'uid-workflow'
   location: location
   tags: {
@@ -67,7 +67,7 @@ resource workflowManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentiti
   }
 }
 
-resource deliveryManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+resource deliveryManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-05-31-preview' = {
   name: 'uid-delivery'
   location: location
   tags: {
@@ -78,7 +78,7 @@ resource deliveryManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentiti
   }
 }
 
-resource droneSchedulerManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+resource droneSchedulerManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-05-31-preview' = {
   name: 'uid-dronescheduler'
   location: location
   tags: {
@@ -89,7 +89,7 @@ resource droneSchedulerManagedIdentity 'Microsoft.ManagedIdentity/userAssignedId
   }
 }
 
-resource ingestionManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+resource ingestionManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-05-31-preview' = {
   name: 'uid-ingestion'
   location: location
   tags: {
@@ -100,7 +100,7 @@ resource ingestionManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentit
   }
 }
 
-resource packageManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-01-31-preview' = {
+resource packageManagedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2025-05-31-preview' = {
   name: 'uid-package'
   location: location
   tags: {
@@ -121,7 +121,7 @@ module containerRegistry './nested_workload-stamp.bicep' = {
   }
 }
 
-resource deliveryRedis 'Microsoft.Cache/redisEnterprise@2025-08-01-preview' = {
+resource deliveryRedis 'Microsoft.Cache/redisEnterprise@2026-02-01-preview' = {
   name: 'redis-delivery-${prefix}'
   location: location
   tags: {
@@ -770,7 +770,7 @@ resource workflowPrincipalKeyVaultSecretsUserRole 'Microsoft.Authorization/roleA
   }
 }
 
-resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-02-01' = {
+resource logAnalyticsWorkspace 'Microsoft.OperationalInsights/workspaces@2025-07-01' = {
   name: logAnalyticsWorkspaceName
   location: location
   properties: {
