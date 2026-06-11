@@ -31,7 +31,7 @@ namespace Fabrikam.Workflow.Service
           this IServiceCollection services,
           IConfiguration configuration)
         {
-            // Reviewer note:
+            // Note:
             // This service is a worker host (HostBuilder), not a web host. The correct AI SDK for
             // this context is Microsoft.ApplicationInsights.WorkerService, which does not require
             // ASP.NET Core infrastructure (IHttpContextAccessor, IWebHostEnvironment). Using
