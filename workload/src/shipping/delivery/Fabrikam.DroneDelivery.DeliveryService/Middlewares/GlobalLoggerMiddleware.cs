@@ -47,7 +47,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Middlewares
                     var exFeature = context.Features.Get<IExceptionHandlerFeature>();
                     if (exFeature != null)
                     {
-                        _logger.LogError(exFeature.Error, "An internal handled exception has occurred: {ExceptionMessage}", exFeature.Error.Message);
+                        _logger.LogError(exFeature.Error, "An internal handled exception has occurred");
                         if (_diagnosticSource.IsEnabled("Microsoft.AspNetCore.Diagnostics.HandledException.Server"))
                         {
                             _diagnosticSource.Write("Microsoft.AspNetCore.Diagnostics.HandledException.Server", new { httpContext = context, exception = exFeature.Error });
@@ -61,7 +61,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Middlewares
             {
                 //TODO: consider adding the event id(s) as constants
                 //Important: Something went really wrong!!!
-                _logger.LogError(ex, "An exception was thrown attempting to execute the global internal server error handler: {ExceptionMessage}", ex.Message);
+                _logger.LogError(ex, "An exception was thrown attempting to execute the global internal server error handler");
                 if (_diagnosticSource.IsEnabled("Microsoft.AspNetCore.Diagnostics.UnhandledException"))
                 {
                     _diagnosticSource.Write("Microsoft.AspNetCore.Diagnostics.UnhandledException", new { httpContext = context, exception = ex });

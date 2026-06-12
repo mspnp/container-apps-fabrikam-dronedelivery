@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using StackExchange.Redis;
+using Fabrikam.DroneDelivery.Common;
 using Fabrikam.DroneDelivery.DeliveryService.Models;
 
 namespace Fabrikam.DroneDelivery.DeliveryService.Services
@@ -66,7 +67,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Services
         {
             using (logger.BeginScope(nameof(GetItemAsync)))
             {
-                logger.LogInformation("id: {Id}", id);
+                logger.LogInformation("id: {Id}", LogSanitizer.Sanitize(id));
 
                 logger.LogInformation("Start: reading value from Redis");
                 var item = await cache.StringGetAsync(id);
@@ -86,7 +87,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Services
         {
             using (logger.BeginScope(nameof(GetItemsAsync)))
             {
-                logger.LogInformation("ids: {@Ids}", ids);
+                logger.LogInformation("ids: {@Ids}", LogSanitizer.SanitizeValues(ids));
 
                 if (ids.Count() == 0)
                     return default(IEnumerable<T>);
@@ -117,7 +118,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Services
         {
             using (logger.BeginScope(nameof(UpdateItemAsync)))
             {
-                logger.LogInformation("id: {Id}", id);
+                logger.LogInformation("id: {Id}", LogSanitizer.Sanitize(id));
 
                 logger.LogInformation("Start: updating item in Redis");
                 string jsonItem = await Task.Factory.StartNew(() => JsonConvert.SerializeObject(item));
@@ -132,7 +133,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Services
         {
             using (logger.BeginScope(nameof(DeleteItemAsync)))
             {
-                logger.LogInformation("id: {Id}", id);
+                logger.LogInformation("id: {Id}", LogSanitizer.Sanitize(id));
 
                 logger.LogInformation("Start: updating item's TTL in Redis");
                 var success = await cache.KeyExpireAsync(id, DateTime.UtcNow.AddDays(7)).ConfigureAwait(continueOnCapturedContext: false);
