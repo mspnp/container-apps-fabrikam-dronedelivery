@@ -11,14 +11,14 @@ module.exports = {
   testPathIgnorePatterns: [
     '/node_modules/'
   ],
+  moduleNameMapper: {
+    '^(\\.{1,2}/.*)\\.js$': '$1'
+  },
   "moduleFileExtensions": ["js", "jsx", "json", "ts", "tsx"],
   "collectCoverage": true,
   "collectCoverageFrom": [
-    "**/*.{ts,tsx,js,jsx}",
-    "!**/tests/models/*.{ts,tsx,js,jsx}",
-    "!**/node_modules/**",
-    "!**/build/**",
-    "!**/coverage/**"
+    "app/**/*.{ts,tsx,js,jsx}",
+    "!app/spec/package-swagger.ts"
   ],
   "transform": {
     "\\.ts$": "ts-jest"
