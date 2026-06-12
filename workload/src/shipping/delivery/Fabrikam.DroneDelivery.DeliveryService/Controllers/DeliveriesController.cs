@@ -45,13 +45,13 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Controllers
         [ProducesResponseType(typeof(Delivery), StatusCodes.Status200OK)]
         public async Task<IActionResult> Get(string id)
         {
-            logger.LogInformation("In Get action with id: {Id}", id);
+            logger.LogInformation("In Get action with id: {Id}", LogSanitizer.Sanitize(id));
 
             var internalDelivery = await deliveryRepository.GetAsync(id);
 
             if (internalDelivery == null)
             {
-                logger.LogDebug("Delivery id: {Id} not found", id);
+                logger.LogDebug("Delivery id: {Id} not found", LogSanitizer.Sanitize(id));
                 return NotFound();
             }
 
@@ -63,12 +63,12 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Controllers
         [ProducesResponseType(typeof(UserAccount), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetOwner(string id)
         {
-            logger.LogInformation("In GetOwner action with id: {Id}", id);
+            logger.LogInformation("In GetOwner action with id: {Id}", LogSanitizer.Sanitize(id));
 
             var delivery = await deliveryRepository.GetAsync(id);
             if (delivery == null)
             {
-                logger.LogDebug("Delivery id: {Id} not found", id);
+                logger.LogDebug("Delivery id: {Id} not found", LogSanitizer.Sanitize(id));
                 return NotFound();
             }
 
@@ -80,12 +80,12 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Controllers
         [ProducesResponseType(typeof(DeliveryStatus), StatusCodes.Status200OK)]
         public async Task<IActionResult> GetStatus(string id)
         {
-            logger.LogInformation("In GetStatus action with id: {Id}", id);
+            logger.LogInformation("In GetStatus action with id: {Id}", LogSanitizer.Sanitize(id));
 
             var delivery = await deliveryRepository.GetAsync(id);
             if (delivery == null)
             {
-                logger.LogDebug("Delivery id: {Id} not found", id);
+                logger.LogDebug("Delivery id: {Id} not found", LogSanitizer.Sanitize(id));
                 return NotFound();
             }
 
@@ -99,7 +99,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Controllers
         [ProducesResponseType(typeof(void), StatusCodes.Status204NoContent)]
         public async Task<IActionResult> Put([FromBody]Delivery delivery, string id)
         {
-            logger.LogInformation("In Put action with delivery {Id}: {@DeliveryInfo}", id, delivery.ToLogInfo());
+            logger.LogInformation("In Put action with delivery {Id}: {DeliveryInfo}", LogSanitizer.Sanitize(id), LogSanitizer.Sanitize(delivery.ToLogInfo()));
 
             try
             {
@@ -117,7 +117,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Controllers
             catch (DuplicateResourceException)
             {
                 //This method is mainly used to create deliveries. If the delivery already exists then update
-                logger.LogInformation("Updating resource with delivery id: {DeliveryId}", id);
+                logger.LogInformation("Updating resource with delivery id: {DeliveryId}", LogSanitizer.Sanitize(id));
 
                 var internalDelivery = delivery.ToInternal();
 
@@ -132,12 +132,12 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Controllers
         [HttpPatch("{id}")]
         public async Task<IActionResult> Patch(string id, [FromBody]RescheduledDelivery rescheduledDelivery)
         {
-            logger.LogInformation("In Patch action with id: {Id} and rescheduledDelivery: {@RescheduledDelivery}", id, rescheduledDelivery.ToLogInfo());
+            logger.LogInformation("In Patch action with id: {Id} and rescheduledDelivery: {RescheduledDelivery}", LogSanitizer.Sanitize(id), LogSanitizer.Sanitize(rescheduledDelivery.ToLogInfo()));
 
             var delivery = await deliveryRepository.GetAsync(id);
             if (delivery == null)
             {
-                logger.LogDebug("Delivery id: {Id} not found", id);
+                logger.LogDebug("Delivery id: {Id} not found", LogSanitizer.Sanitize(id));
                 return NotFound();
             }
 
@@ -163,12 +163,12 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Controllers
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(string id)
         {
-            logger.LogInformation("In Delete action with id: {Id}", id);
+            logger.LogInformation("In Delete action with id: {Id}", LogSanitizer.Sanitize(id));
 
             var delivery = await deliveryRepository.GetAsync(id);
             if (delivery == null)
             {
-                logger.LogDebug("Delivery id: {Id} not found", id);
+                logger.LogDebug("Delivery id: {Id} not found", LogSanitizer.Sanitize(id));
                 return NotFound();
             }
 
@@ -186,12 +186,12 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Controllers
         [HttpPost("{id}/notifymerequests")]
         public async Task<IActionResult> NotifyMe(string id, [FromBody]NotifyMeRequest notifyMeRequest)
         {
-            logger.LogInformation("In NotifyMe action with id: {Id} and notifyMeRequest: {@NotifyMeRequest}", id, notifyMeRequest.ToLogInfo());
+            logger.LogInformation("In NotifyMe action with id: {Id} and notifyMeRequest: {NotifyMeRequest}", LogSanitizer.Sanitize(id), LogSanitizer.Sanitize(notifyMeRequest.ToLogInfo()));
 
             var delivery = await deliveryRepository.GetAsync(id);
             if (delivery == null)
             {
-                logger.LogDebug("Delivery id: {Id} not found", id);
+                logger.LogDebug("Delivery id: {Id} not found", LogSanitizer.Sanitize(id));
                 return NotFound();
             }
 
@@ -220,12 +220,12 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Controllers
         [HttpPost("{id}/confirmations")]
         public async Task<IActionResult> Confirm(string id, [FromBody]Confirmation confirmation)
         {
-            logger.LogInformation("In Confirm action with id: {Id} and confirmation: {@Confirmation}", id, confirmation.ToLogInfo());
+            logger.LogInformation("In Confirm action with id: {Id} and confirmation: {Confirmation}", LogSanitizer.Sanitize(id), LogSanitizer.Sanitize(confirmation.ToLogInfo()));
 
             var delivery = await deliveryRepository.GetAsync(id);
             if (delivery == null)
             {
-                logger.LogDebug("Delivery id: {Id} not found", id);
+                logger.LogDebug("Delivery id: {Id} not found", LogSanitizer.Sanitize(id));
                 return NotFound();
             }
 

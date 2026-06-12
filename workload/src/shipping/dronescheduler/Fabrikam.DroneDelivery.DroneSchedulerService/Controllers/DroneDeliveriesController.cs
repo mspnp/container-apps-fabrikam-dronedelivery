@@ -7,6 +7,7 @@ using System;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
+using Fabrikam.DroneDelivery.Common;
 using Fabrikam.DroneDelivery.DroneSchedulerService.Models;
 using Fabrikam.DroneDelivery.DroneSchedulerService.Services;
 using Microsoft.AspNetCore.Http;
@@ -32,7 +33,7 @@ namespace Fabrikam.DroneDelivery.DroneSchedulerService.Controllers
         [HttpPut("{id}")]
         public string Put([FromBody]Models.DroneDelivery droneDelivery, string id)
         {
-            logger.LogInformation("In Put action with DeliveryId: {DeliveryId}", id);
+            logger.LogInformation("In Put action with DeliveryId: {DeliveryId}", LogSanitizer.Sanitize(id));
 
             var guid = Guid.NewGuid();
             return $"AssignedDroneId{guid}";
@@ -42,7 +43,7 @@ namespace Fabrikam.DroneDelivery.DroneSchedulerService.Controllers
         [HttpDelete("{id}")]
         public void Delete(string id)
         {
-            logger.LogInformation("In Delete action with DeliveryId: {DeliveryId}", id);
+            logger.LogInformation("In Delete action with DeliveryId: {DeliveryId}", LogSanitizer.Sanitize(id));
         }
 
         // GET api/dronedeliveries/utilization

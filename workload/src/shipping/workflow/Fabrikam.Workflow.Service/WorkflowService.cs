@@ -71,7 +71,7 @@ namespace Fabrikam.Workflow.Service
 
         private async Task ProcessMessageAsync(ProcessMessageEventArgs args)
         {
-            _logger.LogInformation("Processing message {messageId}", args.Message.MessageId);
+            _logger.LogInformation("Processing message {messageId}", LogSanitizer.Sanitize(args.Message.MessageId));
 
             if (TryGetDelivery(args.Message, out var delivery))
             {
@@ -85,7 +85,7 @@ namespace Fabrikam.Workflow.Service
                 }
                 catch (Exception e)
                 {
-                    _logger.LogError(e, "Error processing message {messageId}", args.Message.MessageId);
+                    _logger.LogError(e, "Error processing message {messageId}", LogSanitizer.Sanitize(args.Message.MessageId));
                 }
             }
 
@@ -95,18 +95,18 @@ namespace Fabrikam.Workflow.Service
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error moving message {messageId} to dead letter queue", args.Message.MessageId);
+                _logger.LogError(e, "Error moving message {messageId} to dead letter queue", LogSanitizer.Sanitize(args.Message.MessageId));
             }
         }
 
         private Task ProcessMessageExceptionAsync(ProcessErrorEventArgs args)
         {
             // the error source tells me at what point in the processing an error occurred
-            _logger.LogError(args.ErrorSource.ToString());
+            _logger.LogError("Service Bus processing error source: {ErrorSource}", args.ErrorSource);
             // the fully qualified namespace is available
-            _logger.LogError(args.FullyQualifiedNamespace);
+            _logger.LogError("Service Bus namespace: {FullyQualifiedNamespace}", LogSanitizer.Sanitize(args.FullyQualifiedNamespace));
             // as well as the entity path
-            _logger.LogError(args.EntityPath);
+            _logger.LogError("Service Bus entity path: {EntityPath}", LogSanitizer.Sanitize(args.EntityPath));
             _logger.LogError(args.Exception, "Error processing message");
 
             return Task.CompletedTask;
@@ -126,7 +126,7 @@ namespace Fabrikam.Workflow.Service
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Cannot parse payload from message {messageId}", message.MessageId);
+                _logger.LogError(e, "Cannot parse payload from message {messageId}", LogSanitizer.Sanitize(message.MessageId));
             }
 
             delivery = null;

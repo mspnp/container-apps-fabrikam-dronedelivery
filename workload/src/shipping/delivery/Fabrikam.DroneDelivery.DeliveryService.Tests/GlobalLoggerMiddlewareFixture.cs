@@ -72,7 +72,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             loggerMock.Verify(l => l.Log(
                                     LogLevel.Error,
                                     It.IsAny<EventId>(),
-                                    It.Is<It.IsAnyType>((object fV, Type _) => fV.ToString().Equals(($"An internal handled exception has occurred: {exMessage}"))),
+                                    It.Is<It.IsAnyType>((object fV, Type _) => fV.ToString().Equals("An internal handled exception has occurred")),
                                     It.IsAny<Exception>(),
                                     (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
         }
@@ -220,7 +220,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
                     loggerMock.Verify(l => l.Log(
                                             LogLevel.Error,
                                             It.IsAny<EventId>(),
-                                            It.Is<It.IsAnyType>((object fV, Type _) => fV.ToString().Equals(($"An exception was thrown attempting to execute the global internal server error handler: {exMessage}"))),
+                                            It.Is<It.IsAnyType>((object fV, Type _) => fV.ToString().Equals("An exception was thrown attempting to execute the global internal server error handler")),
                                             It.IsAny<Exception>(),
                                             (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
 

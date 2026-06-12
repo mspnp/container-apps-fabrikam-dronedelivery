@@ -12,6 +12,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Azure.Cosmos.Linq;
 using Microsoft.Extensions.Logging;
+using Fabrikam.DroneDelivery.Common;
 using Fabrikam.DroneDelivery.DeliveryService.Models;
 using CosmosContainer = Microsoft.Azure.Cosmos.Container;
 
@@ -38,19 +39,19 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Services
 
             client = new CosmosClient(Endpoint, Key);
             logger = loggerFactory.CreateLogger(nameof(CosmosDBRepository<T>));
-            logger.LogInformation($"Creating CosmosDb Database {DatabaseId} if not exists...");
+            logger.LogInformation("Creating CosmosDb Database {DatabaseId} if not exists...", LogSanitizer.Sanitize(DatabaseId));
             var databaseResponse = await client.CreateDatabaseIfNotExistsAsync(DatabaseId);
-            logger.LogInformation($"CosmosDb Database {DatabaseId} creation if not exists: OK!");
+            logger.LogInformation("CosmosDb Database {DatabaseId} creation if not exists: OK!", LogSanitizer.Sanitize(DatabaseId));
             var containerResponse = await databaseResponse.Database.CreateContainerIfNotExistsAsync(ContainerId, "/partitionKey", 1000);
             container = containerResponse.Container;
-            logger.LogInformation($"CosmosDb Container {ContainerId} creation if not exists: OK!");
+            logger.LogInformation("CosmosDb Container {ContainerId} creation if not exists: OK!", LogSanitizer.Sanitize(ContainerId));
         }
 
         public static async Task<T> GetItemAsync(string id, string partitionKey)
         {
             using (logger.BeginScope(nameof(GetItemAsync)))
             {
-                logger.LogInformation("id: {Id}, partitionKey: {PartitionKey}", id, partitionKey);
+                logger.LogInformation("id: {Id}, partitionKey: {PartitionKey}", LogSanitizer.Sanitize(id), LogSanitizer.Sanitize(partitionKey));
 
                 try
                 {
@@ -71,7 +72,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Services
         {
             using (logger.BeginScope(nameof(GetItemsAsync)))
             {
-                logger.LogInformation("partitionKey: {PartitionKey}", partitionKey);
+                logger.LogInformation("partitionKey: {PartitionKey}", LogSanitizer.Sanitize(partitionKey));
 
                 var query = container.GetItemLinqQueryable<T>(true)
                     .Where(predicate)
@@ -96,7 +97,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Services
         {
             using (logger.BeginScope(nameof(CreateItemAsync)))
             {
-                logger.LogInformation("partitionKey: {PartitionKey}", partitionKey);
+                logger.LogInformation("partitionKey: {PartitionKey}", LogSanitizer.Sanitize(partitionKey));
 
                 item.DocumentType = typeof(T).ToString();
                 item.PartitionKey = partitionKey;
@@ -120,7 +121,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Services
         {
             using (logger.BeginScope(nameof(UpdateItemAsync)))
             {
-                logger.LogInformation("id: {Id}, partitionKey: {PartitionKey}", id, partitionKey);
+                logger.LogInformation("id: {Id}, partitionKey: {PartitionKey}", LogSanitizer.Sanitize(id), LogSanitizer.Sanitize(partitionKey));
 
                 item.DocumentType = typeof(T).ToString();
 
