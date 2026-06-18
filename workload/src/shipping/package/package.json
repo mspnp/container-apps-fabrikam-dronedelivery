@@ -44,7 +44,7 @@
     "@types/supertest": "^6.0.2",
     "@types/swagger-jsdoc": "^6.0.4",
     "del": "^8.0.0",
-    "gulp": "^5.0.0",
+    "gulp": "^5.0.1",
     "gulp-mocha": "^10.0.1",
     "gulp-nodemon": "^2.5.0",
     "gulp-typescript": "^6.0.0-alpha.1",
