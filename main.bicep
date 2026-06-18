@@ -146,14 +146,22 @@ module ca_delivery 'container-http.bicep' = {
     // Production readiness change: Implement a readiness probe endpoint (e.g., /health/ready) that validates Cosmos DB and Redis connectivity before accepting traffic. Current /healthz endpoint only returns "OK" without dependency checks.
     secrets: [
         {
+          name: 'applicationinsights-connectionstring'
+          value: applicationInsightsConnectionString
+        }
+        {
           name: 'applicationinsights-instrumentationkey'
           value: applicationInsightsInstrumentationKey
         }
     ]
     env: [
       {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        secretRef: 'applicationinsights-connectionstring'
+      }
+      {
         name: 'ApplicationInsights__InstrumentationKey'
-        secretref: 'applicationinsights-instrumentationkey'
+        secretRef: 'applicationinsights-instrumentationkey'
       }
       {
         name: 'CosmosDB-Endpoint'
@@ -237,14 +245,22 @@ module ca_dronescheduler 'container-http.bicep' = {
     // Production readiness change: Implement a readiness probe endpoint (e.g., /health/ready) that validates Cosmos DB connectivity before accepting traffic. Current /healthz endpoint only returns "OK" without dependency checks.
     secrets: [
       {
+        name: 'applicationinsights-connectionstring'
+        value: applicationInsightsConnectionString
+      }
+      {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
       }
     ]
     env: [
       {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        secretRef: 'applicationinsights-connectionstring'
+      }
+      {
         name: 'ApplicationInsights__InstrumentationKey'
-        secretref: 'applicationinsights-instrumentationkey'
+        secretRef: 'applicationinsights-instrumentationkey'
       }
       {
         name: 'CosmosDBEndpoint'
@@ -351,6 +367,12 @@ module ca_workflow 'container-http.bicep' = {
     // Production readiness change: Workflow service is a background worker without HTTP endpoints. Consider implementing health probe endpoints for better observability and lifecycle management. See https://learn.microsoft.com/azure/container-apps/health-probes
     secrets: [
       {
+        name: 'applicationinsights-connectionstring'
+        value: applicationInsightsConnectionString
+      }
+      // Per MS recommendation (https://learn.microsoft.com/azure/azure-monitor/app/worker-service), the
+      // connection string (above) is the preferred credential for ApplicationInsights.WorkerService SDK.
+      {
         name: 'applicationinsights-instrumentationkey'
         value: applicationInsightsInstrumentationKey
       }
@@ -361,8 +383,12 @@ module ca_workflow 'container-http.bicep' = {
     ]
     env: [
       {
+        name: 'APPLICATIONINSIGHTS_CONNECTION_STRING'
+        secretRef: 'applicationinsights-connectionstring'
+      }
+      {
         name: 'ApplicationInsights__InstrumentationKey'
-        secretref: 'applicationinsights-instrumentationkey'
+        secretRef: 'applicationinsights-instrumentationkey'
       }
       {
         name: 'QueueName'
@@ -378,7 +404,7 @@ module ca_workflow 'container-http.bicep' = {
       }
       {
         name: 'QueueAccessPolicyKey'
-        secretref: 'namespace-sas-key'
+        secretRef: 'namespace-sas-key'
       }
       {
         name: 'HEALTHCHECK_INITIAL_DELAY'
@@ -465,11 +491,11 @@ module ca_package 'container-http.bicep' = {
     env: [
       {
         name: 'APPINSIGHTS_CONNECTION_STRING'
-        secretref: 'applicationinsights-connectionstring'
+        secretRef: 'applicationinsights-connectionstring'
       }
       {
         name: 'CONNECTION_STRING'
-        secretref: 'mongodb-connectionstring'
+        secretRef: 'mongodb-connectionstring'
       }
       {
         name: 'COLLECTION_NAME'
@@ -551,7 +577,7 @@ module ca_ingestion 'container-http.bicep' = {
     env: [
       {
         name: 'APPINSIGHTS_INSTRUMENTATIONKEY'
-        secretref: 'applicationinsights-instrumentationkey'
+        secretRef: 'applicationinsights-instrumentationkey'
       }
       {
         name: 'APPINSIGHTS_LOGGERLEVEL'
@@ -575,7 +601,7 @@ module ca_ingestion 'container-http.bicep' = {
       }
       {
         name: 'QUEUE_KEYVALUE'
-        secretref: 'namespace-sas-key'
+        secretRef: 'namespace-sas-key'
       }
     ]
   }

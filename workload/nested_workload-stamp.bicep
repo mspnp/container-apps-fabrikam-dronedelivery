@@ -34,7 +34,7 @@ param geoRedundancyLocation string
 @description('Azure Container Registry name.')
 param  acrName string
 
-resource acr 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
+resource acr 'Microsoft.ContainerRegistry/registries@2026-01-01-preview' = {
   name: acrName
   sku: {
     name: 'Premium'
@@ -65,7 +65,7 @@ resource acr 'Microsoft.ContainerRegistry/registries@2025-11-01' = {
   }
 }
 
-resource acrGeoRedundancyLocation 'Microsoft.ContainerRegistry/registries/replications@2025-11-01' = {
+resource acrGeoRedundancyLocation 'Microsoft.ContainerRegistry/registries/replications@2026-01-01-preview' = {
   parent: acr
   name: geoRedundancyLocation
   location: geoRedundancyLocation

@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using Microsoft.Azure.Cosmos;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Fabrikam.DroneDelivery.Common;
 using Fabrikam.DroneDelivery.DroneSchedulerService.Models;
 
 namespace Fabrikam.DroneDelivery.DroneSchedulerService.Services
@@ -43,8 +44,8 @@ namespace Fabrikam.DroneDelivery.DroneSchedulerService.Services
             using (_logger.BeginScope(nameof(GetItemsAsync)))
             {
                 _logger.LogInformation(
-                        "partitionKey: {PartitionKey}",
-                        partitionKey);
+                    "partitionKey: {PartitionKey}",
+                    LogSanitizer.Sanitize(partitionKey));
 
                 using (var queryMetricsTracker =
                     this._metricsTracker.GetQueryMetricsTracker(

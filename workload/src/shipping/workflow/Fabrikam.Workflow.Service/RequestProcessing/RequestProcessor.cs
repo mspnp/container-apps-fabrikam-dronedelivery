@@ -33,36 +33,36 @@ namespace Fabrikam.Workflow.Service.RequestProcessing
 
         public async Task<bool> ProcessDeliveryRequestAsync(Delivery deliveryRequest, IReadOnlyDictionary<string, object> properties)
         {
-            _logger.LogInformation("Processing delivery request {deliveryId}", deliveryRequest.DeliveryId);
+            _logger.LogInformation("Processing delivery request {deliveryId}", LogSanitizer.Sanitize(deliveryRequest.DeliveryId));
 
             try
             {
                 var packageGen = await _packageServiceCaller.UpsertPackageAsync(deliveryRequest.PackageInfo).ConfigureAwait(false);
                 if (packageGen != null)
                 {
-                    _logger.LogInformation("Generated package {packageId} for delivery {deliveryId}", packageGen.Id, deliveryRequest.DeliveryId);
+                    _logger.LogInformation("Generated package {packageId} for delivery {deliveryId}", LogSanitizer.Sanitize(packageGen.Id), LogSanitizer.Sanitize(deliveryRequest.DeliveryId));
 
                     var droneId = await _droneSchedulerServiceCaller.GetDroneIdAsync(deliveryRequest).ConfigureAwait(false);
                     if (droneId != null)
                     {
-                        _logger.LogInformation("Assigned drone {droneId} for delivery {deliveryId}", droneId, deliveryRequest.DeliveryId);
+                        _logger.LogInformation("Assigned drone {droneId} for delivery {deliveryId}", LogSanitizer.Sanitize(droneId), LogSanitizer.Sanitize(deliveryRequest.DeliveryId));
 
                         var deliverySchedule = await _deliveryServiceCaller.ScheduleDeliveryAsync(deliveryRequest, droneId);
                         if (deliverySchedule != null)
                         {
-                            _logger.LogInformation("Completed delivery {deliveryId}", deliveryRequest.DeliveryId);
+                            _logger.LogInformation("Completed delivery {deliveryId}", LogSanitizer.Sanitize(deliveryRequest.DeliveryId));
                             return true;
                         }
                         else
                         {
-                            _logger.LogError("Failed delivery for request {deliveryId}", deliveryRequest.DeliveryId);
+                            _logger.LogError("Failed delivery for request {deliveryId}", LogSanitizer.Sanitize(deliveryRequest.DeliveryId));
                         }
                     }
                 }
             }
             catch (Exception e)
             {
-                _logger.LogError(e, "Error processing delivery request {deliveryId}", deliveryRequest.DeliveryId);
+                _logger.LogError(e, "Error processing delivery request {deliveryId}", LogSanitizer.Sanitize(deliveryRequest.DeliveryId));
             }
 
             return false;

@@ -11,17 +11,16 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Fabrikam.DroneDelivery.Common;
 using Fabrikam.DroneDelivery.DeliveryService.Middlewares.Builder;
 using Fabrikam.DroneDelivery.DeliveryService.Models;
 using Fabrikam.DroneDelivery.DeliveryService.Services;
 using Moq;
+using Xunit;
 
 namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 {
-    [TestClass]
-    public class DeliveriesControllerRoutingFixture
+    public class DeliveriesControllerRoutingFixture : IDisposable
     {
         private readonly TestServer _testServer;
         private readonly Mock<IDeliveryRepository> _deliveryRepositoryMock;
@@ -61,13 +60,12 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
                         }));
         }
 
-        [TestCleanup]
-        public void TearDown()
+        public void Dispose()
         {
             _testServer?.Dispose();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetDelivery_GetsResponse()
         {
             var deliveryId = Guid.NewGuid().ToString();
@@ -84,13 +82,13 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 
                 var delivery = await response.Content.ReadAsAsync<Delivery>();
 
-                Assert.AreEqual(deliveryId, delivery.Id);
+                Assert.Equal(deliveryId, delivery.Id);
             }
 
             _deliveryRepositoryMock.VerifyAll();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetDeliveryThroughPublicRoute_GetsResponse()
         {
             var deliveryId = Guid.NewGuid().ToString();
@@ -107,13 +105,13 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 
                 var delivery = await response.Content.ReadAsAsync<Delivery>();
 
-                Assert.AreEqual(deliveryId, delivery.Id);
+                Assert.Equal(deliveryId, delivery.Id);
             }
 
             _deliveryRepositoryMock.VerifyAll();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PutDelivery_GetsResponse()
         {
             var deliveryId = Guid.NewGuid().ToString();
@@ -131,17 +129,17 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             using (var client = _testServer.CreateClient())
             {
                 var response = await client.PutAsJsonAsync($"http://localhost/api/deliveries/{deliveryId}", delivery);
-                Assert.AreEqual(HttpStatusCode.Created, response.StatusCode);
+                Assert.Equal(HttpStatusCode.Created, response.StatusCode);
 
                 var createdDelivery = await response.Content.ReadAsAsync<Delivery>();
-                Assert.AreEqual(deliveryId, delivery.Id);
+                Assert.Equal(deliveryId, delivery.Id);
             }
 
             _deliveryRepositoryMock.VerifyAll();
             _deliveryTrackingRepository.VerifyAll();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task PutDeliveryThroughPublicRoute_GetsMethodNotAllowedResponse()
         {
             var deliveryId = Guid.NewGuid().ToString();
@@ -150,14 +148,14 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
             using (var client = _testServer.CreateClient())
             {
                 var response = await client.PutAsJsonAsync($"http://localhost/api/deliveries/public/{deliveryId}", delivery);
-                Assert.AreEqual(HttpStatusCode.MethodNotAllowed, response.StatusCode);
+                Assert.Equal(HttpStatusCode.MethodNotAllowed, response.StatusCode);
             }
 
             _deliveryRepositoryMock.VerifyAll();
             _deliveryTrackingRepository.VerifyAll();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetOwner_GetsResponse()
         {
             var deliveryId = Guid.NewGuid().ToString();
@@ -174,13 +172,13 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 
                 var userAccount = await response.Content.ReadAsAsync<UserAccount>();
 
-                Assert.AreEqual("user", userAccount.UserId);
+                Assert.Equal("user", userAccount.UserId);
             }
 
             _deliveryRepositoryMock.VerifyAll();
         }
 
-        [TestMethod]
+        [Fact]
         public async Task GetStatus_GetsResponse()
         {
             var deliveryId = Guid.NewGuid().ToString();
@@ -197,7 +195,7 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 
                 var status = await response.Content.ReadAsAsync<DeliveryStatus>();
 
-                Assert.AreEqual(DeliveryStage.Created, status.Stage);   // exposes deserialization issue
+                Assert.Equal(DeliveryStage.Created, status.Stage);   // exposes deserialization issue
             }
 
             _deliveryRepositoryMock.VerifyAll();

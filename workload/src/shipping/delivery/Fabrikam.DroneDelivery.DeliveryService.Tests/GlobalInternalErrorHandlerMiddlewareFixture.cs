@@ -12,18 +12,17 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.Extensions.Options;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Moq;
 using Fabrikam.DroneDelivery.DeliveryService.Middlewares;
 using Microsoft.Azure.Cosmos;
+using Xunit;
 
 
 namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 {
-    [TestClass]
     public class GlobalInternalErrorHandlerMiddlewareFixture
     {
-        [TestMethod]
+        [Fact]
         public async Task IfInternalServerErrorOccurs_ItHandlesTheException()
         {
             // Arrange
@@ -67,11 +66,11 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 
             // Assert
             responseMock.VerifySet(r500 => r500.StatusCode = 500);
-            Assert.IsNotNull(featuresCollection.Get<IExceptionHandlerFeature>());
-            Assert.IsNotNull(featuresCollection.Get<IExceptionHandlerFeature>().Error);
+            Assert.NotNull(featuresCollection.Get<IExceptionHandlerFeature>());
+            Assert.NotNull(featuresCollection.Get<IExceptionHandlerFeature>().Error);
         }
 
-        [TestMethod]
+        [Fact]
         public async Task IfRequestRateTooLargeException_ItHandlesTheException()
         {
             // Arrange
@@ -115,8 +114,8 @@ namespace Fabrikam.DroneDelivery.DeliveryService.Tests
 
             // Assert
             responseMock.VerifySet(r500 => r500.StatusCode = 500);
-            Assert.IsNotNull(featuresCollection.Get<IExceptionHandlerFeature>());
-            Assert.IsNotNull(featuresCollection.Get<IExceptionHandlerFeature>().Error);
+            Assert.NotNull(featuresCollection.Get<IExceptionHandlerFeature>());
+            Assert.NotNull(featuresCollection.Get<IExceptionHandlerFeature>().Error);
         }
 
         Task NextTooManyRequests(HttpContext context)
